@@ -24,11 +24,6 @@ else()
     message(FATAL_ERROR "SDL2 not found!")
 endif()
 
-# Find X11
-find_package(X11 REQUIRED)
-if (X11_FOUND)
-    include_directories(${X11_INCLUDE_DIR})
-    target_link_libraries(SimpleGame ${X11_LIBRARIES})
-else()
-    message(FATAL_ERROR "X11 not found!")
-endif()
+# Manually specify SDL2_image paths
+include_directories(/usr/include/SDL2)
+target_link_libraries(SimpleGame /usr/lib/x86_64-linux-gnu/libSDL2_image.so)

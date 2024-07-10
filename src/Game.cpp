@@ -13,6 +13,11 @@ bool Game::init(const char* title, int width, int height) {                     
         return false;
     }
 
+    if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
+        std::cerr << "IMG_Init Error: " << IMG_GetError() << std::endl;
+        return false;
+    }
+
     window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN);          /* Creaza window-ul */
     if (!window) {
         std::cerr << "SDL_CreateWindow Error: " << SDL_GetError() << std::endl;
@@ -26,7 +31,8 @@ bool Game::init(const char* title, int width, int height) {                     
     }
 
     isRunning = true;
-    entities.push_back(Entity(100, 100, 50, 50));  // Example entity
+
+    entities.push_back(Entity(100, 100, 50, 50, "assets/entity.png", renderer));  // Example entity
 
     SDL_GetWindowPosition(window, &windowRect.x, &windowRect.y);                                    /* Save initial window size and position */
     SDL_GetWindowSize(window, &windowRect.w, &windowRect.h);
@@ -89,8 +95,12 @@ void Game::render() {
 }
 
 void Game::cleanup() {
+    for (auto& entity : entities) {
+        entity.~Entity(); // Explicitly call the destructor
+    }
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+    IMG_Quit();
     SDL_Quit();
 }
 
