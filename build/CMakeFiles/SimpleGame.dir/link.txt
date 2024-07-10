@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/SimpleGame.dir/src/main.cpp.o CMakeFiles/SimpleGame.dir/src/Game.cpp.o CMakeFiles/SimpleGame.dir/src/Entity.cpp.o -o SimpleGame  -L/usr/lib/x86_64-linux-gnu  -lSDL2 /usr/lib/x86_64-linux-gnu/libSM.so /usr/lib/x86_64-linux-gnu/libICE.so /usr/lib/x86_64-linux-gnu/libX11.so /usr/lib/x86_64-linux-gnu/libXext.so 

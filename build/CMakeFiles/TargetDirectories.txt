@@ -1,0 +1,3 @@
+/home/simion/Desktop/Game/build/CMakeFiles/SimpleGame.dir
+/home/simion/Desktop/Game/build/CMakeFiles/edit_cache.dir
+/home/simion/Desktop/Game/build/CMakeFiles/rebuild_cache.dir
