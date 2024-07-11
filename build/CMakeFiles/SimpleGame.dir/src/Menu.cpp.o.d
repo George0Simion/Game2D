@@ -1,6 +1,6 @@
-CMakeFiles/SimpleGame.dir/src/Game.cpp.o: \
- /home/simion/Desktop/2/Game2D/src/Game.cpp /usr/include/stdc-predef.h \
- /home/simion/Desktop/2/Game2D/src/Game.h /usr/include/SDL2/SDL.h \
+CMakeFiles/SimpleGame.dir/src/Menu.cpp.o: \
+ /home/simion/Desktop/2/Game2D/src/Menu.cpp /usr/include/stdc-predef.h \
+ /home/simion/Desktop/2/Game2D/src/Menu.h /usr/include/SDL2/SDL.h \
  /usr/include/SDL2/SDL_main.h /usr/include/SDL2/SDL_stdinc.h \
  /usr/include/SDL2/SDL_config.h \
  /usr/include/x86_64-linux-gnu/SDL2/_real_SDL_config.h \
@@ -213,8 +213,9 @@ CMakeFiles/SimpleGame.dir/src/Game.cpp.o: \
  /usr/include/SDL2/SDL_shape.h /usr/include/SDL2/SDL_system.h \
  /usr/include/SDL2/SDL_timer.h /usr/include/SDL2/SDL_version.h \
  /usr/include/SDL2/SDL_locale.h /usr/include/SDL2/SDL_misc.h \
- /usr/include/SDL2/SDL_image.h /usr/include/SDL2/SDL.h \
- /usr/include/c++/11/vector /usr/include/c++/11/bits/allocator.h \
+ /home/simion/Desktop/2/Game2D/src/Game.h /usr/include/SDL2/SDL_image.h \
+ /usr/include/SDL2/SDL.h /usr/include/c++/11/vector \
+ /usr/include/c++/11/bits/allocator.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++allocator.h \
  /usr/include/c++/11/ext/new_allocator.h /usr/include/c++/11/new \
  /usr/include/c++/11/bits/exception.h \
@@ -267,5 +268,4 @@ CMakeFiles/SimpleGame.dir/src/Game.cpp.o: \
  /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h \
  /usr/include/x86_64-linux-gnu/bits/types/error_t.h \
  /usr/include/c++/11/bits/charconv.h \
- /usr/include/c++/11/bits/basic_string.tcc \
- /home/simion/Desktop/2/Game2D/src/Menu.h
+ /usr/include/c++/11/bits/basic_string.tcc

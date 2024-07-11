@@ -7,16 +7,18 @@
 
 class Entity {
 public:
-    Entity(int x, int y, int w, int h, const std::string& imagePath, SDL_Renderer* renderer);              /* Constructor initializing the entity's position and size */
-    ~Entity();
-    void update();                                                                                         /* Updates the entity */
-    void render(SDL_Renderer* renderer);                                                                   /* Renders the entity */
-    void move(int dx, int dy);                                                                             /* Method to move the entity */
+    Entity(float p_x, float p_y, SDL_Texture* p_tex);
+    float getX();
+    float getY();
+    void setX(float p_x);
+    void setY(float p_y);
+    SDL_Texture* getTex();
+    SDL_Rect getCurrentFrame();
 
 private:
-    SDL_Rect rect;                                   /* Rectangle defining the entity's position and size */
-    SDL_Texture* texture;
-    SDL_Renderer* renderer;
+    float x, y;
+    SDL_Texture* tex;
+    SDL_Rect currentFrame;
 };
 
-#endif // ENTITY_H
+#endif

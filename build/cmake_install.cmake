@@ -1,4 +1,4 @@
-# Install script for directory: /home/simion/Desktop/Game
+# Install script for directory: /home/simion/Desktop/2/Game2D
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -50,5 +50,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/simion/Desktop/Game/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/simion/Desktop/2/Game2D/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

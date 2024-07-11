@@ -10,6 +10,7 @@ add_executable(SimpleGame
     src/main.cpp
     src/Game.cpp
     src/Entity.cpp
+    src/Menu.cpp  # Add this line
 )
 
 # Include directories

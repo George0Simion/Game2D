@@ -1,13 +1,19 @@
 #include "Game.h"
 
-int main(int argc, char* argv[]) {
-    Game game;
+Game* game = nullptr;
 
-    if (game.init("Simple Game", 1400, 1000)) {
-        game.run();                                     /* Initializam window-ul si rulam daca s-a initializat cu succes */
+int main(int argc, char* argv[]) {
+    game = new Game();
+
+    game->init("Game Window", 800, 600, false);
+
+    while (game->running()) {
+        game->handleEvents();
+        game->update();
+        game->render();
     }
 
-    game.cleanup();
+    game->clean();
 
     return 0;
 }
