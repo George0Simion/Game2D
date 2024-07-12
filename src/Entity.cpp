@@ -1,12 +1,14 @@
 #include "Entity.h"
 
+/* Entity constructor with the intial pozitions */
 Entity::Entity(float p_x, float p_y, SDL_Texture* p_tex): x(p_x), y(p_y), tex(p_tex) {
     currentFrame.x = 0;
     currentFrame.y = 0;
-    currentFrame.w = 32;
-    currentFrame.h = 32;
+    currentFrame.w = 128;
+    currentFrame.h = 128;
 }
 
+/* Methods for the entity */
 float Entity::getX() {
     return x;
 }

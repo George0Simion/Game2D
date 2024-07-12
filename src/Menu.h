@@ -7,9 +7,10 @@ class Game;  // Forward declaration
 
 class Menu {
 public:
-    Menu(Game* game);
-    void handleInput();
-    void render();
+    Menu(Game* game);                           /* Child menu */
+
+    void handleInput(SDL_Event& event);
+    void render();                              /* Methods for the menu */
 
 private:
     bool mouseDown;

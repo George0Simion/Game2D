@@ -186,14 +186,14 @@
 # define COMPILER_VERSION_TWEAK DEC(__ibmxl_ptf_fix_level__)
 
 
-#elif defined(__IBMC__) && !defined(__COMPILER_VER__) && __IBMC__ >= 800
+#elif defined(__IBMC__) && !defined(__COMPILER_VER__) && __IBMC__ >= 1600
 # define COMPILER_ID "XL"
   /* __IBMC__ = VRP */
 # define COMPILER_VERSION_MAJOR DEC(__IBMC__/100)
 # define COMPILER_VERSION_MINOR DEC(__IBMC__/10 % 10)
 # define COMPILER_VERSION_PATCH DEC(__IBMC__    % 10)
 
-#elif defined(__IBMC__) && !defined(__COMPILER_VER__) && __IBMC__ < 800
+#elif defined(__IBMC__) && !defined(__COMPILER_VER__) && __IBMC__ < 1600
 # define COMPILER_ID "VisualAge"
   /* __IBMC__ = VRP */
 # define COMPILER_VERSION_MAJOR DEC(__IBMC__/100)
