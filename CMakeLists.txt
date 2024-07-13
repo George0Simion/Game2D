@@ -10,11 +10,12 @@ add_executable(SimpleGame
     src/main.cpp
     src/Game.cpp
     src/Entity.cpp
-    src/Menu.cpp  # Add this line
+    src/Menu.cpp
+    src/World.cpp  # Add this line if you create a World.cpp file
 )
 
 # Include directories
-target_include_directories(SimpleGame PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_include_directories(SimpleGame PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # Find SDL2
 find_package(SDL2 REQUIRED)

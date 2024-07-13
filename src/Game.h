@@ -6,6 +6,7 @@
 #include <vector>
 #include "Entity.h"
 #include "Menu.h"
+#include "World.h"
 
 class Game {
 public:
@@ -33,6 +34,9 @@ private:
     SDL_Texture* loadTexture(const char* fileName);
 
     Menu* menu;                                                                 /* Menu child */
+    World* world;
+
+    SDL_Rect camera;
 
     void processInput();
 };

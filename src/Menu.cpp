@@ -24,8 +24,7 @@ void Menu::handleInput(SDL_Event& event) {
                     y >= closeButton.y && y <= closeButton.y + closeButton.h) {
                     game->isRunning = false;  // Close the game
                 }
-                if (x >= fullscreenButton.x && x <= fullscreenButton.x + fullscreenButton.w &&
-                    y >= fullscreenButton.y && y <= fullscreenButton.y + fullscreenButton.h) {
+                if (x >= fullscreenButton.x && x <= fullscreenButton.x + fullscreenButton.w) {
                     Uint32 fullscreenFlag = SDL_GetWindowFlags(game->window) & SDL_WINDOW_FULLSCREEN;
                     SDL_SetWindowFullscreen(game->window, fullscreenFlag ? 0 : SDL_WINDOW_FULLSCREEN);
                 }
@@ -35,7 +34,6 @@ void Menu::handleInput(SDL_Event& event) {
             break;
     }
 }
-
 
 void Menu::render() {
     // Render semi-transparent overlay
@@ -56,4 +54,3 @@ void Menu::render() {
 
     // Optionally render button labels (e.g., using SDL_ttf for text rendering)
 }
-
