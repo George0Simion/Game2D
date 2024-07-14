@@ -38,7 +38,7 @@ void Menu::handleInput(SDL_Event& event) {
 void Menu::render() {
     // Render semi-transparent overlay
     SDL_SetRenderDrawColor(game->renderer, 0, 0, 0, 128);  // Semi-transparent black
-    SDL_Rect overlay = { 0, 0, 1600, 1200 };
+    SDL_Rect overlay = { 0, 0, 1920, 1080 };
     SDL_RenderFillRect(game->renderer, &overlay);
 
     // Render menu background

@@ -2,7 +2,7 @@
 #include <fstream>
 #include <iostream>
 
-World::World(SDL_Renderer* p_renderer) : renderer(p_renderer), chunkSize(4), tileset(nullptr), tileWidth(32), tileHeight(32) {}
+World::World(SDL_Renderer* p_renderer) : renderer(p_renderer), chunkSize(8), tileset(nullptr), tileWidth(64), tileHeight(64) {}
 
 World::~World() {
     if (tileset) {
@@ -16,16 +16,15 @@ void World::loadMap(const std::string& mapFile) {
         std::cerr << "Failed to open map file: " << mapFile << std::endl;
         return;
     }
-
-    json mapJson;
-    file >> mapJson;
+    
+    json mapData;
+    file >> mapData;
     file.close();
-
-    chunkSize = mapJson["chunkSize"];
-    std::string tilesetFile = mapJson["tileset"];
-    loadTileset(tilesetFile);
-
-    for (auto& chunk : mapJson["chunks"].items()) {
+    
+    chunkSize = mapData["chunkSize"];
+    loadTileset(mapData["tileset"]);
+    
+    for (auto& chunk : mapData["chunks"].items()) {
         std::string key = chunk.key();
         std::vector<std::vector<int>> chunkData = chunk.value();
         chunks[key] = chunkData;
@@ -83,7 +82,6 @@ void World::renderChunk(int chunkX, int chunkY, float cameraX, float cameraY) {
         }
     }
 }
-
 
 std::string World::getChunkKey(int chunkX, int chunkY) {
     return std::to_string(chunkX) + "," + std::to_string(chunkY);

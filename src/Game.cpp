@@ -12,36 +12,36 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
     int flags = fullscreen ? SDL_WINDOW_FULLSCREEN : 0;
     if (SDL_Init(SDL_INIT_EVERYTHING) == 0) {
         window = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, flags);
-        renderer = SDL_CreateRenderer(window, -1, 0); /* Creating the window and the renderer */
+        renderer = SDL_CreateRenderer(window, -1, 0);                       /* Creating the window and the renderer */
         if (renderer) {
-            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); /* Drawing the window */
+            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);           /* Drawing the window */
         }
         isRunning = true;
     } else {
         isRunning = false;
     }
 
-    if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) { /* Check error for the image */
+    if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {                         /* Check error for the image */
         printf("SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError());
         isRunning = false;
     }
 
     /* Loading the main character and adding it to the vector */
     SDL_Texture* tex = loadTexture("/home/simion/Desktop/2/Game2D/assets/maybe.png");
-    entities.push_back(Entity(width / 2 - 64, height / 2 - 64, tex));  // Center the player
+    entities.push_back(Entity(width / 2 - 64, height / 2 - 64, tex));       /* Center the player */
 
     lastTime = SDL_GetTicks();
-    deltaTime = 0.0f; /* Getting the in-game time for the movement */
+    deltaTime = 0.0f;                                                       /* Getting the in-game time for the movement */
 
-    menu = new Menu(this); /* Allocating memory for the menu */
+    menu = new Menu(this);                                                  /* Allocating memory for the menu */
 
-    world = new World(renderer); /* Initialize and load the world map */
-    world->loadMap("/home/simion/Desktop/2/Game2D/src/map.json"); /* Adjust the path if necessary */
+    world = new World(renderer);                                            /* Initialize and load the world map */
+    world->loadMap("/home/simion/Desktop/2/Game2D/src/map.json");           /* Adjust the path if necessary */
 
-    camera = {0, 0, 1300, 1000}; /* Initialize the camera */
+    camera = {0, 0, 1680, 900};                                             /* Initialize the camera */
 }
 
-SDL_Texture* Game::loadTexture(const char* fileName) { /* Method for loading the texture for the main character */
+SDL_Texture* Game::loadTexture(const char* fileName) {                      /* Method for loading the texture for the main character */
     SDL_Surface* tempSurface = IMG_Load(fileName);
     SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, tempSurface);
     SDL_FreeSurface(tempSurface);
@@ -93,11 +93,11 @@ void Game::processInput() {
         player.setX(player.getX() + speed * deltaTime); /* Move right */
     }
 
-    // Keep entity within the window bounds (assuming window size 1600x1200)
+    // Keep entity within the window bounds (assuming window size 1920x1080)
     if (player.getX() < 0) player.setX(0);
-    if (player.getX() > 1600 - player.getCurrentFrame().w) player.setX(1600 - player.getCurrentFrame().w);
+    if (player.getX() > 1920 - player.getCurrentFrame().w) player.setX(1920 - player.getCurrentFrame().w);
     if (player.getY() < 0) player.setY(0);
-    if (player.getY() > 1200 - player.getCurrentFrame().h) player.setY(1200 - player.getCurrentFrame().h);
+    if (player.getY() > 1080 - player.getCurrentFrame().h) player.setY(1080 - player.getCurrentFrame().h);
 }
 
 void Game::update() {
@@ -140,19 +140,24 @@ void Game::update() {
     // Prevent the camera from going out of bounds
     if (camera.x < 0) camera.x = 0;
     if (camera.y < 0) camera.y = 0;
-    if (camera.x > 1600 - camera.w) camera.x = 1600 - camera.w;
-    if (camera.y > 1200 - camera.h) camera.y = 1200 - camera.h;
+    if (camera.x > 1920 - camera.w) camera.x = 1920 - camera.w;
+    if (camera.y > 1080 - camera.h) camera.y = 1080 - camera.h;
 }
 
 /* Rendering method for the entities */
 void Game::render() {
-    // Clear the screen with white color
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // White color
     SDL_RenderClear(renderer);
 
-    // Render the world
-    Entity& player = entities[0];
-    world->render(camera.x, camera.y);
+    // if(isMenuOpen) {
+    //     menu->render();
+
+    // } else {
+        // Render the world
+        Entity& player = entities[0];
+        world->render(camera.x, camera.y);
+
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // White color
+    // }
 
     // Render entities
     for (Entity& e : entities) {
@@ -163,7 +168,12 @@ void Game::render() {
             srcRect.w, 
             srcRect.h 
         };
+
         SDL_RenderCopy(renderer, e.getTex(), &srcRect, &destRect);
+    }
+
+    if(isMenuOpen) {
+        menu->render();
     }
 
     SDL_RenderPresent(renderer);
