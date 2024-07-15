@@ -34,11 +34,16 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
     deltaTime = 0.0f;                                                       /* Getting the in-game time for the movement */
 
     menu = new Menu(this);                                                  /* Allocating memory for the menu */
-
-    world = new World(renderer);                                            /* Initialize and load the world map */
-    world->loadMap("/home/simion/Desktop/2/Game2D/src/map.json");           /* Adjust the path if necessary */
+    world = new World(renderer, 12345);                                     /* Initialize the world with a seed for procedural generation */
 
     camera = {0, 0, 1680, 900};                                             /* Initialize the camera */
+
+    // Center the camera on the player initially
+    camera.x = entities[0].getX() - camera.w / 2;
+    camera.y = entities[0].getY() - camera.h / 2;
+
+    // Ensure chunks are generated and rendered correctly around the initial camera position
+    world->update(camera.x + camera.w / 2, camera.y + camera.h / 2);
 }
 
 SDL_Texture* Game::loadTexture(const char* fileName) {                      /* Method for loading the texture for the main character */
@@ -92,12 +97,6 @@ void Game::processInput() {
     if (state[SDL_SCANCODE_D] || state[SDL_SCANCODE_RIGHT]) {
         player.setX(player.getX() + speed * deltaTime); /* Move right */
     }
-
-    // Keep entity within the window bounds (assuming window size 1920x1080)
-    if (player.getX() < 0) player.setX(0);
-    if (player.getX() > 1920 - player.getCurrentFrame().w) player.setX(1920 - player.getCurrentFrame().w);
-    if (player.getY() < 0) player.setY(0);
-    if (player.getY() > 1080 - player.getCurrentFrame().h) player.setY(1080 - player.getCurrentFrame().h);
 }
 
 void Game::update() {
@@ -110,54 +109,56 @@ void Game::update() {
 
     // Update the camera position
     Entity& player = entities[0];
-    int playerX = static_cast<int>(player.getX());
-    int playerY = static_cast<int>(player.getY());
+    float playerX = player.getX();
+    float playerY = player.getY();
 
-    // Define the dead zone
-    int deadZoneMarginX = 48;
-    int deadZoneMarginY = 48;
-    int deadZoneWidth = camera.w - 2 * deadZoneMarginX;
-    int deadZoneHeight = camera.h - 2 * deadZoneMarginY;
+    // Define the dead zone dimensions
+    int deadZoneWidth = 1680;
+    int deadZoneHeight = 900;
 
-    int deadZoneLeft = camera.x + (camera.w - deadZoneWidth) / 2;
-    int deadZoneRight = camera.x + (camera.w + deadZoneWidth) / 2;
-    int deadZoneTop = camera.y + (camera.h - deadZoneHeight) / 2;
-    int deadZoneBottom = camera.y + (camera.h + deadZoneHeight) / 2;
+    // Calculate the camera position based on the dead-zone
+    float camX = camera.x + camera.w / 2;
+    float camY = camera.y + camera.h / 2;
+
+    float deadZoneLeft = camX - deadZoneWidth / 2;
+    float deadZoneRight = camX + deadZoneWidth / 2;
+    float deadZoneTop = camY - deadZoneHeight / 2;
+    float deadZoneBottom = camY + deadZoneHeight / 2;
 
     if (playerX < deadZoneLeft) {
-        camera.x = playerX - (camera.w - deadZoneWidth) / 2;
+        camera.x = playerX - (camera.w - deadZoneWidth) / 2; // good
     }
     if (playerX > deadZoneRight) {
-        camera.x = playerX - (camera.w + deadZoneWidth) / 2;
+        camera.x = playerX - (camera.w + deadZoneWidth) / 2; // good
     }
     if (playerY < deadZoneTop) {
-        camera.y = playerY - (camera.h - deadZoneHeight) / 2;
+        camera.y = playerY - (camera.h - deadZoneHeight) / 2; // good
     }
     if (playerY > deadZoneBottom) {
-        camera.y = playerY - (camera.h + deadZoneHeight) / 2;
+        camera.y = playerY - (camera.h + deadZoneHeight) / 2; // good
     }
 
-    // Prevent the camera from going out of bounds
-    if (camera.x < 0) camera.x = 0;
-    if (camera.y < 0) camera.y = 0;
-    if (camera.x > 1920 - camera.w) camera.x = 1920 - camera.w;
-    if (camera.y > 1080 - camera.h) camera.y = 1080 - camera.h;
+    // Ensure the dead zone moves with the camera
+    camX = camera.x + camera.w / 2;
+    camY = camera.y + camera.h / 2;
+
+    deadZoneLeft = camX - deadZoneWidth / 2;
+    deadZoneRight = camX + deadZoneWidth / 2;
+    deadZoneTop = camY - deadZoneHeight / 2;
+    deadZoneBottom = camY + deadZoneHeight / 2;
+
+    // Update the world based on the new camera position
+    world->update(camera.x + camera.w / 2, camera.y + camera.h / 2);
 }
 
-/* Rendering method for the entities */
 void Game::render() {
     SDL_RenderClear(renderer);
 
-    // if(isMenuOpen) {
-    //     menu->render();
+    // Render the world
+    Entity& player = entities[0];
+    world->render(camera.x + camera.w / 2 + 192, camera.y + camera.h / 2 - 256);
 
-    // } else {
-        // Render the world
-        Entity& player = entities[0];
-        world->render(camera.x, camera.y);
-
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // White color
-    // }
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // White color
 
     // Render entities
     for (Entity& e : entities) {
@@ -172,7 +173,7 @@ void Game::render() {
         SDL_RenderCopy(renderer, e.getTex(), &srcRect, &destRect);
     }
 
-    if(isMenuOpen) {
+    if (isMenuOpen) {
         menu->render();
     }
 
