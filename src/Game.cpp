@@ -27,8 +27,8 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
     }
 
     /* Loading the main character and adding it to the vector */
-    SDL_Texture* tex = loadTexture("/home/simion/Desktop/2/Game2D/assets/maybe.png");
-    entities.push_back(Entity(width / 2 - 64, height / 2 - 64, tex));       /* Center the player */
+    SDL_Texture* tex = loadTexture("/home/simion/Desktop/2/Game2D/assets/animation.png");
+    entities.push_back(Entity(width / 2 - 64, height / 2 - 64, tex, 64, 64, 4, 0.1f));       /* Center the player */
 
     lastTime = SDL_GetTicks();
     deltaTime = 0.0f;                                                       /* Getting the in-game time for the movement */
@@ -84,18 +84,31 @@ void Game::processInput() {
     Entity& player = entities[0];
 
     float speed = 100.0f; /* Movement speed in pixels per second */
+    bool moved = false;
 
     if (state[SDL_SCANCODE_W] || state[SDL_SCANCODE_UP]) {
         player.setY(player.getY() - speed * deltaTime); /* Move up */
+        player.setDirection(Entity::Up); // Corrected direction
+        moved = true;
     }
     if (state[SDL_SCANCODE_S] || state[SDL_SCANCODE_DOWN]) {
         player.setY(player.getY() + speed * deltaTime); /* Move down */
+        player.setDirection(Entity::Down); // Corrected direction
+        moved = true;
     }
     if (state[SDL_SCANCODE_A] || state[SDL_SCANCODE_LEFT]) {
         player.setX(player.getX() - speed * deltaTime); /* Move left */
+        player.setDirection(Entity::Left); // Corrected direction
+        moved = true;
     }
     if (state[SDL_SCANCODE_D] || state[SDL_SCANCODE_RIGHT]) {
         player.setX(player.getX() + speed * deltaTime); /* Move right */
+        player.setDirection(Entity::Right); // Corrected direction
+        moved = true;
+    }
+
+    if (!moved) {
+        player.stopAnimation();
     }
 }
 
@@ -106,6 +119,11 @@ void Game::update() {
 
     // Process input
     processInput();
+
+    // Update entities
+    for (Entity& entity : entities) {
+        entity.update(deltaTime); // This is where Entity::update is called
+    }
 
     // Update the camera position
     Entity& player = entities[0];
@@ -166,8 +184,8 @@ void Game::render() {
         SDL_Rect destRect = { 
             static_cast<int>(e.getX()) - camera.x, 
             static_cast<int>(e.getY()) - camera.y, 
-            srcRect.w, 
-            srcRect.h 
+            static_cast<int>(srcRect.w * 1.5), // Scale width by 1.75 to make the character slightly smaller
+            static_cast<int>(srcRect.h * 1.5)  // Scale height by 1.75 to make the character slightly smaller
         };
 
         SDL_RenderCopy(renderer, e.getTex(), &srcRect, &destRect);
