@@ -1,12 +1,13 @@
 #include "Entity.h"
 
-/* Entity constructor with the initial positions */
-Entity::Entity(float p_x, float p_y, SDL_Texture* p_tex, int p_frameWidth, int p_frameHeight, int p_numFrames, float p_animationSpeed)
-    : x(p_x), y(p_y), tex(p_tex), frameWidth(p_frameWidth), frameHeight(p_frameHeight), numFrames(p_numFrames), animationSpeed(p_animationSpeed), animationTimer(0.0f), currentFrameIndex(0), moving(false), direction(Down) {
-    currentFrame = {0, 0, frameWidth, frameHeight};
+const int FRAME_WIDTH = 64;
+const int FRAME_HEIGHT = 64;
+
+Entity::Entity(float p_x, float p_y, SDL_Texture* p_tex, int p_numFrames, float p_animationSpeed)
+    : x(p_x), y(p_y), tex(p_tex), numFrames(p_numFrames), animationSpeed(p_animationSpeed), animationTimer(0.0f), currentFrameIndex(0), moving(false), direction(Down), action(Walking) {
+    currentFrame = {0, 0, FRAME_WIDTH, FRAME_HEIGHT};
 }
 
-/* Methods for the entity */
 float Entity::getX() {
     return x;
 }
@@ -46,18 +47,60 @@ void Entity::stopAnimation() {
 
 void Entity::setDirection(Direction dir) {
     direction = dir;
-    currentFrame.y = direction * frameHeight;
+}
+
+void Entity::setAction(Action act) {
+    if (action != act) {
+        action = act;
+        currentFrameIndex = 0;
+        animationTimer = 0.0f;
+
+        // Adjust number of frames for each action
+        switch(action) {
+            case Slashing:
+                numFrames = 6; // 6 frames for slashing
+                break;
+            case Thrusting:
+                numFrames = 8; // 8 frames for thrusting
+                break;
+            case Spellcasting:
+                numFrames = 7; // 7 frames for spellcasting
+                break;
+            case Shooting:
+                numFrames = 13; // 13 frames for shooting
+                break;
+            default:
+                numFrames = 9; // 9 frames for walking
+                break;
+        }
+        currentFrame = {0, direction * FRAME_HEIGHT, FRAME_WIDTH, FRAME_HEIGHT};
+    }
 }
 
 void Entity::update(float deltaTime) {
-    if (!moving) return;
+    if (!moving && action == Walking) return;
 
     animationTimer += deltaTime;
 
     if (animationTimer >= animationSpeed) {
         animationTimer = 0.0f;
         currentFrameIndex = (currentFrameIndex + 1) % numFrames;
-        currentFrame.x = currentFrameIndex * frameWidth;
-        currentFrame.y = direction * frameHeight;
+
+        int actionOffset = 0;
+        switch(action) {
+            case Walking: actionOffset = 2; break;
+            case Slashing: actionOffset = 3; break;
+            case Thrusting: actionOffset = 1; break;
+            case Spellcasting: actionOffset = 0; break;
+            case Shooting: actionOffset = 4; break;
+        }
+
+        currentFrame.x = currentFrameIndex * FRAME_WIDTH;
+        currentFrame.y = (direction + actionOffset * 4) * FRAME_HEIGHT;
+
+        // Stop animation for shooting after one complete cycle
+        if (action == Shooting && currentFrameIndex == numFrames - 1) {
+            stopAnimation();
+        }
     }
 }

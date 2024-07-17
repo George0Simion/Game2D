@@ -11,34 +11,35 @@
 class Game {
 public:
     Game();
-    ~Game();                                                                    /* Constructor and deconstructor */
+    ~Game();
 
     void init(const char* title, int width, int height, bool fullscreen);
     void handleEvents();
     void update();
     void render();
     void clean();
-    bool running() { return isRunning; }                                        /* Game methods */
+    bool running() { return isRunning; }
 
     bool isRunning;
     bool isMenuOpen;
 
     SDL_Window* window;
-    SDL_Renderer* renderer;                                                     /* Window variables */
+    SDL_Renderer* renderer;
 
 private:
     Uint32 lastTime;
-    float deltaTime;                                                            /* Time for the smooth movement */
+    float deltaTime;
 
-    std::vector<Entity> entities;                                               /* Entities vector */
+    std::vector<Entity> entities;
     SDL_Texture* loadTexture(const char* fileName);
 
-    Menu* menu;                                                                 /* Menu child */
+    Menu* menu;
     World* world;
 
     SDL_Rect camera;
 
     void processInput();
+    SDL_Texture* spriteSheet;
 };
 
 #endif
