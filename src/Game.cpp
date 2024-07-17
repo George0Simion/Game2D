@@ -42,7 +42,6 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
     camera.x = entities[0].getX() - camera.w / 2;
     camera.y = entities[0].getY() - camera.h / 2;
 
-    // Ensure chunks are generated and rendered correctly around the initial camera position
     world->update(camera.x + camera.w / 2, camera.y + camera.h / 2);
 }
 
@@ -68,6 +67,38 @@ void Game::handleEvents() {
                 case SDL_KEYDOWN:
                     if (event.key.keysym.sym == SDLK_ESCAPE) {
                         isMenuOpen = !isMenuOpen;
+                    } else if (event.key.keysym.sym == SDLK_e) {
+                        if (!entities[0].isMoving()) {
+                            entities[0].setAction(Entity::Slashing);
+                            entities[0].startAnimation();
+                        }
+                    } else if (event.key.keysym.sym == SDLK_q) {
+                        if (!entities[0].isMoving()) {
+                            entities[0].setAction(Entity::Spellcasting);
+                            entities[0].startAnimation();
+                        }
+                    }
+                    break;
+                case SDL_MOUSEBUTTONDOWN:
+                    if (event.button.button == SDL_BUTTON_LEFT) {
+                        entities[0].setAction(Entity::Shooting);
+                        entities[0].startAnimation();
+                    } else if (event.button.button == SDL_BUTTON_RIGHT) {
+                        entities[0].setAction(Entity::Thrusting);
+                        entities[0].startAnimation();
+                    }
+                    break;
+                case SDL_MOUSEBUTTONUP:
+                    if (event.button.button == SDL_BUTTON_LEFT) {
+                        if (entities[0].getAction() == Entity::Shooting) {
+                            entities[0].stopAnimation();
+                            entities[0].setAction(Entity::Walking);
+                        }
+                    } else if (event.button.button == SDL_BUTTON_RIGHT) {
+                        if (entities[0].getAction() == Entity::Thrusting) {
+                            entities[0].stopAnimation();
+                            entities[0].setAction(Entity::Walking);
+                        }
                     }
                     break;
                 default:
@@ -76,12 +107,7 @@ void Game::handleEvents() {
         }
     }
 }
-/*
-    ADD THIS:
-Spellcast and slash must be while staying still. 
-For shooting you must release the mouse button to shoot again.
-For thrusting you can doo it infinitelly i dont care.
-*/
+
 void Game::processInput() {
     if (isMenuOpen) return;
 
@@ -90,10 +116,6 @@ void Game::processInput() {
 
     float speed = 100.0f;
     bool moved = false;
-    bool slashing = false;
-    bool thrusting = false;
-    bool spellcasting = false;
-    bool shooting = false;
 
     if (state[SDL_SCANCODE_W] || state[SDL_SCANCODE_UP]) {
         player.setY(player.getY() - speed * deltaTime);
@@ -116,32 +138,29 @@ void Game::processInput() {
         moved = true;
     }
 
-    if (state[SDL_SCANCODE_E]) { // Slashing with E key
-        player.setAction(Entity::Slashing);
-        slashing = true;
-    } else if (state[SDL_SCANCODE_Q]) { // Spellcasting with Q key
-        player.setAction(Entity::Spellcasting);
-        spellcasting = true;
-    } else if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_RIGHT)) { // Thrusting with right click
-        player.setAction(Entity::Thrusting);
-        thrusting = true;
-    } else if (SDL_GetMouseState(NULL, NULL) & SDL_BUTTON(SDL_BUTTON_LEFT)) { // Shooting with left click
-        player.setAction(Entity::Shooting);
-        shooting = true;
-    } else {
-        if (!moved) {
-            player.stopAnimation();
-            player.setAction(Entity::Walking);
+    int mouseX, mouseY;
+    Uint32 mouseState = SDL_GetMouseState(&mouseX, &mouseY);
+    if (mouseState & SDL_BUTTON(SDL_BUTTON_LEFT)) {
+        if (player.getAction() != Entity::Shooting) {
+            player.setAction(Entity::Shooting);
+            player.startAnimation();
+        }
+    } else if (mouseState & SDL_BUTTON(SDL_BUTTON_RIGHT)) {
+        if (player.getAction() != Entity::Thrusting) {
+            player.setAction(Entity::Thrusting);
+            player.startAnimation();
         }
     }
 
-    if (moved || slashing || thrusting || spellcasting || shooting) {
-        player.startAnimation();
-    } else {
+    if (!moved && player.getAction() == Entity::Walking) {
         player.stopAnimation();
+    } else if (moved) {
+        if (player.getAction() != Entity::Shooting && player.getAction() != Entity::Thrusting) {
+            player.startAnimation();
+            player.setAction(Entity::Walking);
+        }
     }
 }
-
 
 void Game::update() {
     Uint32 currentTime = SDL_GetTicks();

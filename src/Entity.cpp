@@ -98,9 +98,20 @@ void Entity::update(float deltaTime) {
         currentFrame.x = currentFrameIndex * FRAME_WIDTH;
         currentFrame.y = (direction + actionOffset * 4) * FRAME_HEIGHT;
 
-        // Stop animation for shooting after one complete cycle
-        if (action == Shooting && currentFrameIndex == numFrames - 1) {
+        // Stop animation for specific actions after one complete cycle
+        if ((action == Slashing && currentFrameIndex == numFrames - 1) ||
+            (action == Spellcasting && currentFrameIndex == numFrames - 1) ||
+            (action == Shooting && currentFrameIndex == numFrames - 1)) {
             stopAnimation();
+            setAction(Walking);
         }
     }
+}
+
+bool Entity::isMoving() const {
+    return moving;
+}
+
+Entity::Action Entity::getAction() const {
+    return action;
 }

@@ -25,6 +25,8 @@ public:
     void stopAnimation();
     void setDirection(Direction dir);
     void setAction(Action act);
+    bool isMoving() const; // Add this method
+    Action getAction() const;
 
 private:
     float x, y;
@@ -43,5 +45,6 @@ private:
     static const int FRAME_WIDTH = 64;
     static const int FRAME_HEIGHT = 64;
 };
+
 
 #endif
