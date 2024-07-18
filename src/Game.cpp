@@ -27,7 +27,7 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
     }
 
     /* Loading the main character and adding it to the vector */
-    SDL_Texture* tex = loadTexture("/home/simion/Desktop/2/Game2D/assets/sprite_good.png");
+    SDL_Texture* tex = loadTexture("/home/simion/Desktop/2/Game2D/assets/sprite_good_arrow2.png");
     entities.push_back(Entity(width / 2 - 64, height / 2 - 64, tex, 4, 0.1f));       /* Center the player */
 
     lastTime = SDL_GetTicks();
@@ -77,6 +77,13 @@ void Game::handleEvents() {
                             entities[0].setAction(Entity::Spellcasting);
                             entities[0].startAnimation();
                         }
+                    } else if (event.key.keysym.sym == SDLK_LSHIFT || event.key.keysym.sym == SDLK_RSHIFT) {
+                        entities[0].setRunning(true);
+                    }
+                    break;
+                case SDL_KEYUP:
+                    if (event.key.keysym.sym == SDLK_LSHIFT || event.key.keysym.sym == SDLK_RSHIFT) {
+                        entities[0].setRunning(false);
                     }
                     break;
                 case SDL_MOUSEBUTTONDOWN:
@@ -92,8 +99,25 @@ void Game::handleEvents() {
                     if (event.button.button == SDL_BUTTON_LEFT) {
                         if (entities[0].getAction() == Entity::Shooting) {
                             entities[0].stopAnimation();
-                            entities[0].setAction(Entity::Walking);
+                            entities[0].shootArrow(entities[0].getDirection());
+
+                            switch (entities[0].getDirection()) {
+                                case Entity::Up:
+                                    entities[0].setAction(Entity::ArrowFlyingUp);
+                                    break;
+                                case Entity::Down:
+                                    entities[0].setAction(Entity::ArrowFlyingDown);
+                                    break;
+                                case Entity::Left:
+                                    entities[0].setAction(Entity::ArrowFlyingLeft);
+                                    break;
+                                case Entity::Right:
+                                    entities[0].setAction(Entity::ArrowFlyingRight);
+                                    break;
+                            }
+                            entities[0].startAnimation();
                         }
+
                     } else if (event.button.button == SDL_BUTTON_RIGHT) {
                         if (entities[0].getAction() == Entity::Thrusting) {
                             entities[0].stopAnimation();
@@ -114,7 +138,7 @@ void Game::processInput() {
     const Uint8* state = SDL_GetKeyboardState(NULL);
     Entity& player = entities[0];
 
-    float speed = 100.0f;
+    float speed = player.isRunning() ? 150.0f : 100.0f;
     bool moved = false;
 
     if (state[SDL_SCANCODE_W] || state[SDL_SCANCODE_UP]) {
@@ -221,24 +245,29 @@ void Game::update() {
 
 void Game::render() {
     SDL_RenderClear(renderer);
-
-    // Render the world
-    Entity& player = entities[0];
     world->render(camera.x + camera.w / 2 + 192, camera.y + camera.h / 2 - 256);
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // White color
-
-    // Render entities
     for (Entity& e : entities) {
         SDL_Rect srcRect = e.getCurrentFrame();
         SDL_Rect destRect = { 
             static_cast<int>(e.getX()) - camera.x, 
             static_cast<int>(e.getY()) - camera.y, 
-            static_cast<int>(srcRect.w * 2), // Scale width by 1.75 to make the character slightly smaller
-            static_cast<int>(srcRect.h * 2)  // Scale height by 1.75 to make the character slightly smaller
+            static_cast<int>(srcRect.w * 2),  
+            static_cast<int>(srcRect.h * 2)  
         };
-
         SDL_RenderCopy(renderer, e.getTex(), &srcRect, &destRect);
+
+        if (e.isArrowActive()) {
+            SDL_Rect arrowSrcRect = e.getArrowFrame();
+            SDL_Rect arrowDestRect = {
+                static_cast<int>(e.getArrowX()) - camera.x,
+                static_cast<int>(e.getArrowY()) - camera.y,
+                64,
+                64
+            };
+            SDL_RenderCopy(renderer, e.getTex(), &arrowSrcRect, &arrowDestRect);
+        }
     }
 
     if (isMenuOpen) {
@@ -247,6 +276,7 @@ void Game::render() {
 
     SDL_RenderPresent(renderer);
 }
+
 
 /* Destroying everything */
 void Game::clean() {
