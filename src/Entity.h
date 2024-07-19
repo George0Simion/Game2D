@@ -38,6 +38,21 @@ public:
     float getArrowY() const;
     SDL_Rect getArrowFrame() const;
 
+protected:
+    virtual int getActionOffset() const; // New virtual method for action offset
+    float getAnimationTimer() const;
+    void setAnimationTimer(float timer);
+    int getCurrentFrameIndex() const;
+    void setCurrentFrameIndex(int index);
+    SDL_Rect& getCurrentFrameRef();
+    bool isEntityMoving() const;
+    bool isEntityRunning() const;
+    float getAnimationSpeed() const;
+    int getNumFrames() const;
+
+    static const int FRAME_WIDTH = 64;
+    static const int FRAME_HEIGHT = 64;
+
 private:
     float x, y;
     bool moving;
@@ -52,9 +67,6 @@ private:
     float animationTimer;
     Direction direction;
     Action action;
-
-    static const int FRAME_WIDTH = 64;
-    static const int FRAME_HEIGHT = 64;
 
     bool arrowActive;
     float arrowX, arrowY;

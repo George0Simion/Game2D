@@ -71,25 +71,25 @@ void Entity::setAction(Action act) {
 
         switch(action) {
             case Slashing:
-                numFrames = 6; // 6 frames for slashing
+                numFrames = 6;
                 break;
             case Thrusting:
-                numFrames = 8; // 8 frames for thrusting
+                numFrames = 8;
                 break;
             case Spellcasting:
-                numFrames = 7; // 7 frames for spellcasting
+                numFrames = 7;
                 break;
             case Shooting:
-                numFrames = 13; // 13 frames for shooting
+                numFrames = 13;
                 break;
             case ArrowFlyingUp:
             case ArrowFlyingDown:
             case ArrowFlyingLeft:
             case ArrowFlyingRight:
-                numFrames = 1; // 1 frame per arrow flying direction
+                numFrames = 1;
                 break;
             default:
-                numFrames = 9; // 9 frames for walking
+                numFrames = 9;
                 break;
         }
         currentFrame = {0, direction * FRAME_HEIGHT, FRAME_WIDTH, FRAME_HEIGHT};
@@ -97,10 +97,9 @@ void Entity::setAction(Action act) {
 }
 
 void Entity::update(float deltaTime) {
-    float actualSpeed = running ? 1.5f * arrowSpeed : arrowSpeed;  // Adjust speed for running
-    float actualAnimationSpeed = running ? animationSpeed / 1.5f : animationSpeed;  // Adjust animation speed for running
+    float actualSpeed = running ? 1.5f * arrowSpeed : arrowSpeed;
+    float actualAnimationSpeed = running ? animationSpeed / 1.5f : animationSpeed;
 
-    // Update arrow position independently
     if (arrowActive) {
         float distance = arrowSpeed * deltaTime;
         arrowTravelDistance += distance;
@@ -117,7 +116,6 @@ void Entity::update(float deltaTime) {
         }
     }
 
-    // Update character animation only if moving or performing an action
     if (moving || action != Walking) {
         animationTimer += deltaTime;
 
@@ -125,19 +123,7 @@ void Entity::update(float deltaTime) {
             animationTimer = 0.0f;
             currentFrameIndex = (currentFrameIndex + 1) % numFrames;
 
-            int actionOffset = 0;
-            switch(action) {
-                case Walking: actionOffset = 2; break;
-                case Slashing: actionOffset = 3; break;
-                case Thrusting: actionOffset = 1; break;
-                case Spellcasting: actionOffset = 0; break;
-                case Shooting: actionOffset = 4; break;
-                case ArrowFlyingUp:
-                case ArrowFlyingDown:
-                case ArrowFlyingLeft:
-                case ArrowFlyingRight:
-                    actionOffset = 5; break;
-            }
+            int actionOffset = getActionOffset();
 
             currentFrame.x = currentFrameIndex * FRAME_WIDTH;
             currentFrame.y = (direction + actionOffset * 4) * FRAME_HEIGHT;
@@ -145,13 +131,29 @@ void Entity::update(float deltaTime) {
             if ((action == Slashing && currentFrameIndex == numFrames - 1) ||
                 (action == Spellcasting && currentFrameIndex == numFrames - 1) ||
                 (action == Shooting && currentFrameIndex == numFrames - 1) ||
-                (action == ArrowFlyingUp || action == ArrowFlyingDown || 
-                 action == ArrowFlyingLeft || action == ArrowFlyingRight)) {
+                (action == Thrusting && currentFrameIndex == numFrames - 1)) {
                 stopAnimation();
                 setAction(Walking);
             }
         }
     }
+}
+
+int Entity::getActionOffset() const {
+    int actionOffset = 0;
+    switch(action) {
+        case Walking: actionOffset = 2; break;
+        case Slashing: actionOffset = 3; break;
+        case Thrusting: actionOffset = 1; break;
+        case Spellcasting: actionOffset = 0; break;
+        case Shooting: actionOffset = 4; break;
+        case ArrowFlyingUp:
+        case ArrowFlyingDown:
+        case ArrowFlyingLeft:
+        case ArrowFlyingRight:
+            actionOffset = 5; break;
+    }
+    return actionOffset;
 }
 
 bool Entity::isMoving() const {
@@ -174,20 +176,20 @@ void Entity::shootArrow(Direction dir) {
 
         switch (dir) {
             case Up:
-                xOffset = FRAME_WIDTH / 2;  // Center horizontally
-                yOffset = -FRAME_HEIGHT / 4;  // Slightly up from the middle
+                xOffset = FRAME_WIDTH / 2;
+                yOffset = -FRAME_HEIGHT / 4;
                 break;
             case Down:
-                xOffset = FRAME_WIDTH / 2;  // Center horizontally
-                yOffset = FRAME_HEIGHT / 2 + 25;  // Slightly down from the middle
+                xOffset = FRAME_WIDTH / 2;
+                yOffset = FRAME_HEIGHT / 2 + 25;
                 break;
             case Left:
-                xOffset = -FRAME_WIDTH / 4;  // Slightly left from the middle
-                yOffset = FRAME_HEIGHT / 2;  // Center vertically
+                xOffset = -FRAME_WIDTH / 4;
+                yOffset = FRAME_HEIGHT / 2;
                 break;
             case Right:
-                xOffset = FRAME_WIDTH / 2 + 30;  // Slightly right from the middle
-                yOffset = FRAME_HEIGHT / 2;  // Center vertically
+                xOffset = FRAME_WIDTH / 2 + 30;
+                yOffset = FRAME_HEIGHT / 2;
                 break;
         }
 
@@ -218,9 +220,39 @@ float Entity::getArrowY() const {
     return arrowY;
 }
 
-/*
+// Protected getters and setters
+float Entity::getAnimationTimer() const {
+    return animationTimer;
+}
 
-    For the spellcast I want the spell to follow the boss for a duration of time. 
-    So the spell will be added after i add the boss
- 
-*/
+void Entity::setAnimationTimer(float timer) {
+    animationTimer = timer;
+}
+
+int Entity::getCurrentFrameIndex() const {
+    return currentFrameIndex;
+}
+
+void Entity::setCurrentFrameIndex(int index) {
+    currentFrameIndex = index;
+}
+
+SDL_Rect& Entity::getCurrentFrameRef() {
+    return currentFrame;
+}
+
+bool Entity::isEntityMoving() const {
+    return moving;
+}
+
+bool Entity::isEntityRunning() const {
+    return running;
+}
+
+float Entity::getAnimationSpeed() const {
+    return animationSpeed;
+}
+
+int Entity::getNumFrames() const {
+    return numFrames;
+}

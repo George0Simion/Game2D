@@ -290,6 +290,7 @@ CMakeFiles/SimpleGame.dir/src/main.cpp.o: \
  /usr/include/c++/11/bits/charconv.h \
  /usr/include/c++/11/bits/basic_string.tcc \
  /home/simion/Desktop/2/Game2D/src/Player.h \
+ /home/simion/Desktop/2/Game2D/src/Enemy.h \
  /home/simion/Desktop/2/Game2D/src/Menu.h \
  /home/simion/Desktop/2/Game2D/src/World.h \
  /usr/include/c++/11/unordered_map /usr/include/c++/11/bits/hashtable.h \

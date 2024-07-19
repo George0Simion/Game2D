@@ -44,6 +44,8 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
     camera.y = player->getY() - camera.h / 2;
 
     world->update(camera.x + camera.w / 2, camera.y + camera.h / 2);
+
+    spawnEnemy();
 }
 
 SDL_Texture* Game::loadTexture(const char* fileName) {                      /* Method for loading the texture for the main character */
@@ -51,6 +53,13 @@ SDL_Texture* Game::loadTexture(const char* fileName) {                      /* M
     SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, tempSurface);
     SDL_FreeSurface(tempSurface);
     return tex;
+}
+
+void Game::spawnEnemy() {
+    SDL_Texture* enemyTex = loadTexture("/home/simion/Desktop/2/Game2D/assets/enemy3.png");
+    float x = 100;
+    float y = 100;
+    entities.push_back(std::make_unique<Enemy>(x, y, enemyTex, 8, 0.1f));
 }
 
 /* Handling the events of the game such as the opening of the menu, if the game is running or not
@@ -63,10 +72,29 @@ void Game::handleEvents() {
         } else if (isMenuOpen) {
             menu->handleInput(event);
         } else {
-            player->handleInput(event);
+            // Process game-specific inputs first
+            switch (event.type) {
+                case SDL_KEYDOWN:
+                    if (event.key.keysym.sym == SDLK_ESCAPE) {
+                        isMenuOpen = !isMenuOpen;
+                    } else {
+                        player->handleInput(event);  // Pass other key events to player
+                    }
+                    break;
+                case SDL_KEYUP:
+                    player->handleInput(event);  // Handle key release events
+                    break;
+                case SDL_MOUSEBUTTONDOWN:
+                case SDL_MOUSEBUTTONUP:
+                    player->handleInput(event);  // Pass mouse events to player
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }
+
 
 void Game::processInput() {
     if (isMenuOpen) return;
@@ -109,26 +137,27 @@ void Game::processInput() {
 
 void Game::update() {
     Uint32 currentTime = SDL_GetTicks();
-    deltaTime = (currentTime - lastTime) / 1000.0f; /* Convert milliseconds to seconds */
+    deltaTime = (currentTime - lastTime) / 1000.0f;
     lastTime = currentTime;
 
-    // Process input
     processInput();
 
-    // Update entities
     for (auto& entity : entities) {
-        entity->update(deltaTime); // This is where Entity::update is called
+        if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
+            enemy->updateBehavior(deltaTime, *player);
+            enemy->update(deltaTime);
+        } 
+        else {
+            entity->update(deltaTime);
+        }
     }
 
-    // Update the camera position
     float playerX = player->getX();
     float playerY = player->getY();
 
-    // Define the dead zone dimensions
     int deadZoneWidth = 1680;
     int deadZoneHeight = 900;
 
-    // Calculate the camera position based on the dead-zone
     float camX = camera.x + camera.w / 2;
     float camY = camera.y + camera.h / 2;
 
@@ -138,19 +167,18 @@ void Game::update() {
     float deadZoneBottom = camY + deadZoneHeight / 2;
 
     if (playerX < deadZoneLeft) {
-        camera.x = playerX - (camera.w - deadZoneWidth) / 2; // good
+        camera.x = playerX - (camera.w - deadZoneWidth) / 2;
     }
     if (playerX > deadZoneRight) {
-        camera.x = playerX - (camera.w + deadZoneWidth) / 2; // good
+        camera.x = playerX - (camera.w + deadZoneWidth) / 2;
     }
     if (playerY < deadZoneTop) {
-        camera.y = playerY - (camera.h - deadZoneHeight) / 2; // good
+        camera.y = playerY - (camera.h - deadZoneHeight) / 2;
     }
     if (playerY > deadZoneBottom) {
-        camera.y = playerY - (camera.h + deadZoneHeight) / 2; // good
+        camera.y = playerY - (camera.h + deadZoneHeight) / 2;
     }
 
-    // Ensure the dead zone moves with the camera
     camX = camera.x + camera.w / 2;
     camY = camera.y + camera.h / 2;
 
@@ -159,9 +187,9 @@ void Game::update() {
     deadZoneTop = camY - deadZoneHeight / 2;
     deadZoneBottom = camY + deadZoneHeight / 2;
 
-    // Update the world based on the new camera position
     world->update(camera.x + camera.w / 2, camera.y + camera.h / 2);
 }
+
 
 void Game::render() {
     SDL_RenderClear(renderer);

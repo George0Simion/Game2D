@@ -129,6 +129,30 @@ SimpleGame/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/SimpleGame.dir/build.make CMakeFiles/SimpleGame.dir/build
 .PHONY : SimpleGame/fast
 
+src/Enemy.o: src/Enemy.cpp.o
+.PHONY : src/Enemy.o
+
+# target to build an object file
+src/Enemy.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SimpleGame.dir/build.make CMakeFiles/SimpleGame.dir/src/Enemy.cpp.o
+.PHONY : src/Enemy.cpp.o
+
+src/Enemy.i: src/Enemy.cpp.i
+.PHONY : src/Enemy.i
+
+# target to preprocess a source file
+src/Enemy.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SimpleGame.dir/build.make CMakeFiles/SimpleGame.dir/src/Enemy.cpp.i
+.PHONY : src/Enemy.cpp.i
+
+src/Enemy.s: src/Enemy.cpp.s
+.PHONY : src/Enemy.s
+
+# target to generate assembly for a file
+src/Enemy.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SimpleGame.dir/build.make CMakeFiles/SimpleGame.dir/src/Enemy.cpp.s
+.PHONY : src/Enemy.cpp.s
+
 src/Entity.o: src/Entity.cpp.o
 .PHONY : src/Entity.o
 
@@ -282,6 +306,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... SimpleGame"
+	@echo "... src/Enemy.o"
+	@echo "... src/Enemy.i"
+	@echo "... src/Enemy.s"
 	@echo "... src/Entity.o"
 	@echo "... src/Entity.i"
 	@echo "... src/Entity.s"

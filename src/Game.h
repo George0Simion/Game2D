@@ -7,6 +7,7 @@
 #include <memory>
 #include "Entity.h"
 #include "Player.h"
+#include "Enemy.h"
 #include "Menu.h"
 #include "World.h"
 
@@ -43,6 +44,8 @@ private:
 
     void processInput();
     SDL_Texture* spriteSheet;
+
+    void spawnEnemy();
 };
 
 #endif

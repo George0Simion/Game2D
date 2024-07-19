@@ -13,6 +13,7 @@ add_executable(SimpleGame
     src/Menu.cpp
     src/World.cpp
     src/Player.cpp
+    src/Enemy.cpp
 )
 
 # Include directories
