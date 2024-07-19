@@ -11,7 +11,8 @@ add_executable(SimpleGame
     src/Game.cpp
     src/Entity.cpp
     src/Menu.cpp
-    src/World.cpp  # Add this line if you create a World.cpp file
+    src/World.cpp
+    src/Player.cpp
 )
 
 # Include directories

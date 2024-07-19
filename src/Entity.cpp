@@ -217,3 +217,10 @@ float Entity::getArrowX() const {
 float Entity::getArrowY() const {
     return arrowY;
 }
+
+/*
+
+    For the spellcast I want the spell to follow the boss for a duration of time. 
+    So the spell will be added after i add the boss
+ 
+*/

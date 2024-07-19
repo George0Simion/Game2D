@@ -5,6 +5,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/SimpleGame.dir/src/Game.cpp.o.d"
   "CMakeFiles/SimpleGame.dir/src/Menu.cpp.o"
   "CMakeFiles/SimpleGame.dir/src/Menu.cpp.o.d"
+  "CMakeFiles/SimpleGame.dir/src/Player.cpp.o"
+  "CMakeFiles/SimpleGame.dir/src/Player.cpp.o.d"
   "CMakeFiles/SimpleGame.dir/src/World.cpp.o"
   "CMakeFiles/SimpleGame.dir/src/World.cpp.o.d"
   "CMakeFiles/SimpleGame.dir/src/main.cpp.o"

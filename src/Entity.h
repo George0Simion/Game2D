@@ -20,7 +20,7 @@ public:
     SDL_Texture* getTex();
     SDL_Rect getCurrentFrame();
 
-    void update(float deltaTime);
+    virtual void update(float deltaTime);
     void startAnimation();
     void stopAnimation();
     void setDirection(Direction dir);

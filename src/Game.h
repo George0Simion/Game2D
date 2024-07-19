@@ -4,7 +4,9 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <vector>
+#include <memory>
 #include "Entity.h"
+#include "Player.h"
 #include "Menu.h"
 #include "World.h"
 
@@ -30,9 +32,10 @@ private:
     Uint32 lastTime;
     float deltaTime;
 
-    std::vector<Entity> entities;
+    std::vector<std::unique_ptr<Entity>> entities;
     SDL_Texture* loadTexture(const char* fileName);
 
+    Player* player;
     Menu* menu;
     World* world;
 
