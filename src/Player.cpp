@@ -36,26 +36,18 @@ void Player::handleInput(const SDL_Event& event) {
                     stopAnimation();
                     shootArrow(getDirection());
 
-                    switch (getDirection()) {
-                        case Up:
-                            setAction(ArrowFlyingUp);
-                            break;
-                        case Down:
-                            setAction(ArrowFlyingDown);
-                            break;
-                        case Left:
-                            setAction(ArrowFlyingLeft);
-                            break;
-                        case Right:
-                            setAction(ArrowFlyingRight);
-                            break;
+                    // Return to idle or walking state after shooting
+                    if (isMoving()) {
+                        setAction(Walking);
+                    } else {
+                        setAction(Walking); // Change to Idle if you have an Idle action
                     }
                     startAnimation();
                 }
             } else if (event.button.button == SDL_BUTTON_RIGHT) {
                 if (getAction() == Thrusting) {
                     stopAnimation();
-                    setAction(Walking);
+                    setAction(Walking); // Change to Idle if you have an Idle action
                 }
             }
             break;

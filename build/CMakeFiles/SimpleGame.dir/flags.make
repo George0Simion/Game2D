@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/home/simion/Desktop/2/Game2D/src -I/home/simion/Desktop/2/Game2D/include -I/usr/include/SDL2
+CXX_INCLUDES = -I/home/simion/Desktop/3/Game2D/src -I/home/simion/Desktop/3/Game2D/include -I/usr/include/SDL2
 
 CXX_FLAGS = -std=gnu++17
 

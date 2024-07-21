@@ -1,6 +1,6 @@
 CMakeFiles/SimpleGame.dir/src/Game.cpp.o: \
- /home/simion/Desktop/2/Game2D/src/Game.cpp /usr/include/stdc-predef.h \
- /home/simion/Desktop/2/Game2D/src/Game.h /usr/include/SDL2/SDL.h \
+ /home/simion/Desktop/3/Game2D/src/Game.cpp /usr/include/stdc-predef.h \
+ /home/simion/Desktop/3/Game2D/src/Game.h /usr/include/SDL2/SDL.h \
  /usr/include/SDL2/SDL_main.h /usr/include/SDL2/SDL_stdinc.h \
  /usr/include/SDL2/SDL_config.h \
  /usr/include/x86_64-linux-gnu/SDL2/_real_SDL_config.h \
@@ -271,7 +271,7 @@ CMakeFiles/SimpleGame.dir/src/Game.cpp.o: \
  /usr/include/c++/11/backward/auto_ptr.h \
  /usr/include/c++/11/pstl/glue_memory_defs.h \
  /usr/include/c++/11/pstl/execution_defs.h \
- /home/simion/Desktop/2/Game2D/src/Entity.h /usr/include/c++/11/string \
+ /home/simion/Desktop/3/Game2D/src/Entity.h /usr/include/c++/11/string \
  /usr/include/c++/11/bits/char_traits.h /usr/include/c++/11/cstdint \
  /usr/include/c++/11/bits/localefwd.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++locale.h \
@@ -289,10 +289,10 @@ CMakeFiles/SimpleGame.dir/src/Game.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/types/error_t.h \
  /usr/include/c++/11/bits/charconv.h \
  /usr/include/c++/11/bits/basic_string.tcc \
- /home/simion/Desktop/2/Game2D/src/Player.h \
- /home/simion/Desktop/2/Game2D/src/Enemy.h \
- /home/simion/Desktop/2/Game2D/src/Menu.h \
- /home/simion/Desktop/2/Game2D/src/World.h \
+ /home/simion/Desktop/3/Game2D/src/Player.h \
+ /home/simion/Desktop/3/Game2D/src/Enemy.h \
+ /home/simion/Desktop/3/Game2D/src/Menu.h \
+ /home/simion/Desktop/3/Game2D/src/World.h \
  /usr/include/c++/11/unordered_map /usr/include/c++/11/bits/hashtable.h \
  /usr/include/c++/11/bits/hashtable_policy.h \
  /usr/include/c++/11/bits/enable_special_members.h \
@@ -300,7 +300,7 @@ CMakeFiles/SimpleGame.dir/src/Game.cpp.o: \
  /usr/include/c++/11/bits/unordered_map.h \
  /usr/include/c++/11/bits/erase_if.h /usr/include/c++/11/unordered_set \
  /usr/include/c++/11/bits/unordered_set.h \
- /home/simion/Desktop/2/Game2D/src/FastNoiseLite.h \
+ /home/simion/Desktop/3/Game2D/src/FastNoiseLite.h \
  /usr/include/c++/11/iostream /usr/include/c++/11/ostream \
  /usr/include/c++/11/ios /usr/include/c++/11/bits/ios_base.h \
  /usr/include/c++/11/bits/locale_classes.h \

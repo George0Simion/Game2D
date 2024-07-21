@@ -46,6 +46,8 @@ private:
     SDL_Texture* spriteSheet;
 
     void spawnEnemy();
+
+    void resolveCollision(Player& player, Enemy& enemy);
 };
 
 #endif

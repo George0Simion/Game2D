@@ -8,6 +8,40 @@ Entity::Entity(float p_x, float p_y, SDL_Texture* p_tex, int p_numFrames, float 
     currentFrame = {0, 0, FRAME_WIDTH, FRAME_HEIGHT};
 }
 
+SDL_Rect Entity::getBoundingBox() const {
+    SDL_Rect boundingBox = { static_cast<int>(x), static_cast<int>(y), FRAME_WIDTH, FRAME_HEIGHT };
+
+    if (action == Slashing) {
+        switch (direction) {
+            case Up:
+            case Down:
+                boundingBox.y -= FRAME_HEIGHT / 4; // Adjust starting position
+                boundingBox.h += FRAME_HEIGHT / 2; // Increase height
+                break;
+            case Left:
+            case Right:
+                boundingBox.x -= FRAME_WIDTH / 4; // Adjust starting position
+                boundingBox.w += FRAME_WIDTH / 2; // Increase width
+                break;
+        }
+    } else if (action == Thrusting) {
+        switch (direction) {
+            case Up:
+            case Down:
+                boundingBox.y -= FRAME_HEIGHT / 8; // Adjust starting position
+                boundingBox.h += FRAME_HEIGHT / 4; // Increase height slightly
+                break;
+            case Left:
+            case Right:
+                boundingBox.x -= FRAME_WIDTH / 8; // Adjust starting position
+                boundingBox.w += FRAME_WIDTH / 4; // Increase width slightly
+                break;
+        }
+    }
+
+    return boundingBox;
+}
+
 float Entity::getX() {
     return x;
 }
@@ -197,6 +231,9 @@ void Entity::shootArrow(Direction dir) {
         arrowY = y + yOffset;
         arrowDirection = dir;
         arrowTravelDistance = 0.0f;
+
+    } else {
+        arrowActive = false;
     }
 }
 

@@ -142,13 +142,44 @@ void Game::update() {
 
     processInput();
 
+    // Update all entities
     for (auto& entity : entities) {
         if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
             enemy->updateBehavior(deltaTime, *player);
-            enemy->update(deltaTime);
-        } 
-        else {
-            entity->update(deltaTime);
+        }
+        entity->update(deltaTime);
+    }
+
+    // Check for collisions and resolve them
+    for (size_t i = 0; i < entities.size(); ++i) {
+        for (size_t j = i + 1; j < entities.size(); ++j) {
+            if (Entity::checkCollision(entities[i]->getBoundingBox(), entities[j]->getBoundingBox())) {
+                if (Player* player = dynamic_cast<Player*>(entities[i].get())) {
+                    if (Enemy* enemy = dynamic_cast<Enemy*>(entities[j].get())) {
+                        resolveCollision(*player, *enemy);
+                    }
+                } else if (Player* player = dynamic_cast<Player*>(entities[j].get())) {
+                    if (Enemy* enemy = dynamic_cast<Enemy*>(entities[i].get())) {
+                        resolveCollision(*player, *enemy);
+                    }
+                }
+            }
+        }
+    }
+
+    // Handle arrow collisions and update positions
+    for (auto& entity : entities) {
+        if (entity->isArrowActive()) {
+            SDL_Rect arrowRect = entity->getArrowFrame();
+            arrowRect.x = static_cast<int>(entity->getArrowX());
+            arrowRect.y = static_cast<int>(entity->getArrowY());
+
+            for (auto& otherEntity : entities) {
+                if (otherEntity.get() != entity.get() && Entity::checkCollision(arrowRect, otherEntity->getBoundingBox())) {
+                    entity->shootArrow(entity->getDirection()); // Deactivate the arrow
+                    break;
+                }
+            }
         }
     }
 
@@ -190,6 +221,41 @@ void Game::update() {
     world->update(camera.x + camera.w / 2, camera.y + camera.h / 2);
 }
 
+void Game::resolveCollision(Player& player, Enemy& enemy) {
+    SDL_Rect playerBox = player.getBoundingBox();
+    SDL_Rect enemyBox = enemy.getBoundingBox();
+
+    // Calculate the overlap between the player and the enemy
+    int overlapX = (playerBox.x + playerBox.w / 2) - (enemyBox.x + enemyBox.w / 2);
+    int overlapY = (playerBox.y + playerBox.h / 2) - (enemyBox.y + enemyBox.h / 2);
+
+    int halfWidth = (playerBox.w + enemyBox.w) / 2;
+    int halfHeight = (playerBox.h + enemyBox.h) / 2;
+
+    if (abs(overlapX) < halfWidth && abs(overlapY) < halfHeight) {
+        int offsetX = halfWidth - abs(overlapX);
+        int offsetY = halfHeight - abs(overlapY);
+
+        // Resolve collision by adjusting positions based on the overlap amount
+        if (offsetX < offsetY) {
+            if (overlapX > 0) {
+                player.setX(player.getX() + offsetX);
+                enemy.setX(enemy.getX() - offsetX);
+            } else {
+                player.setX(player.getX() - offsetX);
+                enemy.setX(enemy.getX() + offsetX);
+            }
+        } else {
+            if (overlapY > 0) {
+                player.setY(player.getY() + offsetY);
+                enemy.setY(enemy.getY() - offsetY);
+            } else {
+                player.setY(player.getY() - offsetY);
+                enemy.setY(enemy.getY() + offsetY);
+            }
+        }
+    }
+}
 
 void Game::render() {
     SDL_RenderClear(renderer);

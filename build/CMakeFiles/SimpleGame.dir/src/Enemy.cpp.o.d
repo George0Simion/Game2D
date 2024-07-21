@@ -1,7 +1,7 @@
 CMakeFiles/SimpleGame.dir/src/Enemy.cpp.o: \
- /home/simion/Desktop/2/Game2D/src/Enemy.cpp /usr/include/stdc-predef.h \
- /home/simion/Desktop/2/Game2D/src/Enemy.h \
- /home/simion/Desktop/2/Game2D/src/Entity.h /usr/include/SDL2/SDL.h \
+ /home/simion/Desktop/3/Game2D/src/Enemy.cpp /usr/include/stdc-predef.h \
+ /home/simion/Desktop/3/Game2D/src/Enemy.h \
+ /home/simion/Desktop/3/Game2D/src/Entity.h /usr/include/SDL2/SDL.h \
  /usr/include/SDL2/SDL_main.h /usr/include/SDL2/SDL_stdinc.h \
  /usr/include/SDL2/SDL_config.h \
  /usr/include/x86_64-linux-gnu/SDL2/_real_SDL_config.h \
@@ -264,4 +264,4 @@ CMakeFiles/SimpleGame.dir/src/Enemy.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/types/error_t.h \
  /usr/include/c++/11/bits/charconv.h \
  /usr/include/c++/11/bits/basic_string.tcc \
- /home/simion/Desktop/2/Game2D/src/Player.h
+ /home/simion/Desktop/3/Game2D/src/Player.h

@@ -1,6 +1,6 @@
 CMakeFiles/SimpleGame.dir/src/Entity.cpp.o: \
- /home/simion/Desktop/2/Game2D/src/Entity.cpp /usr/include/stdc-predef.h \
- /home/simion/Desktop/2/Game2D/src/Entity.h /usr/include/SDL2/SDL.h \
+ /home/simion/Desktop/3/Game2D/src/Entity.cpp /usr/include/stdc-predef.h \
+ /home/simion/Desktop/3/Game2D/src/Entity.h /usr/include/SDL2/SDL.h \
  /usr/include/SDL2/SDL_main.h /usr/include/SDL2/SDL_stdinc.h \
  /usr/include/SDL2/SDL_config.h \
  /usr/include/x86_64-linux-gnu/SDL2/_real_SDL_config.h \

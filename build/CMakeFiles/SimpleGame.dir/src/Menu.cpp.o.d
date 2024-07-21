@@ -1,6 +1,6 @@
 CMakeFiles/SimpleGame.dir/src/Menu.cpp.o: \
- /home/simion/Desktop/2/Game2D/src/Menu.cpp /usr/include/stdc-predef.h \
- /home/simion/Desktop/2/Game2D/src/Menu.h /usr/include/SDL2/SDL.h \
+ /home/simion/Desktop/3/Game2D/src/Menu.cpp /usr/include/stdc-predef.h \
+ /home/simion/Desktop/3/Game2D/src/Menu.h /usr/include/SDL2/SDL.h \
  /usr/include/SDL2/SDL_main.h /usr/include/SDL2/SDL_stdinc.h \
  /usr/include/SDL2/SDL_config.h \
  /usr/include/x86_64-linux-gnu/SDL2/_real_SDL_config.h \
@@ -213,7 +213,7 @@ CMakeFiles/SimpleGame.dir/src/Menu.cpp.o: \
  /usr/include/SDL2/SDL_shape.h /usr/include/SDL2/SDL_system.h \
  /usr/include/SDL2/SDL_timer.h /usr/include/SDL2/SDL_version.h \
  /usr/include/SDL2/SDL_locale.h /usr/include/SDL2/SDL_misc.h \
- /home/simion/Desktop/2/Game2D/src/Game.h /usr/include/SDL2/SDL_image.h \
+ /home/simion/Desktop/3/Game2D/src/Game.h /usr/include/SDL2/SDL_image.h \
  /usr/include/SDL2/SDL.h /usr/include/c++/11/vector \
  /usr/include/c++/11/bits/allocator.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++allocator.h \
@@ -272,7 +272,7 @@ CMakeFiles/SimpleGame.dir/src/Menu.cpp.o: \
  /usr/include/c++/11/backward/auto_ptr.h \
  /usr/include/c++/11/pstl/glue_memory_defs.h \
  /usr/include/c++/11/pstl/execution_defs.h \
- /home/simion/Desktop/2/Game2D/src/Entity.h /usr/include/c++/11/string \
+ /home/simion/Desktop/3/Game2D/src/Entity.h /usr/include/c++/11/string \
  /usr/include/c++/11/bits/char_traits.h /usr/include/c++/11/cstdint \
  /usr/include/c++/11/bits/localefwd.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++locale.h \
@@ -290,9 +290,9 @@ CMakeFiles/SimpleGame.dir/src/Menu.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/types/error_t.h \
  /usr/include/c++/11/bits/charconv.h \
  /usr/include/c++/11/bits/basic_string.tcc \
- /home/simion/Desktop/2/Game2D/src/Player.h \
- /home/simion/Desktop/2/Game2D/src/Enemy.h \
- /home/simion/Desktop/2/Game2D/src/World.h \
+ /home/simion/Desktop/3/Game2D/src/Player.h \
+ /home/simion/Desktop/3/Game2D/src/Enemy.h \
+ /home/simion/Desktop/3/Game2D/src/World.h \
  /usr/include/c++/11/unordered_map /usr/include/c++/11/bits/hashtable.h \
  /usr/include/c++/11/bits/hashtable_policy.h \
  /usr/include/c++/11/bits/enable_special_members.h \
@@ -300,4 +300,4 @@ CMakeFiles/SimpleGame.dir/src/Menu.cpp.o: \
  /usr/include/c++/11/bits/unordered_map.h \
  /usr/include/c++/11/bits/erase_if.h /usr/include/c++/11/unordered_set \
  /usr/include/c++/11/bits/unordered_set.h \
- /home/simion/Desktop/2/Game2D/src/FastNoiseLite.h
+ /home/simion/Desktop/3/Game2D/src/FastNoiseLite.h

@@ -38,6 +38,15 @@ public:
     float getArrowY() const;
     SDL_Rect getArrowFrame() const;
 
+    virtual SDL_Rect getBoundingBox() const;
+
+    static bool checkCollision(const SDL_Rect& a, const SDL_Rect& b) {
+        return SDL_HasIntersection(&a, &b);
+    }
+
+    static int getFrameWidth() { return FRAME_WIDTH; }
+    static int getFrameHeight() { return FRAME_HEIGHT; }
+
 protected:
     virtual int getActionOffset() const; // New virtual method for action offset
     float getAnimationTimer() const;

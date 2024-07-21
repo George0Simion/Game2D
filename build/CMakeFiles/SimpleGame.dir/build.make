@@ -53,10 +53,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/simion/Desktop/2/Game2D
+CMAKE_SOURCE_DIR = /home/simion/Desktop/3/Game2D
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/simion/Desktop/2/Game2D/build
+CMAKE_BINARY_DIR = /home/simion/Desktop/3/Game2D/build
 
 # Include any dependencies generated for this target.
 include CMakeFiles/SimpleGame.dir/depend.make
@@ -72,100 +72,100 @@ include CMakeFiles/SimpleGame.dir/flags.make
 CMakeFiles/SimpleGame.dir/src/main.cpp.o: CMakeFiles/SimpleGame.dir/flags.make
 CMakeFiles/SimpleGame.dir/src/main.cpp.o: ../src/main.cpp
 CMakeFiles/SimpleGame.dir/src/main.cpp.o: CMakeFiles/SimpleGame.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/simion/Desktop/2/Game2D/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/SimpleGame.dir/src/main.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SimpleGame.dir/src/main.cpp.o -MF CMakeFiles/SimpleGame.dir/src/main.cpp.o.d -o CMakeFiles/SimpleGame.dir/src/main.cpp.o -c /home/simion/Desktop/2/Game2D/src/main.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/simion/Desktop/3/Game2D/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/SimpleGame.dir/src/main.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SimpleGame.dir/src/main.cpp.o -MF CMakeFiles/SimpleGame.dir/src/main.cpp.o.d -o CMakeFiles/SimpleGame.dir/src/main.cpp.o -c /home/simion/Desktop/3/Game2D/src/main.cpp
 
 CMakeFiles/SimpleGame.dir/src/main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/SimpleGame.dir/src/main.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/simion/Desktop/2/Game2D/src/main.cpp > CMakeFiles/SimpleGame.dir/src/main.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/simion/Desktop/3/Game2D/src/main.cpp > CMakeFiles/SimpleGame.dir/src/main.cpp.i
 
 CMakeFiles/SimpleGame.dir/src/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/SimpleGame.dir/src/main.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/simion/Desktop/2/Game2D/src/main.cpp -o CMakeFiles/SimpleGame.dir/src/main.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/simion/Desktop/3/Game2D/src/main.cpp -o CMakeFiles/SimpleGame.dir/src/main.cpp.s
 
 CMakeFiles/SimpleGame.dir/src/Game.cpp.o: CMakeFiles/SimpleGame.dir/flags.make
 CMakeFiles/SimpleGame.dir/src/Game.cpp.o: ../src/Game.cpp
 CMakeFiles/SimpleGame.dir/src/Game.cpp.o: CMakeFiles/SimpleGame.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/simion/Desktop/2/Game2D/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/SimpleGame.dir/src/Game.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SimpleGame.dir/src/Game.cpp.o -MF CMakeFiles/SimpleGame.dir/src/Game.cpp.o.d -o CMakeFiles/SimpleGame.dir/src/Game.cpp.o -c /home/simion/Desktop/2/Game2D/src/Game.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/simion/Desktop/3/Game2D/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/SimpleGame.dir/src/Game.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SimpleGame.dir/src/Game.cpp.o -MF CMakeFiles/SimpleGame.dir/src/Game.cpp.o.d -o CMakeFiles/SimpleGame.dir/src/Game.cpp.o -c /home/simion/Desktop/3/Game2D/src/Game.cpp
 
 CMakeFiles/SimpleGame.dir/src/Game.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/SimpleGame.dir/src/Game.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/simion/Desktop/2/Game2D/src/Game.cpp > CMakeFiles/SimpleGame.dir/src/Game.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/simion/Desktop/3/Game2D/src/Game.cpp > CMakeFiles/SimpleGame.dir/src/Game.cpp.i
 
 CMakeFiles/SimpleGame.dir/src/Game.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/SimpleGame.dir/src/Game.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/simion/Desktop/2/Game2D/src/Game.cpp -o CMakeFiles/SimpleGame.dir/src/Game.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/simion/Desktop/3/Game2D/src/Game.cpp -o CMakeFiles/SimpleGame.dir/src/Game.cpp.s
 
 CMakeFiles/SimpleGame.dir/src/Entity.cpp.o: CMakeFiles/SimpleGame.dir/flags.make
 CMakeFiles/SimpleGame.dir/src/Entity.cpp.o: ../src/Entity.cpp
 CMakeFiles/SimpleGame.dir/src/Entity.cpp.o: CMakeFiles/SimpleGame.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/simion/Desktop/2/Game2D/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/SimpleGame.dir/src/Entity.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SimpleGame.dir/src/Entity.cpp.o -MF CMakeFiles/SimpleGame.dir/src/Entity.cpp.o.d -o CMakeFiles/SimpleGame.dir/src/Entity.cpp.o -c /home/simion/Desktop/2/Game2D/src/Entity.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/simion/Desktop/3/Game2D/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/SimpleGame.dir/src/Entity.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SimpleGame.dir/src/Entity.cpp.o -MF CMakeFiles/SimpleGame.dir/src/Entity.cpp.o.d -o CMakeFiles/SimpleGame.dir/src/Entity.cpp.o -c /home/simion/Desktop/3/Game2D/src/Entity.cpp
 
 CMakeFiles/SimpleGame.dir/src/Entity.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/SimpleGame.dir/src/Entity.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/simion/Desktop/2/Game2D/src/Entity.cpp > CMakeFiles/SimpleGame.dir/src/Entity.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/simion/Desktop/3/Game2D/src/Entity.cpp > CMakeFiles/SimpleGame.dir/src/Entity.cpp.i
 
 CMakeFiles/SimpleGame.dir/src/Entity.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/SimpleGame.dir/src/Entity.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/simion/Desktop/2/Game2D/src/Entity.cpp -o CMakeFiles/SimpleGame.dir/src/Entity.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/simion/Desktop/3/Game2D/src/Entity.cpp -o CMakeFiles/SimpleGame.dir/src/Entity.cpp.s
 
 CMakeFiles/SimpleGame.dir/src/Menu.cpp.o: CMakeFiles/SimpleGame.dir/flags.make
 CMakeFiles/SimpleGame.dir/src/Menu.cpp.o: ../src/Menu.cpp
 CMakeFiles/SimpleGame.dir/src/Menu.cpp.o: CMakeFiles/SimpleGame.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/simion/Desktop/2/Game2D/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/SimpleGame.dir/src/Menu.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SimpleGame.dir/src/Menu.cpp.o -MF CMakeFiles/SimpleGame.dir/src/Menu.cpp.o.d -o CMakeFiles/SimpleGame.dir/src/Menu.cpp.o -c /home/simion/Desktop/2/Game2D/src/Menu.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/simion/Desktop/3/Game2D/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/SimpleGame.dir/src/Menu.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SimpleGame.dir/src/Menu.cpp.o -MF CMakeFiles/SimpleGame.dir/src/Menu.cpp.o.d -o CMakeFiles/SimpleGame.dir/src/Menu.cpp.o -c /home/simion/Desktop/3/Game2D/src/Menu.cpp
 
 CMakeFiles/SimpleGame.dir/src/Menu.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/SimpleGame.dir/src/Menu.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/simion/Desktop/2/Game2D/src/Menu.cpp > CMakeFiles/SimpleGame.dir/src/Menu.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/simion/Desktop/3/Game2D/src/Menu.cpp > CMakeFiles/SimpleGame.dir/src/Menu.cpp.i
 
 CMakeFiles/SimpleGame.dir/src/Menu.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/SimpleGame.dir/src/Menu.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/simion/Desktop/2/Game2D/src/Menu.cpp -o CMakeFiles/SimpleGame.dir/src/Menu.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/simion/Desktop/3/Game2D/src/Menu.cpp -o CMakeFiles/SimpleGame.dir/src/Menu.cpp.s
 
 CMakeFiles/SimpleGame.dir/src/World.cpp.o: CMakeFiles/SimpleGame.dir/flags.make
 CMakeFiles/SimpleGame.dir/src/World.cpp.o: ../src/World.cpp
 CMakeFiles/SimpleGame.dir/src/World.cpp.o: CMakeFiles/SimpleGame.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/simion/Desktop/2/Game2D/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/SimpleGame.dir/src/World.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SimpleGame.dir/src/World.cpp.o -MF CMakeFiles/SimpleGame.dir/src/World.cpp.o.d -o CMakeFiles/SimpleGame.dir/src/World.cpp.o -c /home/simion/Desktop/2/Game2D/src/World.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/simion/Desktop/3/Game2D/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/SimpleGame.dir/src/World.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SimpleGame.dir/src/World.cpp.o -MF CMakeFiles/SimpleGame.dir/src/World.cpp.o.d -o CMakeFiles/SimpleGame.dir/src/World.cpp.o -c /home/simion/Desktop/3/Game2D/src/World.cpp
 
 CMakeFiles/SimpleGame.dir/src/World.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/SimpleGame.dir/src/World.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/simion/Desktop/2/Game2D/src/World.cpp > CMakeFiles/SimpleGame.dir/src/World.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/simion/Desktop/3/Game2D/src/World.cpp > CMakeFiles/SimpleGame.dir/src/World.cpp.i
 
 CMakeFiles/SimpleGame.dir/src/World.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/SimpleGame.dir/src/World.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/simion/Desktop/2/Game2D/src/World.cpp -o CMakeFiles/SimpleGame.dir/src/World.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/simion/Desktop/3/Game2D/src/World.cpp -o CMakeFiles/SimpleGame.dir/src/World.cpp.s
 
 CMakeFiles/SimpleGame.dir/src/Player.cpp.o: CMakeFiles/SimpleGame.dir/flags.make
 CMakeFiles/SimpleGame.dir/src/Player.cpp.o: ../src/Player.cpp
 CMakeFiles/SimpleGame.dir/src/Player.cpp.o: CMakeFiles/SimpleGame.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/simion/Desktop/2/Game2D/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/SimpleGame.dir/src/Player.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SimpleGame.dir/src/Player.cpp.o -MF CMakeFiles/SimpleGame.dir/src/Player.cpp.o.d -o CMakeFiles/SimpleGame.dir/src/Player.cpp.o -c /home/simion/Desktop/2/Game2D/src/Player.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/simion/Desktop/3/Game2D/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/SimpleGame.dir/src/Player.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SimpleGame.dir/src/Player.cpp.o -MF CMakeFiles/SimpleGame.dir/src/Player.cpp.o.d -o CMakeFiles/SimpleGame.dir/src/Player.cpp.o -c /home/simion/Desktop/3/Game2D/src/Player.cpp
 
 CMakeFiles/SimpleGame.dir/src/Player.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/SimpleGame.dir/src/Player.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/simion/Desktop/2/Game2D/src/Player.cpp > CMakeFiles/SimpleGame.dir/src/Player.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/simion/Desktop/3/Game2D/src/Player.cpp > CMakeFiles/SimpleGame.dir/src/Player.cpp.i
 
 CMakeFiles/SimpleGame.dir/src/Player.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/SimpleGame.dir/src/Player.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/simion/Desktop/2/Game2D/src/Player.cpp -o CMakeFiles/SimpleGame.dir/src/Player.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/simion/Desktop/3/Game2D/src/Player.cpp -o CMakeFiles/SimpleGame.dir/src/Player.cpp.s
 
 CMakeFiles/SimpleGame.dir/src/Enemy.cpp.o: CMakeFiles/SimpleGame.dir/flags.make
 CMakeFiles/SimpleGame.dir/src/Enemy.cpp.o: ../src/Enemy.cpp
 CMakeFiles/SimpleGame.dir/src/Enemy.cpp.o: CMakeFiles/SimpleGame.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/simion/Desktop/2/Game2D/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/SimpleGame.dir/src/Enemy.cpp.o"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SimpleGame.dir/src/Enemy.cpp.o -MF CMakeFiles/SimpleGame.dir/src/Enemy.cpp.o.d -o CMakeFiles/SimpleGame.dir/src/Enemy.cpp.o -c /home/simion/Desktop/2/Game2D/src/Enemy.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/simion/Desktop/3/Game2D/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/SimpleGame.dir/src/Enemy.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SimpleGame.dir/src/Enemy.cpp.o -MF CMakeFiles/SimpleGame.dir/src/Enemy.cpp.o.d -o CMakeFiles/SimpleGame.dir/src/Enemy.cpp.o -c /home/simion/Desktop/3/Game2D/src/Enemy.cpp
 
 CMakeFiles/SimpleGame.dir/src/Enemy.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/SimpleGame.dir/src/Enemy.cpp.i"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/simion/Desktop/2/Game2D/src/Enemy.cpp > CMakeFiles/SimpleGame.dir/src/Enemy.cpp.i
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/simion/Desktop/3/Game2D/src/Enemy.cpp > CMakeFiles/SimpleGame.dir/src/Enemy.cpp.i
 
 CMakeFiles/SimpleGame.dir/src/Enemy.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/SimpleGame.dir/src/Enemy.cpp.s"
-	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/simion/Desktop/2/Game2D/src/Enemy.cpp -o CMakeFiles/SimpleGame.dir/src/Enemy.cpp.s
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/simion/Desktop/3/Game2D/src/Enemy.cpp -o CMakeFiles/SimpleGame.dir/src/Enemy.cpp.s
 
 # Object files for target SimpleGame
 SimpleGame_OBJECTS = \
@@ -190,7 +190,7 @@ SimpleGame: CMakeFiles/SimpleGame.dir/src/Enemy.cpp.o
 SimpleGame: CMakeFiles/SimpleGame.dir/build.make
 SimpleGame: /usr/lib/x86_64-linux-gnu/libSDL2_image.so
 SimpleGame: CMakeFiles/SimpleGame.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/simion/Desktop/2/Game2D/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Linking CXX executable SimpleGame"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/simion/Desktop/3/Game2D/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Linking CXX executable SimpleGame"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/SimpleGame.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -202,6 +202,6 @@ CMakeFiles/SimpleGame.dir/clean:
 .PHONY : CMakeFiles/SimpleGame.dir/clean
 
 CMakeFiles/SimpleGame.dir/depend:
-	cd /home/simion/Desktop/2/Game2D/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/simion/Desktop/2/Game2D /home/simion/Desktop/2/Game2D /home/simion/Desktop/2/Game2D/build /home/simion/Desktop/2/Game2D/build /home/simion/Desktop/2/Game2D/build/CMakeFiles/SimpleGame.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/simion/Desktop/3/Game2D/build && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/simion/Desktop/3/Game2D /home/simion/Desktop/3/Game2D /home/simion/Desktop/3/Game2D/build /home/simion/Desktop/3/Game2D/build /home/simion/Desktop/3/Game2D/build/CMakeFiles/SimpleGame.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : CMakeFiles/SimpleGame.dir/depend
 
