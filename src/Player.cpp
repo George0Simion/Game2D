@@ -9,9 +9,15 @@ void Player::handleInput(const SDL_Event& event) {
             if (event.key.keysym.sym == SDLK_e) {
                 setAction(Slashing);
                 startAnimation();
+                setAttackStartTime(SDL_GetTicks());
+                setAttackDelay(200); // Set delay to 200ms
+                setDamageApplied(false);
             } else if (event.key.keysym.sym == SDLK_q) {
                 setAction(Spellcasting);
                 startAnimation();
+                setAttackStartTime(SDL_GetTicks());
+                setAttackDelay(500); // Set delay to 500ms
+                setDamageApplied(false);
             } else if (event.key.keysym.sym == SDLK_LSHIFT || event.key.keysym.sym == SDLK_RSHIFT) {
                 setRunning(true);
             }
@@ -25,9 +31,15 @@ void Player::handleInput(const SDL_Event& event) {
             if (event.button.button == SDL_BUTTON_LEFT) {
                 setAction(Shooting);
                 startAnimation();
+                setAttackStartTime(SDL_GetTicks());
+                setAttackDelay(300); // Set delay to 300ms
+                setDamageApplied(false);
             } else if (event.button.button == SDL_BUTTON_RIGHT) {
                 setAction(Thrusting);
                 startAnimation();
+                setAttackStartTime(SDL_GetTicks());
+                setAttackDelay(150); // Set delay to 150ms
+                setDamageApplied(false);
             }
             break;
         case SDL_MOUSEBUTTONUP:
@@ -54,6 +66,41 @@ void Player::handleInput(const SDL_Event& event) {
         default:
             break;
     }
+}
+
+SDL_Rect Player::getAttackBoundingBox() const {
+    SDL_Rect boundingBox = getBoundingBox();
+    int thrustRange = getThrustRange();
+
+    if (getAction() == Thrusting) {
+        switch (getDirection()) {
+            case Up:
+                boundingBox.y -= thrustRange; boundingBox.h += thrustRange; break;
+            case Down:
+                boundingBox.h += thrustRange; break;
+            case Left:
+                boundingBox.x -= thrustRange; boundingBox.w += thrustRange; break;
+            case Right:
+                boundingBox.w += thrustRange; break;
+        }
+    } else if (getAction() == Slashing) {
+        switch (getDirection()) {
+            case Up:
+                boundingBox.y -= 60; boundingBox.h += 60; break;
+            case Down:
+                boundingBox.h += 60; break;
+            case Left:
+                boundingBox.x -= 60; boundingBox.w += 60; break;
+            case Right:
+                boundingBox.w += 60; break;
+        }
+    }
+
+    return boundingBox;
+}
+
+int Player::getThrustRange() const {
+    return 30; // Thrust range for the player
 }
 
 void Player::update(float deltaTime) {

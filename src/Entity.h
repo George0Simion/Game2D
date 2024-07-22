@@ -8,7 +8,7 @@
 class Entity {
 public:
     enum Direction { Up, Left, Down, Right };
-    enum Action { Walking, Slashing, Thrusting, Spellcasting, Shooting, ArrowFlyingUp, ArrowFlyingDown, ArrowFlyingLeft, ArrowFlyingRight };
+    enum Action { Walking, Slashing, Thrusting, Spellcasting, Shooting, ArrowFlyingUp, ArrowFlyingDown, ArrowFlyingLeft, ArrowFlyingRight, Dying };
 
     Entity(float p_x, float p_y, SDL_Texture* p_tex, int numFrames, float animationSpeed);
 
@@ -39,6 +39,9 @@ public:
     SDL_Rect getArrowFrame() const;
 
     virtual SDL_Rect getBoundingBox() const;
+    virtual SDL_Rect getAttackBoundingBox() const;
+    virtual int getThrustRange() const;
+    virtual SDL_Rect getCollisionBoundingBox() const;
 
     static bool checkCollision(const SDL_Rect& a, const SDL_Rect& b) {
         return SDL_HasIntersection(&a, &b);
@@ -46,6 +49,19 @@ public:
 
     static int getFrameWidth() { return FRAME_WIDTH; }
     static int getFrameHeight() { return FRAME_HEIGHT; }
+
+    int getHealth() const;
+    void setHealth(int health);
+    bool isAlive() const;
+    void takeDamage(int damage);
+    virtual int getMaxHealth() const = 0;
+
+    bool getDamageApplied() const; // New getter for damageApplied
+    void setDamageApplied(bool value); // New setter for damageApplied
+    Uint32 getAttackStartTime() const; // New getter for attackStartTime
+    void setAttackStartTime(Uint32 time); // New setter for attackStartTime
+    Uint32 getAttackDelay() const; // New getter for attackDelay
+    void setAttackDelay(Uint32 delay); // New setter for attackDelay
 
 protected:
     virtual int getActionOffset() const; // New virtual method for action offset
@@ -62,6 +78,13 @@ protected:
     static const int FRAME_WIDTH = 64;
     static const int FRAME_HEIGHT = 64;
 
+    bool damageApplied;
+    Uint32 attackStartTime; // New member to track the start time of the attack
+    Uint32 attackDelay;
+
+    Direction direction;
+    Action action;
+
 private:
     float x, y;
     bool moving;
@@ -74,8 +97,6 @@ private:
     int currentFrameIndex;
     float animationSpeed;
     float animationTimer;
-    Direction direction;
-    Action action;
 
     bool arrowActive;
     float arrowX, arrowY;
@@ -83,6 +104,8 @@ private:
     float arrowMaxDistance;
     float arrowTravelDistance;
     Direction arrowDirection;
+
+    int health;
 };
 
 #endif

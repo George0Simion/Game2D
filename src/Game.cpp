@@ -30,6 +30,7 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
     SDL_Texture* tex = loadTexture("/home/simion/Desktop/2/Game2D/assets/sprite_good_arrow2.png");
     player = new Player(width / 2 - 64, height / 2 - 64, tex, 4, 0.1f);     /* Center the player */
     entities.push_back(std::unique_ptr<Entity>(player));
+    player->setHealth(Player::INITIAL_HEALTH);                                                 /* Set the health of the player */
 
     lastTime = SDL_GetTicks();
     deltaTime = 0.0f;                                                       /* Getting the in-game time for the movement */
@@ -59,7 +60,9 @@ void Game::spawnEnemy() {
     SDL_Texture* enemyTex = loadTexture("/home/simion/Desktop/2/Game2D/assets/enemy3.png");
     float x = 100;
     float y = 100;
-    entities.push_back(std::make_unique<Enemy>(x, y, enemyTex, 8, 0.1f));
+    auto enemy = std::make_unique<Enemy>(x, y, enemyTex, 8, 0.1f);
+    enemy->setHealth(Enemy::INITIAL_HEALTH);
+    entities.push_back(std::move(enemy));
 }
 
 /* Handling the events of the game such as the opening of the menu, if the game is running or not
@@ -150,6 +153,30 @@ void Game::update() {
         entity->update(deltaTime);
     }
 
+    // Handle arrow collisions and update positions
+    for (auto& entity : entities) {
+        if (entity->isArrowActive()) {
+            SDL_Rect arrowRect = entity->getArrowFrame();
+            arrowRect.x = static_cast<int>(entity->getArrowX());
+            arrowRect.y = static_cast<int>(entity->getArrowY());
+
+            for (auto& otherEntity : entities) {
+                if (otherEntity.get() != entity.get() && Entity::checkCollision(arrowRect, otherEntity->getBoundingBox())) {
+                    // Apply damage to the target if hit by an arrow
+                    if (Enemy* enemy = dynamic_cast<Enemy*>(otherEntity.get())) {
+                        applyDamage(*entity, *enemy, Player::ARROW_DAMAGE);
+                        entity->shootArrow(Entity::Up); // Deactivate the arrow by resetting its position
+                        break; // Exit the inner loop to prevent multiple hits in one frame
+                    } else if (Player* player = dynamic_cast<Player*>(otherEntity.get())) {
+                        applyDamage(*entity, *player, Player::ARROW_DAMAGE); // Adjust arrow damage for player if needed
+                        entity->shootArrow(Entity::Up); // Deactivate the arrow by resetting its position
+                        break; // Exit the inner loop to prevent multiple hits in one frame
+                    }
+                }
+            }
+        }
+    }
+
     // Check for collisions and resolve them
     for (size_t i = 0; i < entities.size(); ++i) {
         for (size_t j = i + 1; j < entities.size(); ++j) {
@@ -167,21 +194,13 @@ void Game::update() {
         }
     }
 
-    // Handle arrow collisions and update positions
-    for (auto& entity : entities) {
-        if (entity->isArrowActive()) {
-            SDL_Rect arrowRect = entity->getArrowFrame();
-            arrowRect.x = static_cast<int>(entity->getArrowX());
-            arrowRect.y = static_cast<int>(entity->getArrowY());
-
-            for (auto& otherEntity : entities) {
-                if (otherEntity.get() != entity.get() && Entity::checkCollision(arrowRect, otherEntity->getBoundingBox())) {
-                    entity->shootArrow(entity->getDirection()); // Deactivate the arrow
-                    break;
-                }
-            }
-        }
+    // Remove entities marked for removal
+    for (Entity* entity : entitiesToRemove) {
+        auto it = std::remove_if(entities.begin(), entities.end(),
+                                 [entity](const std::unique_ptr<Entity>& e) { return e.get() == entity; });
+        entities.erase(it, entities.end());
     }
+    entitiesToRemove.clear();
 
     float playerX = player->getX();
     float playerY = player->getY();
@@ -225,6 +244,42 @@ void Game::resolveCollision(Player& player, Enemy& enemy) {
     SDL_Rect playerBox = player.getBoundingBox();
     SDL_Rect enemyBox = enemy.getBoundingBox();
 
+    if (Entity::checkCollision(playerBox, enemyBox)) {
+        adjustPositionOnCollision(player, enemy);
+    }
+
+    SDL_Rect playerAttackBox = player.getAttackBoundingBox();
+    SDL_Rect enemyAttackBox = enemy.getAttackBoundingBox();
+
+    Uint32 currentTime = SDL_GetTicks();
+
+    // Check player's attack collision with enemy
+    if (Entity::checkCollision(playerAttackBox, enemy.getBoundingBox())) {
+        if (player.getAction() == Entity::Thrusting && !player.getDamageApplied() && (currentTime - player.getAttackStartTime() >= player.getAttackDelay())) {
+            applyDamage(player, enemy, Player::THRUST_DAMAGE);
+            player.setDamageApplied(true);
+        } else if (player.getAction() == Entity::Slashing && !player.getDamageApplied() && (currentTime - player.getAttackStartTime() >= player.getAttackDelay())) {
+            applyDamage(player, enemy, Player::SLASH_DAMAGE);
+            player.setDamageApplied(true);
+        }
+    }
+
+    // Check enemy's attack collision with player
+    if (Entity::checkCollision(enemyAttackBox, player.getBoundingBox())) {
+        if (enemy.getAction() == Entity::Thrusting && !enemy.getDamageApplied() && (currentTime - enemy.getAttackStartTime() >= enemy.getAttackDelay())) {
+            applyDamage(enemy, player, Enemy::THRUST_DAMAGE);
+            enemy.setDamageApplied(true);
+        } else if (enemy.getAction() == Entity::Spellcasting && !enemy.getDamageApplied() && (currentTime - enemy.getAttackStartTime() >= enemy.getAttackDelay())) {
+            applyDamage(enemy, player, Enemy::SPELL_DAMAGE);
+            enemy.setDamageApplied(true);
+        }
+    }
+}
+
+void Game::adjustPositionOnCollision(Player& player, Enemy& enemy) {
+    SDL_Rect playerBox = player.getCollisionBoundingBox();
+    SDL_Rect enemyBox = enemy.getCollisionBoundingBox();
+
     // Calculate the overlap between the player and the enemy
     int overlapX = (playerBox.x + playerBox.w / 2) - (enemyBox.x + enemyBox.w / 2);
     int overlapY = (playerBox.y + playerBox.h / 2) - (enemyBox.y + enemyBox.h / 2);
@@ -257,6 +312,34 @@ void Game::resolveCollision(Player& player, Enemy& enemy) {
     }
 }
 
+void Game::applyDamage(Entity& attacker, Entity& target, int damage) {
+    target.takeDamage(damage);
+    if (!target.isAlive()) {
+        if (Player* player = dynamic_cast<Player*>(&target)) {
+            isRunning = false; // Stop the game if the player dies
+        } else if (Enemy* enemy = dynamic_cast<Enemy*>(&target)) {
+            // Mark the enemy for removal
+            entitiesToRemove.push_back(&target);
+        }
+    }
+}
+
+void Game::renderHealthBar(int x, int y, int currentHealth, int maxHealth) {
+    int barWidth = 100; // Width of the health bar
+    int barHeight = 10; // Height of the health bar
+    float healthRatio = static_cast<float>(currentHealth) / static_cast<float>(maxHealth);
+
+    // Draw the background (black)
+    SDL_Rect backgroundRect = { x, y, barWidth, barHeight };
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderFillRect(renderer, &backgroundRect);
+
+    // Draw the health bar (red)
+    SDL_Rect healthRect = { x, y, static_cast<int>(barWidth * healthRatio), barHeight };
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    SDL_RenderFillRect(renderer, &healthRect);
+}
+
 void Game::render() {
     SDL_RenderClear(renderer);
     world->render(camera.x + camera.w / 2 + 192, camera.y + camera.h / 2 - 256);
@@ -282,7 +365,14 @@ void Game::render() {
             };
             SDL_RenderCopy(renderer, entity->getTex(), &arrowSrcRect, &arrowDestRect);
         }
+
+        // Render health bar above the entity
+        int healthBarX = destRect.x;
+        int healthBarY = destRect.y - 10; // Adjust the Y position to be above the entity
+        renderHealthBar(healthBarX, healthBarY, entity->getHealth(), entity->getMaxHealth());
     }
+
+    // renderHealthBar(10, 10, player->getHealth(), Player::INITIAL_HEALTH);
 
     if (isMenuOpen) {
         menu->render();

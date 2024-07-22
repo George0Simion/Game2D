@@ -79,12 +79,42 @@ void Enemy::decideAction(Player& player, float distance) {
     if (distance > spellRange && randomFactor < 20) { // 20% chance to spellcast at far range
         setAction(Spellcasting);
         attackCooldown = 5.0f; // Increased cooldown for spellcasting
+        setAttackStartTime(SDL_GetTicks());
+        setAttackDelay(500); // Set delay to 500ms
+        setDamageApplied(false);
     } else if (distance <= thrustRange * 1.2 && randomFactor < 60) { // 60% chance to thrust at very close range
         setAction(Thrusting);
         attackCooldown = 1.0f;
+        setAttackStartTime(SDL_GetTicks());
+        setAttackDelay(150); // Set delay to 150ms
+        setDamageApplied(false);
     } else {
         setAction(Walking);
     }
 
     startAnimation();
+}
+
+SDL_Rect Enemy::getAttackBoundingBox() const {
+    SDL_Rect boundingBox = Entity::getAttackBoundingBox(); // Call base class method for slashing
+
+    if (getAction() == Thrusting) {
+        int thrustRange = getThrustRange();
+        switch (getDirection()) {
+            case Up:
+                boundingBox.y -= thrustRange; boundingBox.h += thrustRange; break;
+            case Down:
+                boundingBox.h += thrustRange; break;
+            case Left:
+                boundingBox.x -= thrustRange; boundingBox.w += thrustRange; break;
+            case Right:
+                boundingBox.w += thrustRange; break;
+        }
+    }
+
+    return boundingBox;
+}
+
+int Enemy::getThrustRange() const {
+    return 60; // Thrust range for the enemy
 }

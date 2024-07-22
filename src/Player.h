@@ -9,6 +9,17 @@ public:
 
     void handleInput(const SDL_Event& event);
     void update(float deltaTime) override;
+
+    int getThrustRange() const override;
+    SDL_Rect getAttackBoundingBox() const override;
+
+    static const int INITIAL_HEALTH = 100;
+    static const int THRUST_DAMAGE = 15;
+    static const int SPELL_DAMAGE = 35;
+    static const int SLASH_DAMAGE = 25;
+    static const int ARROW_DAMAGE = 20;
+
+    int getMaxHealth() const override { return INITIAL_HEALTH; }
 };
 
 #endif

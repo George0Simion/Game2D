@@ -8,6 +8,90 @@ Entity::Entity(float p_x, float p_y, SDL_Texture* p_tex, int p_numFrames, float 
     currentFrame = {0, 0, FRAME_WIDTH, FRAME_HEIGHT};
 }
 
+SDL_Rect Entity::getCollisionBoundingBox() const {
+    SDL_Rect boundingBox = { static_cast<int>(x) + 10, static_cast<int>(y) + 10, FRAME_WIDTH - 20, FRAME_HEIGHT - 20 };
+    return boundingBox;
+}
+
+SDL_Rect Entity::getAttackBoundingBox() const {
+    SDL_Rect boundingBox = getBoundingBox();
+    int thrustRange = getThrustRange();
+
+    if (action == Slashing) {
+        switch (direction) {
+            case Up:
+                boundingBox.y -= 45; boundingBox.h += 45; break;
+            case Down:
+                boundingBox.h += 45; break;
+            case Left:
+                boundingBox.x -= 45; boundingBox.w += 45; break;
+            case Right:
+                boundingBox.w += 45; break;
+        }
+    } else if (action == Thrusting) {
+        switch (direction) {
+            case Up:
+                boundingBox.y -= thrustRange; boundingBox.h += thrustRange; break;
+            case Down:
+                boundingBox.h += thrustRange; break;
+            case Left:
+                boundingBox.x -= thrustRange; boundingBox.w += thrustRange; break;
+            case Right:
+                boundingBox.w += thrustRange; break;
+        }
+    }
+
+    return boundingBox;
+}
+
+int Entity::getThrustRange() const {
+    return 30; // Default thrust range for generic entities
+}
+
+int Entity::getHealth() const {
+    return health;
+}
+
+void Entity::setHealth(int health) {
+    this->health = health;
+}
+
+bool Entity::isAlive() const {
+    return health > 0;
+}
+
+void Entity::takeDamage(int damage) {
+    health -= damage;
+    if (health < 0) {
+        health = 0;
+    }
+}
+
+bool Entity::getDamageApplied() const {
+    return damageApplied;
+}
+
+void Entity::setDamageApplied(bool value) {
+    damageApplied = value;
+}
+
+
+Uint32 Entity::getAttackStartTime() const {
+    return attackStartTime;
+}
+
+void Entity::setAttackStartTime(Uint32 time) {
+    attackStartTime = time;
+}
+
+Uint32 Entity::getAttackDelay() const {
+    return attackDelay;
+}
+
+void Entity::setAttackDelay(Uint32 delay) {
+    attackDelay = delay;
+}
+
 SDL_Rect Entity::getBoundingBox() const {
     SDL_Rect boundingBox = { static_cast<int>(x), static_cast<int>(y), FRAME_WIDTH, FRAME_HEIGHT };
 
@@ -102,28 +186,35 @@ void Entity::setAction(Action act) {
         action = act;
         currentFrameIndex = 0;
         animationTimer = 0.0f;
+        damageApplied = false;
 
         switch(action) {
             case Slashing:
                 numFrames = 6;
+                attackDelay = 300;
                 break;
             case Thrusting:
                 numFrames = 8;
+                attackDelay = 200;
                 break;
             case Spellcasting:
                 numFrames = 7;
+                attackDelay = 400;
                 break;
             case Shooting:
                 numFrames = 13;
+                attackDelay = 0;
                 break;
             case ArrowFlyingUp:
             case ArrowFlyingDown:
             case ArrowFlyingLeft:
             case ArrowFlyingRight:
                 numFrames = 1;
+                attackDelay = 0;
                 break;
             default:
                 numFrames = 9;
+                attackDelay = 0;
                 break;
         }
         currentFrame = {0, direction * FRAME_HEIGHT, FRAME_WIDTH, FRAME_HEIGHT};

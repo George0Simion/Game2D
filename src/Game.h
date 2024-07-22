@@ -5,6 +5,7 @@
 #include <SDL2/SDL_image.h>
 #include <vector>
 #include <memory>
+#include <algorithm>
 #include "Entity.h"
 #include "Player.h"
 #include "Enemy.h"
@@ -33,6 +34,7 @@ private:
     Uint32 lastTime;
     float deltaTime;
 
+    std::vector<Entity*> entitiesToRemove;
     std::vector<std::unique_ptr<Entity>> entities;
     SDL_Texture* loadTexture(const char* fileName);
 
@@ -48,6 +50,10 @@ private:
     void spawnEnemy();
 
     void resolveCollision(Player& player, Enemy& enemy);
+    void adjustPositionOnCollision(Player& player, Enemy& enemy);
+    void applyDamage(Entity& attacker, Entity& target, int damage);
+
+    void renderHealthBar(int x, int y, int currentHealth, int maxHealth);
 };
 
 #endif
