@@ -19,6 +19,7 @@ public:
 
     SDL_Texture* getTex();
     SDL_Rect getCurrentFrame();
+    void setCurrentFrame(const SDL_Rect& frame);
 
     virtual void update(float deltaTime);
     void startAnimation();
@@ -62,6 +63,8 @@ public:
     void setAttackStartTime(Uint32 time); // New setter for attackStartTime
     Uint32 getAttackDelay() const; // New getter for attackDelay
     void setAttackDelay(Uint32 delay); // New setter for attackDelay
+
+    void setNumFrames(int numFrames);
 
 protected:
     virtual int getActionOffset() const; // New virtual method for action offset

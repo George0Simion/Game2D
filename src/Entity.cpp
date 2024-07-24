@@ -222,6 +222,22 @@ void Entity::setAction(Action act) {
 }
 
 void Entity::update(float deltaTime) {
+    if (action == Dying) {
+        animationTimer += deltaTime;
+        if (animationTimer >= animationSpeed) {
+            animationTimer = 0.0f;
+            currentFrameIndex = (currentFrameIndex + 1) % numFrames;
+            currentFrame.x = currentFrameIndex * FRAME_WIDTH;
+            currentFrame.y = 24 * FRAME_HEIGHT; // Assuming row 24 for dying animation
+
+            if (currentFrameIndex == numFrames - 1) {
+                // Animation finished
+                stopAnimation();
+            }
+        }
+        return;
+    }
+
     float actualSpeed = running ? 1.5f * arrowSpeed : arrowSpeed;
     float actualAnimationSpeed = running ? animationSpeed / 1.5f : animationSpeed;
 
@@ -294,6 +310,8 @@ Entity::Direction Entity::getDirection() const {
 }
 
 void Entity::shootArrow(Direction dir) {
+    //if (arrowActive) return;
+
     if (!arrowActive) {
         arrowActive = true;
         float xOffset = 0;
@@ -383,4 +401,12 @@ float Entity::getAnimationSpeed() const {
 
 int Entity::getNumFrames() const {
     return numFrames;
+}
+
+void Entity::setNumFrames(int numFrames) {
+    this->numFrames = numFrames;
+}
+
+void Entity::setCurrentFrame(const SDL_Rect& frame) {
+    currentFrame = frame;
 }

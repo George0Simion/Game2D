@@ -19,6 +19,7 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
         isRunning = true;
     } else {
         isRunning = false;
+        printf("pula");
     }
 
     if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {                         /* Check error for the image */
@@ -65,6 +66,34 @@ void Game::spawnEnemy() {
     entities.push_back(std::move(enemy));
 }
 
+void Game::resetGame() {
+    for (auto& entity : entities) {
+        entity.reset();
+    }
+    entities.clear();
+
+    // Reinitialize game state without recreating the window and renderer
+    player = new Player(1920 / 2 - 64, 1080 / 2 - 64, loadTexture("/home/simion/Desktop/2/Game2D/assets/sprite_good_arrow2.png"), 4, 0.1f);
+    player->setHealth(Player::INITIAL_HEALTH);
+    entities.push_back(std::unique_ptr<Entity>(player));
+
+    world = new World(renderer, 12345); // Reinitialize the world with a seed for procedural generation
+
+    camera = {0, 0, 1680, 900}; // Initialize the camera
+
+    // Center the camera on the player initially
+    camera.x = player->getX() - camera.w / 2;
+    camera.y = player->getY() - camera.h / 2;
+
+    world->update(camera.x + camera.w / 2, camera.y + camera.h / 2);
+
+    spawnEnemy();
+
+    // init("Game Window", 1920, 1080, false);  // Reinitialize the game
+    isMenuOpen = false;
+    isRunning = true;
+}
+
 /* Handling the events of the game such as the opening of the menu, if the game is running or not
    and some more are coming  */
 void Game::handleEvents() {
@@ -79,7 +108,13 @@ void Game::handleEvents() {
             switch (event.type) {
                 case SDL_KEYDOWN:
                     if (event.key.keysym.sym == SDLK_ESCAPE) {
-                        isMenuOpen = !isMenuOpen;
+                        if (isMenuOpen) {
+                            menu->setState(Menu::NONE);
+                            isMenuOpen = false;
+                        } else {
+                            menu->setState(Menu::MAIN_MENU);
+                            isMenuOpen = true;
+                        }
                     } else {
                         player->handleInput(event);  // Pass other key events to player
                     }
@@ -97,7 +132,6 @@ void Game::handleEvents() {
         }
     }
 }
-
 
 void Game::processInput() {
     if (isMenuOpen) return;
@@ -143,101 +177,112 @@ void Game::update() {
     deltaTime = (currentTime - lastTime) / 1000.0f;
     lastTime = currentTime;
 
-    processInput();
-
-    // Update all entities
-    for (auto& entity : entities) {
-        if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
-            enemy->updateBehavior(deltaTime, *player);
-        }
-        entity->update(deltaTime);
+    if (isMenuOpen) {
+        return;
     }
 
-    // Handle arrow collisions and update positions
-    for (auto& entity : entities) {
-        if (entity->isArrowActive()) {
-            SDL_Rect arrowRect = entity->getArrowFrame();
-            arrowRect.x = static_cast<int>(entity->getArrowX());
-            arrowRect.y = static_cast<int>(entity->getArrowY());
+    if (player->getIsDead()) {
+        player->update(deltaTime);
+        if (isPlayerDeathAnimationFinished() && currentTime - deathTime >= DEATH_DELAY) {
+            menu->setState(Menu::RESPAWN_MENU);  // Show the respawn menu
+            isMenuOpen = true;
+        }
+    } else {
+        processInput();
 
-            for (auto& otherEntity : entities) {
-                if (otherEntity.get() != entity.get() && Entity::checkCollision(arrowRect, otherEntity->getBoundingBox())) {
-                    // Apply damage to the target if hit by an arrow
-                    if (Enemy* enemy = dynamic_cast<Enemy*>(otherEntity.get())) {
-                        applyDamage(*entity, *enemy, Player::ARROW_DAMAGE);
-                        entity->shootArrow(Entity::Up); // Deactivate the arrow by resetting its position
-                        break; // Exit the inner loop to prevent multiple hits in one frame
-                    } else if (Player* player = dynamic_cast<Player*>(otherEntity.get())) {
-                        applyDamage(*entity, *player, Player::ARROW_DAMAGE); // Adjust arrow damage for player if needed
-                        entity->shootArrow(Entity::Up); // Deactivate the arrow by resetting its position
-                        break; // Exit the inner loop to prevent multiple hits in one frame
+        // Update all entities
+        for (auto& entity : entities) {
+            if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
+                enemy->updateBehavior(deltaTime, *player);
+            }
+            entity->update(deltaTime);
+        }
+
+        // Handle arrow collisions and update positions
+        for (auto& entity : entities) {
+            if (entity->isArrowActive()) {
+                SDL_Rect arrowRect = entity->getArrowFrame();
+                arrowRect.x = static_cast<int>(entity->getArrowX());
+                arrowRect.y = static_cast<int>(entity->getArrowY());
+
+                for (auto& otherEntity : entities) {
+                    if (otherEntity.get() != entity.get() && Entity::checkCollision(arrowRect, otherEntity->getBoundingBox())) {
+                        // Apply damage to the target if hit by an arrow
+                        if (Enemy* enemy = dynamic_cast<Enemy*>(otherEntity.get())) {
+                            applyDamage(*entity, *enemy, Player::ARROW_DAMAGE);
+                            entity->shootArrow(Entity::Up); // Deactivate the arrow by resetting its position
+                            break; // Exit the inner loop to prevent multiple hits in one frame
+                        } else if (Player* player = dynamic_cast<Player*>(otherEntity.get())) {
+                            applyDamage(*entity, *player, Player::ARROW_DAMAGE); // Adjust arrow damage for player if needed
+                            entity->shootArrow(Entity::Up); // Deactivate the arrow by resetting its position
+                            break; // Exit the inner loop to prevent multiple hits in one frame
+                        }
                     }
                 }
             }
         }
-    }
 
-    // Check for collisions and resolve them
-    for (size_t i = 0; i < entities.size(); ++i) {
-        for (size_t j = i + 1; j < entities.size(); ++j) {
-            if (Entity::checkCollision(entities[i]->getBoundingBox(), entities[j]->getBoundingBox())) {
-                if (Player* player = dynamic_cast<Player*>(entities[i].get())) {
-                    if (Enemy* enemy = dynamic_cast<Enemy*>(entities[j].get())) {
-                        resolveCollision(*player, *enemy);
-                    }
-                } else if (Player* player = dynamic_cast<Player*>(entities[j].get())) {
-                    if (Enemy* enemy = dynamic_cast<Enemy*>(entities[i].get())) {
-                        resolveCollision(*player, *enemy);
+        // Check for collisions and resolve them
+        for (size_t i = 0; i < entities.size(); ++i) {
+            for (size_t j = i + 1; j < entities.size(); ++j) {
+                if (Entity::checkCollision(entities[i]->getBoundingBox(), entities[j]->getBoundingBox())) {
+                    if (Player* player = dynamic_cast<Player*>(entities[i].get())) {
+                        if (Enemy* enemy = dynamic_cast<Enemy*>(entities[j].get())) {
+                            resolveCollision(*player, *enemy);
+                        }
+                    } else if (Player* player = dynamic_cast<Player*>(entities[j].get())) {
+                        if (Enemy* enemy = dynamic_cast<Enemy*>(entities[i].get())) {
+                            resolveCollision(*player, *enemy);
+                        }
                     }
                 }
             }
         }
+
+        for (Entity* entity : entitiesToRemove) {
+            auto it = std::remove_if(entities.begin(), entities.end(),
+                                    [entity](const std::unique_ptr<Entity>& e) { return e.get() == entity; });
+            entities.erase(it, entities.end());
+        }
+        entitiesToRemove.clear();
+
+        float playerX = player->getX();
+        float playerY = player->getY();
+
+        int deadZoneWidth = 1680;
+        int deadZoneHeight = 900;
+
+        float camX = camera.x + camera.w / 2;
+        float camY = camera.y + camera.h / 2;
+
+        float deadZoneLeft = camX - deadZoneWidth / 2;
+        float deadZoneRight = camX + deadZoneWidth / 2;
+        float deadZoneTop = camY - deadZoneHeight / 2;
+        float deadZoneBottom = camY + deadZoneHeight / 2;
+
+        if (playerX < deadZoneLeft) {
+            camera.x = playerX - (camera.w - deadZoneWidth) / 2;
+        }
+        if (playerX > deadZoneRight) {
+            camera.x = playerX - (camera.w + deadZoneWidth) / 2;
+        }
+        if (playerY < deadZoneTop) {
+            camera.y = playerY - (camera.h - deadZoneHeight) / 2;
+        }
+        if (playerY > deadZoneBottom) {
+            camera.y = playerY - (camera.h + deadZoneHeight) / 2;
+        }
+
+        camX = camera.x + camera.w / 2;
+        camY = camera.y + camera.h / 2;
+
+        deadZoneLeft = camX - deadZoneWidth / 2;
+        deadZoneRight = camX + deadZoneWidth / 2;
+        deadZoneTop = camY - deadZoneHeight / 2;
+        deadZoneBottom = camY + deadZoneHeight / 2;
+
+        world->update(camera.x + camera.w / 2, camera.y + camera.h / 2);
     }
-
-    // Remove entities marked for removal
-    for (Entity* entity : entitiesToRemove) {
-        auto it = std::remove_if(entities.begin(), entities.end(),
-                                 [entity](const std::unique_ptr<Entity>& e) { return e.get() == entity; });
-        entities.erase(it, entities.end());
-    }
-    entitiesToRemove.clear();
-
-    float playerX = player->getX();
-    float playerY = player->getY();
-
-    int deadZoneWidth = 1680;
-    int deadZoneHeight = 900;
-
-    float camX = camera.x + camera.w / 2;
-    float camY = camera.y + camera.h / 2;
-
-    float deadZoneLeft = camX - deadZoneWidth / 2;
-    float deadZoneRight = camX + deadZoneWidth / 2;
-    float deadZoneTop = camY - deadZoneHeight / 2;
-    float deadZoneBottom = camY + deadZoneHeight / 2;
-
-    if (playerX < deadZoneLeft) {
-        camera.x = playerX - (camera.w - deadZoneWidth) / 2;
-    }
-    if (playerX > deadZoneRight) {
-        camera.x = playerX - (camera.w + deadZoneWidth) / 2;
-    }
-    if (playerY < deadZoneTop) {
-        camera.y = playerY - (camera.h - deadZoneHeight) / 2;
-    }
-    if (playerY > deadZoneBottom) {
-        camera.y = playerY - (camera.h + deadZoneHeight) / 2;
-    }
-
-    camX = camera.x + camera.w / 2;
-    camY = camera.y + camera.h / 2;
-
-    deadZoneLeft = camX - deadZoneWidth / 2;
-    deadZoneRight = camX + deadZoneWidth / 2;
-    deadZoneTop = camY - deadZoneHeight / 2;
-    deadZoneBottom = camY + deadZoneHeight / 2;
-
-    world->update(camera.x + camera.w / 2, camera.y + camera.h / 2);
 }
 
 void Game::resolveCollision(Player& player, Enemy& enemy) {
@@ -312,11 +357,17 @@ void Game::adjustPositionOnCollision(Player& player, Enemy& enemy) {
     }
 }
 
+bool Game::isPlayerDeathAnimationFinished() const {
+    return player->getIsDead() && player->isDeathAnimationFinished();
+}
+
 void Game::applyDamage(Entity& attacker, Entity& target, int damage) {
     target.takeDamage(damage);
     if (!target.isAlive()) {
         if (Player* player = dynamic_cast<Player*>(&target)) {
-            isRunning = false; // Stop the game if the player dies
+            player->setIsDead(true);
+            deathTime = SDL_GetTicks();  // Record the time of death
+            // entitiesToRemove.push_back(player);
         } else if (Enemy* enemy = dynamic_cast<Enemy*>(&target)) {
             // Mark the enemy for removal
             entitiesToRemove.push_back(&target);
@@ -372,8 +423,6 @@ void Game::render() {
         renderHealthBar(healthBarX, healthBarY, entity->getHealth(), entity->getMaxHealth());
     }
 
-    // renderHealthBar(10, 10, player->getHealth(), Player::INITIAL_HEALTH);
-
     if (isMenuOpen) {
         menu->render();
     }
@@ -382,10 +431,30 @@ void Game::render() {
 }
 
 void Game::clean() {
-    SDL_DestroyWindow(window);
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyTexture(spriteSheet);
+    // if (renderer) {
+    //     SDL_DestroyRenderer(renderer);
+    //     renderer = nullptr;
+    // }
+    // if (window) {
+    //     SDL_DestroyWindow(window);
+    //     window = nullptr;
+    // }
+    for (auto& entity : entities) {
+        entity.reset();
+    }
+    entities.clear();
+
+    if (spriteSheet) {
+        SDL_DestroyTexture(spriteSheet);
+        spriteSheet = nullptr;
+    }
+
     delete menu;
+    menu = nullptr;
     delete world;
+    world = nullptr;
+
+    IMG_Quit();
     SDL_Quit();
 }
+

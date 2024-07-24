@@ -20,6 +20,16 @@ public:
     static const int ARROW_DAMAGE = 20;
 
     int getMaxHealth() const override { return INITIAL_HEALTH; }
+
+    bool getIsDead() const { return isDead; }
+    void setIsDead(bool dead) { isDead = dead; }
+
+    void setDeathAnimationFinished(bool finished) { deathAnimationFinished = finished; }
+    bool isDeathAnimationFinished() const;
+
+private:
+    bool isDead;
+    bool deathAnimationFinished;
 };
 
 #endif
