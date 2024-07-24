@@ -57,7 +57,7 @@ SDL_Texture* Game::loadTexture(const char* fileName) {                      /* M
 }
 
 void Game::spawnEnemy() {
-    SDL_Texture* enemyTex = loadTexture("/home/simion/Desktop/3/Game2D/assets/enemy3.png");
+    SDL_Texture* enemyTex = loadTexture("/home/simion/Desktop/3/Game2D/assets/enemy4.png");
     float x = 100;
     float y = 100;
     auto enemy = std::make_unique<Enemy>(x, y, enemyTex, 8, 0.1f);
