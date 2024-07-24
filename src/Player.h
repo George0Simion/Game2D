@@ -7,7 +7,7 @@ class Player : public Entity {
 public:
     Player(float p_x, float p_y, SDL_Texture* p_tex, int numFrames, float animationSpeed);
 
-    void handleInput(const SDL_Event& event);
+    void handleInput(const SDL_Event& event) override;
     void update(float deltaTime) override;
 
     int getThrustRange() const override;

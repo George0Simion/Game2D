@@ -1,9 +1,16 @@
+// Entity.h
+
 #ifndef ENTITY_H
 #define ENTITY_H
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <string>
+#include <vector>
+#include <memory>
+#include <limits>
+
+class Enemy; // Forward declaration
 
 class Entity {
 public:
@@ -22,6 +29,7 @@ public:
     void setCurrentFrame(const SDL_Rect& frame);
 
     virtual void update(float deltaTime);
+    virtual void handleInput(const SDL_Event& event); // Make handleInput virtual
     void startAnimation();
     void stopAnimation();
     void setDirection(Direction dir);
@@ -66,6 +74,15 @@ public:
 
     void setNumFrames(int numFrames);
 
+    // New methods for spell handling
+    void setSpellTarget(float targetX, float targetY);
+    void updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities);
+    bool isSpellActive() const;
+    SDL_Rect getSpellFrame() const;
+    float getSpellX() const;
+    float getSpellY() const;
+    void deactivateSpell();
+
 protected:
     virtual int getActionOffset() const; // New virtual method for action offset
     float getAnimationTimer() const;
@@ -88,7 +105,12 @@ protected:
     Direction direction;
     Action action;
 
-private:
+    bool spellActive;
+    float spellX, spellY;
+    float spellTargetX, spellTargetY;
+    float spellSpeed;
+    float spellCurveFactor;
+
     float x, y;
     bool moving;
     bool running;
@@ -109,6 +131,9 @@ private:
     Direction arrowDirection;
 
     int health;
+
+    Uint32 spellStartTime;
+    Uint32 spellDuration;
 };
 
 #endif

@@ -1,5 +1,4 @@
 #include "Game.h"
-#include <iostream>
 
 /* Constructor and Destructor */
 Game::Game() : window(nullptr), renderer(nullptr), isRunning(false), player(nullptr), world(nullptr) {}
@@ -28,7 +27,7 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
     }
 
     /* Loading the main character and adding it to the vector */
-    SDL_Texture* tex = loadTexture("/home/simion/Desktop/2/Game2D/assets/sprite_good_arrow2.png");
+    SDL_Texture* tex = loadTexture("/home/simion/Desktop/3/Game2D/assets/sprite_good_arrow3.png");
     player = new Player(width / 2 - 64, height / 2 - 64, tex, 4, 0.1f);     /* Center the player */
     entities.push_back(std::unique_ptr<Entity>(player));
     player->setHealth(Player::INITIAL_HEALTH);                                                 /* Set the health of the player */
@@ -58,7 +57,7 @@ SDL_Texture* Game::loadTexture(const char* fileName) {                      /* M
 }
 
 void Game::spawnEnemy() {
-    SDL_Texture* enemyTex = loadTexture("/home/simion/Desktop/2/Game2D/assets/enemy3.png");
+    SDL_Texture* enemyTex = loadTexture("/home/simion/Desktop/3/Game2D/assets/enemy3.png");
     float x = 100;
     float y = 100;
     auto enemy = std::make_unique<Enemy>(x, y, enemyTex, 8, 0.1f);
@@ -73,7 +72,7 @@ void Game::resetGame() {
     entities.clear();
 
     // Reinitialize game state without recreating the window and renderer
-    player = new Player(1920 / 2 - 64, 1080 / 2 - 64, loadTexture("/home/simion/Desktop/2/Game2D/assets/sprite_good_arrow2.png"), 4, 0.1f);
+    player = new Player(1920 / 2 - 64, 1080 / 2 - 64, loadTexture("/home/simion/Desktop/3/Game2D/assets/sprite_good_arrow3.png"), 4, 0.1f);
     player->setHealth(Player::INITIAL_HEALTH);
     entities.push_back(std::unique_ptr<Entity>(player));
 
@@ -197,6 +196,9 @@ void Game::update() {
             }
             entity->update(deltaTime);
         }
+
+        // Update spell animation and check for collisions
+        updateSpellAnimation(deltaTime, entities);
 
         // Handle arrow collisions and update positions
         for (auto& entity : entities) {
@@ -375,6 +377,32 @@ void Game::applyDamage(Entity& attacker, Entity& target, int damage) {
     }
 }
 
+void Game::updateSpellAnimation(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities) {
+    if (player->getAction() == Entity::Spellcasting && !player->isArrowActive()) {
+        // Find the closest enemy
+        Enemy* closestEnemy = nullptr;
+        float minDistance = std::numeric_limits<float>::max(); // Correct usage of numeric_limits
+
+        for (const auto& entity : entities) {
+            if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
+                float distance = std::hypot(player->getX() - enemy->getX(), player->getY() - enemy->getY());
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestEnemy = enemy;
+                }
+            }
+        }
+
+        if (closestEnemy) {
+            // Set the spell direction towards the closest enemy
+            player->setSpellTarget(closestEnemy->getX(), closestEnemy->getY());
+        }
+    }
+
+    // Update spell position
+    player->updateSpellPosition(deltaTime, entities);
+}
+
 void Game::renderHealthBar(int x, int y, int currentHealth, int maxHealth) {
     int barWidth = 100; // Width of the health bar
     int barHeight = 10; // Height of the health bar
@@ -417,6 +445,18 @@ void Game::render() {
             SDL_RenderCopy(renderer, entity->getTex(), &arrowSrcRect, &arrowDestRect);
         }
 
+        // Render the spell if active
+        if (entity->isSpellActive()) {
+            SDL_Rect spellSrcRect = entity->getSpellFrame();
+            SDL_Rect spellDestRect = {
+                static_cast<int>(entity->getSpellX()) - camera.x,
+                static_cast<int>(entity->getSpellY()) - camera.y,
+                64,
+                64
+            };
+            SDL_RenderCopy(renderer, entity->getTex(), &spellSrcRect, &spellDestRect);
+        }
+
         // Render health bar above the entity
         int healthBarX = destRect.x;
         int healthBarY = destRect.y - 10; // Adjust the Y position to be above the entity
@@ -431,14 +471,6 @@ void Game::render() {
 }
 
 void Game::clean() {
-    // if (renderer) {
-    //     SDL_DestroyRenderer(renderer);
-    //     renderer = nullptr;
-    // }
-    // if (window) {
-    //     SDL_DestroyWindow(window);
-    //     window = nullptr;
-    // }
     for (auto& entity : entities) {
         entity.reset();
     }

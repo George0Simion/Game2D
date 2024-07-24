@@ -14,12 +14,18 @@ void Player::handleInput(const SDL_Event& event) {
                 setAttackStartTime(SDL_GetTicks());
                 setAttackDelay(200);
                 setDamageApplied(false);
-            } else if (event.key.keysym.sym == SDLK_q) {
+            } else if (event.key.keysym.sym == SDLK_q && !isMoving()) { // Ensure the player is idle
                 setAction(Spellcasting);
                 startAnimation();
                 setAttackStartTime(SDL_GetTicks());
                 setAttackDelay(500);
                 setDamageApplied(false);
+                // Set spell position
+                spellActive = true;
+                spellX = x;
+                spellY = y;
+                spellStartTime = SDL_GetTicks();
+                spellDuration = 4000;
             } else if (event.key.keysym.sym == SDLK_LSHIFT || event.key.keysym.sym == SDLK_RSHIFT) {
                 setRunning(true);
             }
@@ -30,7 +36,7 @@ void Player::handleInput(const SDL_Event& event) {
             }
             break;
         case SDL_MOUSEBUTTONDOWN:
-            if (event.button.button == SDL_BUTTON_LEFT && isArrowActive() == false){
+            if (event.button.button == SDL_BUTTON_LEFT && !isArrowActive()) {
                 setAction(Shooting);
                 startAnimation();
                 setAttackStartTime(SDL_GetTicks());

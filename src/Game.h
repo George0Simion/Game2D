@@ -1,3 +1,4 @@
+// Game.h
 #ifndef GAME_H
 #define GAME_H
 
@@ -6,6 +7,7 @@
 #include <vector>
 #include <memory>
 #include <algorithm>
+#include <limits>
 #include "Entity.h"
 #include "Player.h"
 #include "Enemy.h"
@@ -61,6 +63,9 @@ private:
     void adjustPositionOnCollision(Player& player, Enemy& enemy);
 
     void renderHealthBar(int x, int y, int currentHealth, int maxHealth);
+
+    // Update the method signature
+    void updateSpellAnimation(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities);
 };
 
 #endif

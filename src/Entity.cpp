@@ -1,11 +1,106 @@
 #include "Entity.h"
+#include "Enemy.h"
 
 const int FRAME_WIDTH = 64;
 const int FRAME_HEIGHT = 64;
 
 Entity::Entity(float p_x, float p_y, SDL_Texture* p_tex, int p_numFrames, float p_animationSpeed)
-: x(p_x), y(p_y), tex(p_tex), numFrames(p_numFrames), animationSpeed(p_animationSpeed), arrowActive(false), arrowSpeed(400.0f), arrowMaxDistance(800.0f), arrowTravelDistance(0.0f), moving(false), running(false), direction(Down), action(Walking) {
+: x(p_x), y(p_y), tex(p_tex), numFrames(p_numFrames), animationSpeed(p_animationSpeed), arrowActive(false), spellActive(false), arrowSpeed(400.0f), spellSpeed(200.0f), spellCurveFactor(0.1f), arrowMaxDistance(800.0f), arrowTravelDistance(0.0f), moving(false), running(false), direction(Down), action(Walking), health(100) { // Initialize health
     currentFrame = {0, 0, FRAME_WIDTH, FRAME_HEIGHT};
+}
+
+// Define the handleInput method in the base Entity class
+void Entity::handleInput(const SDL_Event& event) {
+    // Base class method is empty because it's meant to be overridden by derived classes
+}
+
+void Entity::setSpellTarget(float targetX, float targetY) {
+    spellActive = true;
+    spellX = x;
+    spellY = y;
+    spellTargetX = targetX;
+    spellTargetY = targetY;
+    spellDuration = 6000;
+}
+
+void Entity::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities) {
+    if (spellActive) {
+        Uint32 currentTime = SDL_GetTicks();
+        if (currentTime - spellStartTime > spellDuration) {
+            deactivateSpell();
+            return;
+        }
+
+        // Update target position more frequently to ensure smooth tracking
+        Enemy* closestEnemy = nullptr;
+        float minDistance = std::numeric_limits<float>::max();
+        for (auto& entity : entities) {
+            if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
+                float distance = std::hypot(spellX - enemy->getX(), spellY - enemy->getY());
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestEnemy = enemy;
+                }
+            }
+        }
+        if (closestEnemy) {
+            spellTargetX = closestEnemy->getX();
+            spellTargetY = closestEnemy->getY();
+        }
+
+        float dx = spellTargetX - spellX;
+        float dy = spellTargetY - spellY;
+        float distance = std::hypot(dx, dy);
+
+        if (distance > 5.0f) {
+            float angle = atan2(dy, dx);
+            float curve = sin(SDL_GetTicks() * spellCurveFactor);
+
+            spellX += spellSpeed * deltaTime * cos(angle + curve);
+            spellY += spellSpeed * deltaTime * sin(angle + curve);
+        } else {
+            deactivateSpell();
+        }
+
+        // Check for collision with enemies
+        SDL_Rect spellRect = { static_cast<int>(spellX), static_cast<int>(spellY), FRAME_WIDTH, FRAME_HEIGHT };
+        for (auto& entity : entities) {
+            if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
+                SDL_Rect enemyBoundingBox = enemy->getBoundingBox();
+                if (SDL_HasIntersection(&spellRect, &enemyBoundingBox)) {
+                    enemy->takeDamage(Player::SPELL_DAMAGE);
+                    deactivateSpell();
+                    break;
+                }
+            }
+        }
+    }
+}
+
+void Entity::deactivateSpell() {
+    spellActive = false;
+}
+
+bool Entity::isSpellActive() const {
+    return spellActive;
+}
+
+float Entity::getSpellX() const {
+    return spellX;
+}
+
+float Entity::getSpellY() const {
+    return spellY;
+}
+
+SDL_Rect Entity::getSpellFrame() const {
+    // Assuming the spell animation frames are in a specific row in the sprite sheet
+    if (spellActive) {
+        int spellRow = 25; // Adjust as per your sprite sheet
+        int spellFrameIndex = (SDL_GetTicks() / 50) % 6; // Assuming 6 frames for the spell animation
+        return {spellFrameIndex * FRAME_WIDTH, spellRow * FRAME_HEIGHT, FRAME_WIDTH, FRAME_HEIGHT};
+    }
+    return currentFrame;
 }
 
 SDL_Rect Entity::getCollisionBoundingBox() const {
