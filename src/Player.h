@@ -2,13 +2,18 @@
 #define PLAYER_H
 
 #include "Entity.h"
+#include <vector>
+#include <memory>
+
+// Forward declaration of Game class
+class Game;
 
 class Player : public Entity {
 public:
     Player(float p_x, float p_y, SDL_Texture* p_tex, int numFrames, float animationSpeed);
 
     void handleInput(const SDL_Event& event) override;
-    void update(float deltaTime) override;
+    void update(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities, Game& game);
 
     int getThrustRange() const override;
     SDL_Rect getAttackBoundingBox() const override;

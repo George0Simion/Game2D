@@ -83,6 +83,9 @@ public:
     float getSpellY() const;
     void deactivateSpell();
 
+    bool isMarkedForRemoval() const;
+    void markForRemoval();
+
 protected:
     virtual int getActionOffset() const; // New virtual method for action offset
     float getAnimationTimer() const;
@@ -134,6 +137,10 @@ protected:
 
     Uint32 spellStartTime;
     Uint32 spellDuration;
+
+private:
+    bool markedForRemoval = false;
+
 };
 
 #endif

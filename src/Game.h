@@ -66,6 +66,8 @@ private:
 
     // Update the method signature
     void updateSpellAnimation(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities);
+
+    friend class Player;
 };
 
 #endif

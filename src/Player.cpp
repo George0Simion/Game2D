@@ -1,4 +1,5 @@
 #include "Player.h"
+#include "Game.h" // Include Game.h to use Game class
 
 Player::Player(float p_x, float p_y, SDL_Texture* p_tex, int numFrames, float animationSpeed)
     : Entity(p_x, p_y, p_tex, numFrames, animationSpeed), isDead(false), deathAnimationFinished(false) {}
@@ -21,11 +22,8 @@ void Player::handleInput(const SDL_Event& event) {
                 setAttackDelay(500);
                 setDamageApplied(false);
                 // Set spell position
-                spellActive = true;
-                spellX = x;
-                spellY = y;
+                setSpellTarget(x, y); // Initialize the spell at the player's position
                 spellStartTime = SDL_GetTicks();
-                spellDuration = 4000;
             } else if (event.key.keysym.sym == SDLK_LSHIFT || event.key.keysym.sym == SDLK_RSHIFT) {
                 setRunning(true);
             }
@@ -36,7 +34,7 @@ void Player::handleInput(const SDL_Event& event) {
             }
             break;
         case SDL_MOUSEBUTTONDOWN:
-            if (event.button.button == SDL_BUTTON_LEFT && !isArrowActive()) {
+            if (event.button.button == SDL_BUTTON_LEFT && isArrowActive() == false) {
                 setAction(Shooting);
                 startAnimation();
                 setAttackStartTime(SDL_GetTicks());
@@ -75,6 +73,63 @@ void Player::handleInput(const SDL_Event& event) {
     }
 }
 
+void Player::update(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities, Game& game) {
+    if (isDead) {
+        if (!deathAnimationFinished) {
+            if (getAction() != Entity::Dying) {
+                setAction(Entity::Dying);
+                startAnimation();
+                setCurrentFrameIndex(0); // Start the dying animation from the first frame
+                setNumFrames(6); // Set the number of frames for the dying animation
+            }
+
+            setAnimationTimer(getAnimationTimer() + deltaTime);
+            if (getAnimationTimer() >= getAnimationSpeed()) {
+                setAnimationTimer(0.0f);
+                setCurrentFrameIndex((getCurrentFrameIndex() + 1));
+
+                SDL_Rect frame = getCurrentFrame();
+                frame.x = getCurrentFrameIndex() * FRAME_WIDTH;
+                frame.y = 24 * FRAME_HEIGHT; // Assuming row 24 for dying animation
+                setCurrentFrame(frame);
+
+                if (getCurrentFrameIndex() == getNumFrames() - 1) {
+                    // Stop the animation after the last frame
+                    stopAnimation();
+                    setDeathAnimationFinished(true); // Mark the death animation as finished
+                }
+            }
+        }
+    } else {
+        Entity::update(deltaTime);
+
+        // Check for attack damage application
+        if (getAction() == Thrusting && !getDamageApplied() && (SDL_GetTicks() - getAttackStartTime() >= getAttackDelay())) {
+            for (auto& entity : entities) {
+                if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
+                    if (Entity::checkCollision(getAttackBoundingBox(), enemy->getBoundingBox())) {
+                        game.applyDamage(*this, *enemy, Player::THRUST_DAMAGE);
+                        setDamageApplied(true);
+                    }
+                }
+            }
+        } else if (getAction() == Slashing && !getDamageApplied() && (SDL_GetTicks() - getAttackStartTime() >= getAttackDelay())) {
+            for (auto& entity : entities) {
+                if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
+                    if (Entity::checkCollision(getAttackBoundingBox(), enemy->getBoundingBox())) {
+                        game.applyDamage(*this, *enemy, Player::SLASH_DAMAGE);
+                        setDamageApplied(true);
+                    }
+                }
+            }
+
+            if (isSpellActive()) {
+                updateSpellPosition(deltaTime, entities);
+            }
+        }
+    }
+}
+
 SDL_Rect Player::getAttackBoundingBox() const {
     SDL_Rect boundingBox = getBoundingBox();
     int thrustRange = getThrustRange();
@@ -108,38 +163,6 @@ SDL_Rect Player::getAttackBoundingBox() const {
 
 int Player::getThrustRange() const {
     return 30; // Thrust range for the player
-}
-
-void Player::update(float deltaTime) {
-    if (isDead) {
-        if (!deathAnimationFinished) {
-            if (getAction() != Entity::Dying) {
-                setAction(Entity::Dying);
-                startAnimation();
-                setCurrentFrameIndex(0); // Start the dying animation from the first frame
-                setNumFrames(6); // Set the number of frames for the dying animation
-            }
-
-            setAnimationTimer(getAnimationTimer() + deltaTime);
-            if (getAnimationTimer() >= getAnimationSpeed()) {
-                setAnimationTimer(0.0f);
-                setCurrentFrameIndex((getCurrentFrameIndex() + 1));
-
-                SDL_Rect frame = getCurrentFrame();
-                frame.x = getCurrentFrameIndex() * FRAME_WIDTH;
-                frame.y = 24 * FRAME_HEIGHT; // Assuming row 24 for dying animation
-                setCurrentFrame(frame);
-
-                if (getCurrentFrameIndex() == getNumFrames() - 1) {
-                    // Stop the animation after the last frame
-                    stopAnimation();
-                    setDeathAnimationFinished(true); // Mark the death animation as finished
-                }
-            }
-        }
-    } else {
-        Entity::update(deltaTime);
-    }
 }
 
 bool Player::isDeathAnimationFinished() const {

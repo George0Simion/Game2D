@@ -9,6 +9,14 @@ Entity::Entity(float p_x, float p_y, SDL_Texture* p_tex, int p_numFrames, float 
     currentFrame = {0, 0, FRAME_WIDTH, FRAME_HEIGHT};
 }
 
+bool Entity::isMarkedForRemoval() const {
+    return markedForRemoval;
+}
+
+void Entity::markForRemoval() {
+    markedForRemoval = true;
+}
+
 // Define the handleInput method in the base Entity class
 void Entity::handleInput(const SDL_Event& event) {
     // Base class method is empty because it's meant to be overridden by derived classes
@@ -20,7 +28,7 @@ void Entity::setSpellTarget(float targetX, float targetY) {
     spellY = y;
     spellTargetX = targetX;
     spellTargetY = targetY;
-    spellDuration = 6000;
+    spellDuration = 4000;
 }
 
 void Entity::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities) {
@@ -69,6 +77,10 @@ void Entity::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<En
                 SDL_Rect enemyBoundingBox = enemy->getBoundingBox();
                 if (SDL_HasIntersection(&spellRect, &enemyBoundingBox)) {
                     enemy->takeDamage(Player::SPELL_DAMAGE);
+                    if (!enemy->isAlive()) {
+                        // Mark the enemy for removal
+                        enemy->markForRemoval();
+                    }
                     deactivateSpell();
                     break;
                 }
@@ -76,6 +88,7 @@ void Entity::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<En
         }
     }
 }
+
 
 void Entity::deactivateSpell() {
     spellActive = false;

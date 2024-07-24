@@ -181,7 +181,7 @@ void Game::update() {
     }
 
     if (player->getIsDead()) {
-        player->update(deltaTime);
+        player->update(deltaTime, entities, *this);
         if (isPlayerDeathAnimationFinished() && currentTime - deathTime >= DEATH_DELAY) {
             menu->setState(Menu::RESPAWN_MENU);  // Show the respawn menu
             isMenuOpen = true;
@@ -241,12 +241,11 @@ void Game::update() {
             }
         }
 
-        for (Entity* entity : entitiesToRemove) {
-            auto it = std::remove_if(entities.begin(), entities.end(),
-                                    [entity](const std::unique_ptr<Entity>& e) { return e.get() == entity; });
-            entities.erase(it, entities.end());
-        }
-        entitiesToRemove.clear();
+        // Remove entities that are marked for removal
+        entities.erase(std::remove_if(entities.begin(), entities.end(),
+                                      [](const std::unique_ptr<Entity>& entity) {
+                                          return entity->isMarkedForRemoval();
+                                      }), entities.end());
 
         float playerX = player->getX();
         float playerY = player->getY();
