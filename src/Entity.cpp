@@ -24,10 +24,11 @@ void Entity::handleInput(const SDL_Event& event) {
 
 void Entity::setSpellTarget(float targetX, float targetY) {
     spellActive = true;
-    spellX = x;
-    spellY = y;
+    spellX = x + FRAME_WIDTH / 2;
+    spellY = y - 40;
     spellTargetX = targetX;
     spellTargetY = targetY;
+    spellStartTime = SDL_GetTicks();
     spellDuration = 4000;
 }
 
@@ -64,14 +65,20 @@ void Entity::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<En
             float angle = atan2(dy, dx);
             float curve = sin(SDL_GetTicks() * spellCurveFactor);
 
-            spellX += spellSpeed * deltaTime * cos(angle + curve);
-            spellY += spellSpeed * deltaTime * sin(angle + curve);
+            float controlPointX = (spellX + spellTargetX) / 2 + curve * 50;
+            float controlPointY = (spellY + spellTargetY) / 2 + curve * 50;
+
+            // Interpolating positions for smooth, curved movement
+            /* Curbe Bezier patratice */
+            float t = spellSpeed * deltaTime / distance; // Parametric time
+            spellX = (1 - t) * (1 - t) * spellX + 2 * (1 - t) * t * controlPointX + t * t * spellTargetX;
+            spellY = (1 - t) * (1 - t) * spellY + 2 * (1 - t) * t * controlPointY + t * t * spellTargetY;
         } else {
             deactivateSpell();
         }
 
         // Check for collision with enemies
-        SDL_Rect spellRect = { static_cast<int>(spellX), static_cast<int>(spellY), FRAME_WIDTH, FRAME_HEIGHT };
+        SDL_Rect spellRect = { static_cast<int>(spellX), static_cast<int>(spellY), FRAME_WIDTH - 20, FRAME_HEIGHT - 20 }; // Reduced collision box size
         for (auto& entity : entities) {
             if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
                 SDL_Rect enemyBoundingBox = enemy->getBoundingBox();
@@ -88,7 +95,6 @@ void Entity::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<En
         }
     }
 }
-
 
 void Entity::deactivateSpell() {
     spellActive = false;

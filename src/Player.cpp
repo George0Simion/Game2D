@@ -22,7 +22,7 @@ void Player::handleInput(const SDL_Event& event) {
                 setAttackDelay(500);
                 setDamageApplied(false);
                 // Set spell position
-                setSpellTarget(x, y); // Initialize the spell at the player's position
+                setSpellTarget(x + FRAME_WIDTH / 2, y - 40);
                 spellStartTime = SDL_GetTicks();
             } else if (event.key.keysym.sym == SDLK_LSHIFT || event.key.keysym.sym == SDLK_RSHIFT) {
                 setRunning(true);
