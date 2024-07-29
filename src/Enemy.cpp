@@ -52,7 +52,7 @@ void Enemy::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Ent
             float angle = atan2(dy, dx);
             float curve = sin(SDL_GetTicks() * spellCurveFactor);
 
-            float controlPointX = (spellX + spellTargetX) / 2 + curve * 50;
+            float controlPointX = (spellX + spellTargetX) / 2 + curve * 50; // Adding a control point for curve
             float controlPointY = (spellY + spellTargetY) / 2 + curve * 50;
 
             float t = (spellSpeed / 2) * deltaTime / distance;
@@ -69,6 +69,9 @@ void Enemy::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Ent
                     SDL_Rect playerBoundingBox = player->getBoundingBox();
                     if (SDL_HasIntersection(&spellRect, &playerBoundingBox)) {
                         player->takeDamage(SPELL_DAMAGE);
+                        if (!player->isAlive()) {
+                            player->setIsDead(true);
+                        }
                         deactivateSpell();
                         break;
                     }

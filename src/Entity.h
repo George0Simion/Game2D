@@ -83,6 +83,10 @@ public:
     void setSpellRow(int row);
     SDL_Rect getSpellFrameForEnemy() const;
 
+    bool tryDodge();
+    void incrementShotsTaken();
+    void resetShotsTaken();
+
 protected:
     virtual int getActionOffset() const;
     float getAnimationTimer() const;
@@ -134,9 +138,11 @@ protected:
 
     int health;
 
+    float dodgeChance;
+    int shotsTaken;
+
 private:
     bool markedForRemoval = false;
-
 };
 
 #endif
