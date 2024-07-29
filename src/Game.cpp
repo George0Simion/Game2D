@@ -1,4 +1,5 @@
 #include "Game.h"
+#include <iostream>
 
 /* Constructor and Destructor */
 Game::Game() : window(nullptr), renderer(nullptr), isRunning(false), player(nullptr), world(nullptr) {}
@@ -18,7 +19,6 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
         isRunning = true;
     } else {
         isRunning = false;
-        printf("pula");
     }
 
     if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {                         /* Check error for the image */
@@ -171,6 +171,22 @@ void Game::processInput() {
     }
 }
 
+void Game::updateEnemySpellAnimation(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities) {
+    for (const auto& entity : entities) {
+        if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
+            if (enemy->getAction() == Entity::Spellcasting && !enemy->isSpellActive()) {
+                enemy->setSpellTarget(player->getX(), player->getY());
+            }
+            enemy->updateSpellPosition(deltaTime, entities);
+
+            // Ensure the enemy's texture is restored after spellcasting
+            if (enemy->getAction() == Entity::Spellcasting && !enemy->isSpellActive()) {
+                enemy->setAction(Entity::Walking); // Set back to walking after spellcasting
+            }
+        }
+    }
+}
+
 void Game::update() {
     Uint32 currentTime = SDL_GetTicks();
     deltaTime = (currentTime - lastTime) / 1000.0f;
@@ -183,24 +199,27 @@ void Game::update() {
     if (player->getIsDead()) {
         player->update(deltaTime, entities, *this);
         if (isPlayerDeathAnimationFinished() && currentTime - deathTime >= DEATH_DELAY) {
-            menu->setState(Menu::RESPAWN_MENU);  // Show the respawn menu
+            menu->setState(Menu::RESPAWN_MENU);
             isMenuOpen = true;
         }
     } else {
         processInput();
 
-        // Update all entities
-        for (auto& entity : entities) {
+        for (size_t i = 0; i < entities.size(); ++i) {
+            auto& entity = entities[i];
+            if (entity->isMarkedForRemoval()) continue;
+
             if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
-                enemy->updateBehavior(deltaTime, *player);
+                enemy->updateBehavior(deltaTime, *player, entities);
+
+            } else if (Player* playerEntity = dynamic_cast<Player*>(entity.get())) {
+                playerEntity->update(deltaTime, entities, *this);
             }
-            entity->update(deltaTime);
         }
 
-        // Update spell animation and check for collisions
         updateSpellAnimation(deltaTime, entities);
+        updateEnemySpellAnimation(deltaTime, entities);
 
-        // Handle arrow collisions and update positions
         for (auto& entity : entities) {
             if (entity->isArrowActive()) {
                 SDL_Rect arrowRect = entity->getArrowFrame();
@@ -215,6 +234,7 @@ void Game::update() {
                             entity->shootArrow(Entity::Up); // Deactivate the arrow by resetting its position
                             break; // Exit the inner loop to prevent multiple hits in one frame
                         } else if (Player* player = dynamic_cast<Player*>(otherEntity.get())) {
+                            player->updateArrowPosition(deltaTime, entities);
                             applyDamage(*entity, *player, Player::ARROW_DAMAGE); // Adjust arrow damage for player if needed
                             entity->shootArrow(Entity::Up); // Deactivate the arrow by resetting its position
                             break; // Exit the inner loop to prevent multiple hits in one frame
@@ -224,9 +244,11 @@ void Game::update() {
             }
         }
 
-        // Check for collisions and resolve them
         for (size_t i = 0; i < entities.size(); ++i) {
+            if (entities[i]->isMarkedForRemoval()) continue;
             for (size_t j = i + 1; j < entities.size(); ++j) {
+                if (entities[j]->isMarkedForRemoval()) continue;
+
                 if (Entity::checkCollision(entities[i]->getBoundingBox(), entities[j]->getBoundingBox())) {
                     if (Player* player = dynamic_cast<Player*>(entities[i].get())) {
                         if (Enemy* enemy = dynamic_cast<Enemy*>(entities[j].get())) {
@@ -241,7 +263,7 @@ void Game::update() {
             }
         }
 
-        // Remove entities that are marked for removal
+        removeDeadEntities();
         entities.erase(std::remove_if(entities.begin(), entities.end(),
                                       [](const std::unique_ptr<Entity>& entity) {
                                           return entity->isMarkedForRemoval();
@@ -249,41 +271,19 @@ void Game::update() {
 
         float playerX = player->getX();
         float playerY = player->getY();
-
-        int deadZoneWidth = 1680;
-        int deadZoneHeight = 900;
-
-        float camX = camera.x + camera.w / 2;
-        float camY = camera.y + camera.h / 2;
-
-        float deadZoneLeft = camX - deadZoneWidth / 2;
-        float deadZoneRight = camX + deadZoneWidth / 2;
-        float deadZoneTop = camY - deadZoneHeight / 2;
-        float deadZoneBottom = camY + deadZoneHeight / 2;
-
-        if (playerX < deadZoneLeft) {
-            camera.x = playerX - (camera.w - deadZoneWidth) / 2;
-        }
-        if (playerX > deadZoneRight) {
-            camera.x = playerX - (camera.w + deadZoneWidth) / 2;
-        }
-        if (playerY < deadZoneTop) {
-            camera.y = playerY - (camera.h - deadZoneHeight) / 2;
-        }
-        if (playerY > deadZoneBottom) {
-            camera.y = playerY - (camera.h + deadZoneHeight) / 2;
-        }
-
-        camX = camera.x + camera.w / 2;
-        camY = camera.y + camera.h / 2;
-
-        deadZoneLeft = camX - deadZoneWidth / 2;
-        deadZoneRight = camX + deadZoneWidth / 2;
-        deadZoneTop = camY - deadZoneHeight / 2;
-        deadZoneBottom = camY + deadZoneHeight / 2;
+        updateCamera(playerX, playerY);
 
         world->update(camera.x + camera.w / 2, camera.y + camera.h / 2);
     }
+}
+
+void Game::removeDeadEntities() {
+    for (Entity* entity : entitiesToRemove) {
+            auto it = std::remove_if(entities.begin(), entities.end(),
+                                    [entity](const std::unique_ptr<Entity>& e) { return e.get() == entity; });
+            entities.erase(it, entities.end());
+        }
+        entitiesToRemove.clear();
 }
 
 void Game::resolveCollision(Player& player, Enemy& enemy) {
@@ -362,15 +362,40 @@ bool Game::isPlayerDeathAnimationFinished() const {
     return player->getIsDead() && player->isDeathAnimationFinished();
 }
 
+void Game::updateCamera(float playerX, float playerY) {
+    int deadZoneWidth = 1680;
+    int deadZoneHeight = 900;
+
+    float camX = camera.x + camera.w / 2;
+    float camY = camera.y + camera.h / 2;
+
+    float deadZoneLeft = camX - deadZoneWidth / 2;
+    float deadZoneRight = camX + deadZoneWidth / 2;
+    float deadZoneTop = camY - deadZoneHeight / 2;
+    float deadZoneBottom = camY + deadZoneHeight / 2;
+
+    if (playerX < deadZoneLeft) {
+        camera.x = playerX - (camera.w - deadZoneWidth) / 2;
+    }
+    if (playerX > deadZoneRight) {
+        camera.x = playerX - (camera.w + deadZoneWidth) / 2;
+    }
+    if (playerY < deadZoneTop) {
+        camera.y = playerY - (camera.h - deadZoneHeight) / 2;
+    }
+    if (playerY > deadZoneBottom) {
+        camera.y = playerY - (camera.h + deadZoneHeight) / 2;
+    }
+}
+
 void Game::applyDamage(Entity& attacker, Entity& target, int damage) {
     target.takeDamage(damage);
     if (!target.isAlive()) {
         if (Player* player = dynamic_cast<Player*>(&target)) {
             player->setIsDead(true);
-            deathTime = SDL_GetTicks();  // Record the time of death
-            // entitiesToRemove.push_back(player);
+            deathTime = SDL_GetTicks();
+
         } else if (Enemy* enemy = dynamic_cast<Enemy*>(&target)) {
-            // Mark the enemy for removal
             entitiesToRemove.push_back(&target);
         }
     }
@@ -446,7 +471,13 @@ void Game::render() {
 
         // Render the spell if active
         if (entity->isSpellActive()) {
-            SDL_Rect spellSrcRect = entity->getSpellFrame();
+            SDL_Rect spellSrcRect;
+            if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
+                spellSrcRect = enemy->getSpellFrameForEnemy();
+            } else {
+                spellSrcRect = entity->getSpellFrame();
+            }
+
             SDL_Rect spellDestRect = {
                 static_cast<int>(entity->getSpellX()) - camera.x,
                 static_cast<int>(entity->getSpellY()) - camera.y,

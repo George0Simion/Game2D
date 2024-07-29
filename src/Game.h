@@ -17,7 +17,7 @@
 class Game {
 public:
     Game();
-    ~Game();
+    ~Game();                                                                                    /* Constructor and deconstructor */
 
     void init(const char* title, int width, int height, bool fullscreen);
     void handleEvents();
@@ -26,46 +26,43 @@ public:
     void clean();
     bool running() { return isRunning; }
     void resetGame();
+    void applyDamage(Entity& attacker, Entity& target, int damage);
+    bool isPlayerDeathAnimationFinished() const;
+    void removeDeadEntities();                                                                  /* Game thods */
+    void updateCamera(float playerX, float playerY);
 
     bool isRunning;
-    bool isMenuOpen;
+    bool isMenuOpen;                                                                            /* Window sem - variables */
 
     SDL_Window* window;
-    SDL_Renderer* renderer;
-
-    void applyDamage(Entity& attacker, Entity& target, int damage);
-
-    bool isPlayerDeathAnimationFinished() const;
+    SDL_Renderer* renderer;                                                                     /* Window variables */
 
 private:
     Uint32 lastTime;
-    float deltaTime;
+    float deltaTime;                                                                            /* Time variables for smooth movement */
 
     Uint32 deathTime;
-    const Uint32 DEATH_DELAY = 2000;
+    const Uint32 DEATH_DELAY = 2000;                                                            /* Death dealy time for the death animation */
 
     std::vector<Entity*> entitiesToRemove;
-    std::vector<std::unique_ptr<Entity>> entities;
+    std::vector<std::unique_ptr<Entity>> entities;                                              /* Alive and dead entities */
+
     SDL_Texture* loadTexture(const char* fileName);
+    SDL_Texture* spriteSheet;                                                                   /* Texture variables */
 
     Player* player;
     Menu* menu;
     World* world;
-
-    SDL_Rect camera;
+    SDL_Rect camera;                                                                           /* Player, menu and world variables */
 
     void processInput();
-    SDL_Texture* spriteSheet;
 
     void spawnEnemy();
-
     void resolveCollision(Player& player, Enemy& enemy);
     void adjustPositionOnCollision(Player& player, Enemy& enemy);
-
     void renderHealthBar(int x, int y, int currentHealth, int maxHealth);
-
-    // Update the method signature
     void updateSpellAnimation(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities);
+    void updateEnemySpellAnimation(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities); 
 
     friend class Player;
 };

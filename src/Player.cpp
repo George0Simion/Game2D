@@ -1,8 +1,72 @@
 #include "Player.h"
-#include "Game.h" // Include Game.h to use Game class
+#include "Game.h"
 
 Player::Player(float p_x, float p_y, SDL_Texture* p_tex, int numFrames, float animationSpeed)
     : Entity(p_x, p_y, p_tex, numFrames, animationSpeed), isDead(false), deathAnimationFinished(false) {}
+
+void Player::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities) {
+    if (spellActive) {
+        Uint32 currentTime = SDL_GetTicks();
+        if (currentTime - spellStartTime > spellDuration) {
+            deactivateSpell();
+            return;
+        }
+
+        // Update target position more frequently to ensure smooth tracking
+        Enemy* closestEnemy = nullptr;
+        float minDistance = std::numeric_limits<float>::max();
+        for (const auto& entity : entities) {
+            if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
+                float distance = std::hypot(spellX - enemy->getX(), spellY - enemy->getY());
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestEnemy = enemy;
+                }
+            }
+        }
+        if (closestEnemy) {
+            spellTargetX = closestEnemy->getX();
+            spellTargetY = closestEnemy->getY();
+        }
+
+        float dx = spellTargetX - spellX;
+        float dy = spellTargetY - spellY;
+        float distance = std::hypot(dx, dy);
+
+        if (distance > 5.0f) {
+            float angle = atan2(dy, dx);
+            float curve = sin(SDL_GetTicks() * spellCurveFactor);
+
+            float controlPointX = (spellX + spellTargetX) / 2 + curve * 50; // Adding a control point for curve
+            float controlPointY = (spellY + spellTargetY) / 2 + curve * 50;
+
+            // Interpolating positions for smooth, curved movement
+            float t = spellSpeed * deltaTime / distance; // Parametric time
+            spellX = (1 - t) * (1 - t) * spellX + 2 * (1 - t) * t * controlPointX + t * t * spellTargetX;
+            spellY = (1 - t) * (1 - t) * spellY + 2 * (1 - t) * t * controlPointY + t * t * spellTargetY;
+        } else {
+            deactivateSpell();
+        }
+
+        // Check for collision with enemies
+        SDL_Rect spellRect = { static_cast<int>(spellX), static_cast<int>(spellY), FRAME_WIDTH - 20, FRAME_HEIGHT - 20 }; // Reduced collision box size
+        for (auto& entity : entities) {
+            if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
+                SDL_Rect enemyBoundingBox = enemy->getBoundingBox();
+                if (SDL_HasIntersection(&spellRect, &enemyBoundingBox)) {
+                    enemy->takeDamage(Player::SPELL_DAMAGE);
+                    if (!enemy->isAlive()) {
+                        // Mark the enemy for removal
+                        enemy->markForRemoval();
+                    }
+
+                    deactivateSpell();
+                    break;
+                }
+            }
+        }
+    }
+}
 
 void Player::handleInput(const SDL_Event& event) {
     if (isDead && deathAnimationFinished) return;
@@ -15,13 +79,12 @@ void Player::handleInput(const SDL_Event& event) {
                 setAttackStartTime(SDL_GetTicks());
                 setAttackDelay(200);
                 setDamageApplied(false);
-            } else if (event.key.keysym.sym == SDLK_q && !isMoving()) { // Ensure the player is idle
+            } else if (event.key.keysym.sym == SDLK_q && !isMoving()) {
                 setAction(Spellcasting);
                 startAnimation();
                 setAttackStartTime(SDL_GetTicks());
                 setAttackDelay(500);
                 setDamageApplied(false);
-                // Set spell position
                 setSpellTarget(x + FRAME_WIDTH / 2, y - 40);
                 spellStartTime = SDL_GetTicks();
             } else if (event.key.keysym.sym == SDLK_LSHIFT || event.key.keysym.sym == SDLK_RSHIFT) {
@@ -34,17 +97,17 @@ void Player::handleInput(const SDL_Event& event) {
             }
             break;
         case SDL_MOUSEBUTTONDOWN:
-            if (event.button.button == SDL_BUTTON_LEFT && isArrowActive() == false) {
+            if (event.button.button == SDL_BUTTON_LEFT && !isArrowActive()) {
                 setAction(Shooting);
                 startAnimation();
                 setAttackStartTime(SDL_GetTicks());
-                setAttackDelay(400); // Set delay to 300ms
+                setAttackDelay(400);
                 setDamageApplied(false);
             } else if (event.button.button == SDL_BUTTON_RIGHT) {
                 setAction(Thrusting);
                 startAnimation();
                 setAttackStartTime(SDL_GetTicks());
-                setAttackDelay(150); // Set delay to 150ms
+                setAttackDelay(150);
                 setDamageApplied(false);
             }
             break;
@@ -53,7 +116,6 @@ void Player::handleInput(const SDL_Event& event) {
                 if (getAction() == Shooting) {
                     stopAnimation();
                     shootArrow(getDirection());
-
                     if (isMoving()) {
                         setAction(Walking);
                     } else {
@@ -73,14 +135,33 @@ void Player::handleInput(const SDL_Event& event) {
     }
 }
 
+void Player::updateArrowPosition(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities) {
+    if (arrowActive) {
+        float distance = arrowSpeed * deltaTime;
+        arrowTravelDistance += distance;
+
+        switch (arrowDirection) {
+            case Up:    arrowY -= distance; break;
+            case Down:  arrowY += distance; break;
+            case Left:  arrowX -= distance; break;
+            case Right: arrowX += distance; break;
+        }
+
+        if (arrowTravelDistance >= arrowMaxDistance) {
+            arrowActive = false;
+            return;
+        }
+    }
+}
+
 void Player::update(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities, Game& game) {
     if (isDead) {
         if (!deathAnimationFinished) {
             if (getAction() != Entity::Dying) {
                 setAction(Entity::Dying);
                 startAnimation();
-                setCurrentFrameIndex(0); // Start the dying animation from the first frame
-                setNumFrames(6); // Set the number of frames for the dying animation
+                setCurrentFrameIndex(0);
+                setNumFrames(6);
             }
 
             setAnimationTimer(getAnimationTimer() + deltaTime);
@@ -90,13 +171,12 @@ void Player::update(float deltaTime, std::vector<std::unique_ptr<Entity>>& entit
 
                 SDL_Rect frame = getCurrentFrame();
                 frame.x = getCurrentFrameIndex() * FRAME_WIDTH;
-                frame.y = 24 * FRAME_HEIGHT; // Assuming row 24 for dying animation
+                frame.y = 24 * FRAME_HEIGHT;
                 setCurrentFrame(frame);
 
                 if (getCurrentFrameIndex() == getNumFrames() - 1) {
-                    // Stop the animation after the last frame
                     stopAnimation();
-                    setDeathAnimationFinished(true); // Mark the death animation as finished
+                    setDeathAnimationFinished(true);
                 }
             }
         }
@@ -121,10 +201,6 @@ void Player::update(float deltaTime, std::vector<std::unique_ptr<Entity>>& entit
                         setDamageApplied(true);
                     }
                 }
-            }
-
-            if (isSpellActive()) {
-                updateSpellPosition(deltaTime, entities);
             }
         }
     }

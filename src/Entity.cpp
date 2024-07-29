@@ -1,25 +1,41 @@
 #include "Entity.h"
 #include "Enemy.h"
+#include <iostream>
 
 const int FRAME_WIDTH = 64;
 const int FRAME_HEIGHT = 64;
 
 Entity::Entity(float p_x, float p_y, SDL_Texture* p_tex, int p_numFrames, float p_animationSpeed)
-: x(p_x), y(p_y), tex(p_tex), numFrames(p_numFrames), animationSpeed(p_animationSpeed), arrowActive(false), spellActive(false), arrowSpeed(400.0f), spellSpeed(200.0f), spellCurveFactor(0.1f), arrowMaxDistance(800.0f), arrowTravelDistance(0.0f), moving(false), running(false), direction(Down), action(Walking), health(100) { // Initialize health
+: x(p_x), y(p_y), tex(p_tex), numFrames(p_numFrames), animationSpeed(p_animationSpeed), arrowActive(false), spellActive(false), arrowSpeed(400.0f), spellSpeed(200.0f), spellCurveFactor(0.1f), arrowMaxDistance(800.0f), arrowTravelDistance(0.0f), moving(false), running(false), direction(Down), action(Walking), health(100) {
     currentFrame = {0, 0, FRAME_WIDTH, FRAME_HEIGHT};
 }
 
-bool Entity::isMarkedForRemoval() const {
-    return markedForRemoval;
+void Entity::takeDamage(int damage) {
+    health -= damage;
+    if (health <= 0) {
+        health = 0;
+        // markForRemoval();
+        std::cout << "Entity marked for removal" << std::endl;
+    }
 }
 
-void Entity::markForRemoval() {
-    markedForRemoval = true;
-}
-
-// Define the handleInput method in the base Entity class
 void Entity::handleInput(const SDL_Event& event) {
     // Base class method is empty because it's meant to be overridden by derived classes
+}
+
+void Entity::setSpellRow(int row) {
+    int spellRow = row;
+    int spellFrameIndex = (SDL_GetTicks() / 50) % 6; // Assuming 6 frames for the spell animation
+    currentFrame = {spellFrameIndex * FRAME_WIDTH, spellRow * FRAME_HEIGHT, FRAME_WIDTH, FRAME_HEIGHT};
+}
+
+SDL_Rect Entity::getSpellFrameForEnemy() const {
+    if (spellActive) {
+        int spellRow = 13; // Row for the enemy's spell animation
+        int spellFrameIndex = (SDL_GetTicks() / 50) % 6; // Assuming 6 frames for the spell animation
+        return {spellFrameIndex * FRAME_WIDTH, spellRow * FRAME_HEIGHT, FRAME_WIDTH, FRAME_HEIGHT};
+    }
+    return currentFrame;
 }
 
 void Entity::setSpellTarget(float targetX, float targetY) {
@@ -32,88 +48,7 @@ void Entity::setSpellTarget(float targetX, float targetY) {
     spellDuration = 4000;
 }
 
-void Entity::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities) {
-    if (spellActive) {
-        Uint32 currentTime = SDL_GetTicks();
-        if (currentTime - spellStartTime > spellDuration) {
-            deactivateSpell();
-            return;
-        }
-
-        // Update target position more frequently to ensure smooth tracking
-        Enemy* closestEnemy = nullptr;
-        float minDistance = std::numeric_limits<float>::max();
-        for (auto& entity : entities) {
-            if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
-                float distance = std::hypot(spellX - enemy->getX(), spellY - enemy->getY());
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    closestEnemy = enemy;
-                }
-            }
-        }
-        if (closestEnemy) {
-            spellTargetX = closestEnemy->getX();
-            spellTargetY = closestEnemy->getY();
-        }
-
-        float dx = spellTargetX - spellX;
-        float dy = spellTargetY - spellY;
-        float distance = std::hypot(dx, dy);
-
-        if (distance > 5.0f) {
-            float angle = atan2(dy, dx);
-            float curve = sin(SDL_GetTicks() * spellCurveFactor);
-
-            float controlPointX = (spellX + spellTargetX) / 2 + curve * 50;
-            float controlPointY = (spellY + spellTargetY) / 2 + curve * 50;
-
-            // Interpolating positions for smooth, curved movement
-            /* Curbe Bezier patratice */
-            float t = spellSpeed * deltaTime / distance; // Parametric time
-            spellX = (1 - t) * (1 - t) * spellX + 2 * (1 - t) * t * controlPointX + t * t * spellTargetX;
-            spellY = (1 - t) * (1 - t) * spellY + 2 * (1 - t) * t * controlPointY + t * t * spellTargetY;
-        } else {
-            deactivateSpell();
-        }
-
-        // Check for collision with enemies
-        SDL_Rect spellRect = { static_cast<int>(spellX), static_cast<int>(spellY), FRAME_WIDTH - 20, FRAME_HEIGHT - 20 }; // Reduced collision box size
-        for (auto& entity : entities) {
-            if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
-                SDL_Rect enemyBoundingBox = enemy->getBoundingBox();
-                if (SDL_HasIntersection(&spellRect, &enemyBoundingBox)) {
-                    enemy->takeDamage(Player::SPELL_DAMAGE);
-                    if (!enemy->isAlive()) {
-                        // Mark the enemy for removal
-                        enemy->markForRemoval();
-                    }
-                    deactivateSpell();
-                    break;
-                }
-            }
-        }
-    }
-}
-
-void Entity::deactivateSpell() {
-    spellActive = false;
-}
-
-bool Entity::isSpellActive() const {
-    return spellActive;
-}
-
-float Entity::getSpellX() const {
-    return spellX;
-}
-
-float Entity::getSpellY() const {
-    return spellY;
-}
-
 SDL_Rect Entity::getSpellFrame() const {
-    // Assuming the spell animation frames are in a specific row in the sprite sheet
     if (spellActive) {
         int spellRow = 25; // Adjust as per your sprite sheet
         int spellFrameIndex = (SDL_GetTicks() / 50) % 6; // Assuming 6 frames for the spell animation
@@ -158,55 +93,6 @@ SDL_Rect Entity::getAttackBoundingBox() const {
     return boundingBox;
 }
 
-int Entity::getThrustRange() const {
-    return 30; // Default thrust range for generic entities
-}
-
-int Entity::getHealth() const {
-    return health;
-}
-
-void Entity::setHealth(int health) {
-    this->health = health;
-}
-
-bool Entity::isAlive() const {
-    return health > 0;
-}
-
-void Entity::takeDamage(int damage) {
-    health -= damage;
-    if (health < 0) {
-        health = 0;
-        markForRemoval();
-    }
-}
-
-bool Entity::getDamageApplied() const {
-    return damageApplied;
-}
-
-void Entity::setDamageApplied(bool value) {
-    damageApplied = value;
-}
-
-
-Uint32 Entity::getAttackStartTime() const {
-    return attackStartTime;
-}
-
-void Entity::setAttackStartTime(Uint32 time) {
-    attackStartTime = time;
-}
-
-Uint32 Entity::getAttackDelay() const {
-    return attackDelay;
-}
-
-void Entity::setAttackDelay(Uint32 delay) {
-    attackDelay = delay;
-}
-
 SDL_Rect Entity::getBoundingBox() const {
     SDL_Rect boundingBox = { static_cast<int>(x), static_cast<int>(y), FRAME_WIDTH, FRAME_HEIGHT };
 
@@ -214,26 +100,26 @@ SDL_Rect Entity::getBoundingBox() const {
         switch (direction) {
             case Up:
             case Down:
-                boundingBox.y -= FRAME_HEIGHT / 4; // Adjust starting position
-                boundingBox.h += FRAME_HEIGHT / 2; // Increase height
+                boundingBox.y -= FRAME_HEIGHT / 4;
+                boundingBox.h += FRAME_HEIGHT / 2;
                 break;
             case Left:
             case Right:
-                boundingBox.x -= FRAME_WIDTH / 4; // Adjust starting position
-                boundingBox.w += FRAME_WIDTH / 2; // Increase width
+                boundingBox.x -= FRAME_WIDTH / 4;
+                boundingBox.w += FRAME_WIDTH / 2;
                 break;
         }
     } else if (action == Thrusting) {
         switch (direction) {
             case Up:
             case Down:
-                boundingBox.y -= FRAME_HEIGHT / 8; // Adjust starting position
-                boundingBox.h += FRAME_HEIGHT / 4; // Increase height slightly
+                boundingBox.y -= FRAME_HEIGHT / 8;
+                boundingBox.h += FRAME_HEIGHT / 4;
                 break;
             case Left:
             case Right:
-                boundingBox.x -= FRAME_WIDTH / 8; // Adjust starting position
-                boundingBox.w += FRAME_WIDTH / 4; // Increase width slightly
+                boundingBox.x -= FRAME_WIDTH / 8;
+                boundingBox.w += FRAME_WIDTH / 4;
                 break;
         }
     }
@@ -241,12 +127,6 @@ SDL_Rect Entity::getBoundingBox() const {
     return boundingBox;
 }
 
-float Entity::getX() {
-    return x;
-}
-float Entity::getY() {
-    return y;
-}
 void Entity::setX(float p_x) {
     if (p_x != x) {
         x = p_x;
@@ -263,12 +143,6 @@ void Entity::setY(float p_y) {
         stopAnimation();
     }
 }
-SDL_Texture* Entity::getTex() {
-    return tex;
-}
-SDL_Rect Entity::getCurrentFrame() {
-    return currentFrame;
-}
 
 SDL_Rect Entity::getArrowFrame() const {
     if (arrowActive) {
@@ -282,18 +156,6 @@ SDL_Rect Entity::getArrowFrame() const {
         return {0, FRAME_HEIGHT * arrowRowOffset, FRAME_WIDTH, FRAME_HEIGHT};
     }
     return currentFrame;
-}
-
-void Entity::startAnimation() {
-    moving = true;
-}
-
-void Entity::stopAnimation() {
-    moving = false;
-}
-
-void Entity::setDirection(Direction dir) {
-    direction = dir;
 }
 
 void Entity::setAction(Action act) {
@@ -343,10 +205,9 @@ void Entity::update(float deltaTime) {
             animationTimer = 0.0f;
             currentFrameIndex = (currentFrameIndex + 1) % numFrames;
             currentFrame.x = currentFrameIndex * FRAME_WIDTH;
-            currentFrame.y = 24 * FRAME_HEIGHT; // Assuming row 24 for dying animation
+            currentFrame.y = 24 * FRAME_HEIGHT;
 
             if (currentFrameIndex == numFrames - 1) {
-                // Animation finished
                 stopAnimation();
             }
         }
@@ -412,21 +273,7 @@ int Entity::getActionOffset() const {
     return actionOffset;
 }
 
-bool Entity::isMoving() const {
-    return moving;
-}
-
-Entity::Action Entity::getAction() const {
-    return action;
-}
-
-Entity::Direction Entity::getDirection() const {
-    return direction;
-}
-
 void Entity::shootArrow(Direction dir) {
-    //if (arrowActive) return;
-
     if (!arrowActive) {
         arrowActive = true;
         float xOffset = 0;
@@ -455,73 +302,134 @@ void Entity::shootArrow(Direction dir) {
         arrowY = y + yOffset;
         arrowDirection = dir;
         arrowTravelDistance = 0.0f;
-
     } else {
         arrowActive = false;
     }
 }
 
+int Entity::getThrustRange() const {
+    return 30;
+}
+void Entity::deactivateSpell() {
+    spellActive = false;
+}
+bool Entity::isSpellActive() const {
+    return spellActive;
+}
+float Entity::getSpellX() const {
+    return spellX;
+}
+float Entity::getSpellY() const {
+    return spellY;
+}
+bool Entity::isMarkedForRemoval() const {
+    return markedForRemoval;
+}
+void Entity::markForRemoval() {
+    markedForRemoval = true;
+}
+int Entity::getHealth() const {
+    return health;
+}
+void Entity::setHealth(int health) {
+    this->health = health;
+}
+bool Entity::isAlive() const {
+    return health > 0;
+}
+bool Entity::getDamageApplied() const {
+    return damageApplied;
+}
+void Entity::setDamageApplied(bool value) {
+    damageApplied = value;
+}
+Uint32 Entity::getAttackStartTime() const {
+    return attackStartTime;
+}
+void Entity::setAttackStartTime(Uint32 time) {
+    attackStartTime = time;
+}
+Uint32 Entity::getAttackDelay() const {
+    return attackDelay;
+}
+void Entity::setAttackDelay(Uint32 delay) {
+    attackDelay = delay;
+}
+float Entity::getX() {
+    return x;
+}
+float Entity::getY() {
+    return y;
+}
+SDL_Texture* Entity::getTex() {
+    return tex;
+}
+SDL_Rect Entity::getCurrentFrame() {
+    return currentFrame;
+}
+void Entity::startAnimation() {
+    moving = true;
+}
+void Entity::stopAnimation() {
+    moving = false;
+}
+void Entity::setDirection(Direction dir) {
+    direction = dir;
+}
+bool Entity::isMoving() const {
+    return moving;
+}
+Entity::Action Entity::getAction() const {
+    return action;
+}
+Entity::Direction Entity::getDirection() const {
+    return direction;
+}
 void Entity::setRunning(bool running) {
     this->running = running;
 }
-
 bool Entity::isRunning() const {
     return running;
 }
-
 bool Entity::isArrowActive() const {
     return arrowActive;
 }
-
 float Entity::getArrowX() const {
     return arrowX;
 }
-
 float Entity::getArrowY() const {
     return arrowY;
 }
-
-// Protected getters and setters
 float Entity::getAnimationTimer() const {
     return animationTimer;
 }
-
 void Entity::setAnimationTimer(float timer) {
     animationTimer = timer;
 }
-
 int Entity::getCurrentFrameIndex() const {
     return currentFrameIndex;
 }
-
 void Entity::setCurrentFrameIndex(int index) {
     currentFrameIndex = index;
 }
-
 SDL_Rect& Entity::getCurrentFrameRef() {
     return currentFrame;
 }
-
 bool Entity::isEntityMoving() const {
     return moving;
 }
-
 bool Entity::isEntityRunning() const {
     return running;
 }
-
 float Entity::getAnimationSpeed() const {
     return animationSpeed;
 }
-
 int Entity::getNumFrames() const {
     return numFrames;
 }
-
 void Entity::setNumFrames(int numFrames) {
     this->numFrames = numFrames;
 }
-
 void Entity::setCurrentFrame(const SDL_Rect& frame) {
     currentFrame = frame;
 }

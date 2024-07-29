@@ -1,5 +1,3 @@
-// Entity.h
-
 #ifndef ENTITY_H
 #define ENTITY_H
 
@@ -10,7 +8,7 @@
 #include <memory>
 #include <limits>
 
-class Enemy; // Forward declaration
+class Enemy;
 
 class Entity {
 public:
@@ -29,7 +27,7 @@ public:
     void setCurrentFrame(const SDL_Rect& frame);
 
     virtual void update(float deltaTime);
-    virtual void handleInput(const SDL_Event& event); // Make handleInput virtual
+    virtual void handleInput(const SDL_Event& event);
     void startAnimation();
     void stopAnimation();
     void setDirection(Direction dir);
@@ -52,10 +50,7 @@ public:
     virtual int getThrustRange() const;
     virtual SDL_Rect getCollisionBoundingBox() const;
 
-    static bool checkCollision(const SDL_Rect& a, const SDL_Rect& b) {
-        return SDL_HasIntersection(&a, &b);
-    }
-
+    static bool checkCollision(const SDL_Rect& a, const SDL_Rect& b) { return SDL_HasIntersection(&a, &b); }
     static int getFrameWidth() { return FRAME_WIDTH; }
     static int getFrameHeight() { return FRAME_HEIGHT; }
 
@@ -65,18 +60,17 @@ public:
     void takeDamage(int damage);
     virtual int getMaxHealth() const = 0;
 
-    bool getDamageApplied() const; // New getter for damageApplied
-    void setDamageApplied(bool value); // New setter for damageApplied
-    Uint32 getAttackStartTime() const; // New getter for attackStartTime
-    void setAttackStartTime(Uint32 time); // New setter for attackStartTime
-    Uint32 getAttackDelay() const; // New getter for attackDelay
-    void setAttackDelay(Uint32 delay); // New setter for attackDelay
+    bool getDamageApplied() const;
+    void setDamageApplied(bool value);
+    Uint32 getAttackStartTime() const;
+    void setAttackStartTime(Uint32 time);
+    Uint32 getAttackDelay() const;
+    void setAttackDelay(Uint32 delay);
 
     void setNumFrames(int numFrames);
 
-    // New methods for spell handling
-    void setSpellTarget(float targetX, float targetY);
-    void updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities);
+    virtual void setSpellTarget(float targetX, float targetY);
+    virtual void updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities) = 0;
     bool isSpellActive() const;
     SDL_Rect getSpellFrame() const;
     float getSpellX() const;
@@ -86,8 +80,11 @@ public:
     bool isMarkedForRemoval() const;
     void markForRemoval();
 
+    void setSpellRow(int row);
+    SDL_Rect getSpellFrameForEnemy() const;
+
 protected:
-    virtual int getActionOffset() const; // New virtual method for action offset
+    virtual int getActionOffset() const;
     float getAnimationTimer() const;
     void setAnimationTimer(float timer);
     int getCurrentFrameIndex() const;
@@ -102,7 +99,7 @@ protected:
     static const int FRAME_HEIGHT = 64;
 
     bool damageApplied;
-    Uint32 attackStartTime; // New member to track the start time of the attack
+    Uint32 attackStartTime;
     Uint32 attackDelay;
 
     Direction direction;
@@ -113,6 +110,8 @@ protected:
     float spellTargetX, spellTargetY;
     float spellSpeed;
     float spellCurveFactor;
+    Uint32 spellStartTime;
+    Uint32 spellDuration;
 
     float x, y;
     bool moving;
@@ -134,9 +133,6 @@ protected:
     Direction arrowDirection;
 
     int health;
-
-    Uint32 spellStartTime;
-    Uint32 spellDuration;
 
 private:
     bool markedForRemoval = false;

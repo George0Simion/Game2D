@@ -1,34 +1,88 @@
 #include "Enemy.h"
+#include <iostream>
 
 Enemy::Enemy(float p_x, float p_y, SDL_Texture* p_tex, int numFrames, float animationSpeed)
     : Entity(p_x, p_y, p_tex, numFrames, animationSpeed), attackCooldown(0.0f), spellRange(300.0f), thrustRange(100.0f), moveSpeed(75.0f) {}
 
-void Enemy::update(float deltaTime) {
-    float actualSpeed = isRunning() ? 1.5f * moveSpeed : moveSpeed;
-    float actualAnimationSpeed = isRunning() ? getAnimationSpeed() / 1.5f : getAnimationSpeed();
 
-    if (isMoving() || getAction() != Walking) {
-        setAnimationTimer(getAnimationTimer() + deltaTime);
+void Enemy::setSpellTarget(float targetX, float targetY) {
+    spellActive = true;
+    spellX = x + FRAME_WIDTH / 2;
+    spellY = y - 10;
+    spellTargetX = targetX;
+    spellTargetY = targetY;
+    spellStartTime = SDL_GetTicks();
+    spellDuration = SPELL_DURATION;
+    setSpellRow(13);
+}
 
-        if (getAnimationTimer() >= actualAnimationSpeed) {
-            setAnimationTimer(0.0f);
-            setCurrentFrameIndex((getCurrentFrameIndex() + 1) % getNumFrames());
+void Enemy::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities) {
+    if (spellActive) {
+        Uint32 currentTime = SDL_GetTicks();
+        if (currentTime - spellStartTime > spellDuration) {
+            deactivateSpell();
+            return;
+        }
 
-            SDL_Rect& currentFrame = getCurrentFrameRef();
-            currentFrame.x = getCurrentFrameIndex() * FRAME_WIDTH;
-            currentFrame.y = (getDirection() + getActionOffset() * 4) * FRAME_HEIGHT;
+        Player* closestPlayer = nullptr;
+        float minDistance = std::numeric_limits<float>::max();
+        for (const auto& entity : entities) {
+            if (Player* player = dynamic_cast<Player*>(entity.get())) {
+                if (!player->getIsDead()) {
+                    float distance = std::hypot(spellX - player->getX(), spellY - player->getY());
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closestPlayer = player;
+                    }
+                }
+            }
+        }
+        if (closestPlayer) {
+            spellTargetX = closestPlayer->getX();
+            spellTargetY = closestPlayer->getY();
+        } else {
+            deactivateSpell();
+            return;
+        }
 
-            if ((getAction() == Slashing && getCurrentFrameIndex() == getNumFrames() - 1) ||
-                (getAction() == Spellcasting && getCurrentFrameIndex() == getNumFrames() - 1) ||
-                (getAction() == Thrusting && getCurrentFrameIndex() == getNumFrames() - 1)) {
-                stopAnimation();
-                setAction(Walking); // Ensure the enemy returns to walking after an action
+        float dx = spellTargetX - spellX;
+        float dy = spellTargetY - spellY;
+        float distance = std::hypot(dx, dy);
+
+        if (distance > 5.0f) {
+            float angle = atan2(dy, dx);
+            float curve = sin(SDL_GetTicks() * spellCurveFactor);
+
+            float controlPointX = (spellX + spellTargetX) / 2 + curve * 50; // Adding a control point for curve
+            float controlPointY = (spellY + spellTargetY) / 2 + curve * 50;
+
+            // Interpolating positions for smooth, curved movement
+            float t = (spellSpeed / 2) * deltaTime / distance; // Parametric time
+            spellX = (1 - t) * (1 - t) * spellX + 2 * (1 - t) * t * controlPointX + t * t * spellTargetX;
+            spellY = (1 - t) * (1 - t) * spellY + 2 * (1 - t) * t * controlPointY + t * t * spellTargetY;
+        } else {
+            deactivateSpell();
+        }
+
+        SDL_Rect spellRect = { static_cast<int>(spellX), static_cast<int>(spellY), FRAME_WIDTH - 20, FRAME_HEIGHT - 20 };
+        for (auto& entity : entities) {
+            if (Player* player = dynamic_cast<Player*>(entity.get())) {
+                if (!player->getIsDead()) {
+                    SDL_Rect playerBoundingBox = player->getBoundingBox();
+                    if (SDL_HasIntersection(&spellRect, &playerBoundingBox)) {
+                        player->takeDamage(SPELL_DAMAGE);
+                        deactivateSpell();
+                        break;
+                    }
+                }
             }
         }
     }
 }
 
-void Enemy::updateBehavior(float deltaTime, Player& player) {
+void Enemy::updateBehavior(float deltaTime, Player& player, std::vector<std::unique_ptr<Entity>>& entities) {
+    if (isMarkedForRemoval()) return;
+
     float distanceX = player.getX() - getX();
     float distanceY = player.getY() - getY();
     float distance = sqrt(distanceX * distanceX + distanceY * distanceY);
@@ -60,15 +114,48 @@ void Enemy::updateBehavior(float deltaTime, Player& player) {
         }
         startAnimation();
     }
+
+    updateEnemy(deltaTime, player, entities);
+}
+
+void Enemy::updateEnemy(float deltaTime, Player& player, std::vector<std::unique_ptr<Entity>>& entities) {
+    if (isMarkedForRemoval()) return;
+
+    float actualSpeed = isRunning() ? 1.5f * moveSpeed : moveSpeed;
+    float actualAnimationSpeed = isRunning() ? getAnimationSpeed() / 1.5f : getAnimationSpeed();
+
+    if (isMoving() || getAction() != Walking) {
+        setAnimationTimer(getAnimationTimer() + deltaTime);
+
+        if (getAnimationTimer() >= actualAnimationSpeed) {
+            setAnimationTimer(0.0f);
+            setCurrentFrameIndex((getCurrentFrameIndex() + 1) % getNumFrames());
+
+            SDL_Rect& currentFrame = getCurrentFrameRef();
+            currentFrame.x = getCurrentFrameIndex() * FRAME_WIDTH;
+            currentFrame.y = (getDirection() + getActionOffset() * 4) * FRAME_HEIGHT;
+
+            if ((getAction() == Slashing && getCurrentFrameIndex() == getNumFrames() - 1) ||
+                (getAction() == Spellcasting && getCurrentFrameIndex() == getNumFrames() - 1) ||
+                (getAction() == Thrusting && getCurrentFrameIndex() == getNumFrames() - 1)) {
+                stopAnimation();
+                setAction(Walking);
+            }
+        }
+    }
+
+    if (isSpellActive()) {
+        updateSpellPosition(deltaTime, entities);
+    }
 }
 
 int Enemy::getActionOffset() const {
     int actionOffset = 0;
     switch (getAction()) {
-        case Walking: actionOffset = 2; break; // Adjusted based on sprite sheet
-        case Thrusting: actionOffset = 1; break; // Adjusted based on sprite sheet
-        case Spellcasting: actionOffset = 0; break; // Adjusted based on sprite sheet
-        default: actionOffset = 2; break; // Walking, default to 1
+        case Walking: actionOffset = 2; break;
+        case Thrusting: actionOffset = 1; break;
+        case Spellcasting: actionOffset = 0; break;
+        default: actionOffset = 2; break;
     }
     return actionOffset;
 }
@@ -76,17 +163,17 @@ int Enemy::getActionOffset() const {
 void Enemy::decideAction(Player& player, float distance) {
     int randomFactor = rand() % 100;
 
-    if (distance > spellRange && randomFactor < 20) { // 20% chance to spellcast at far range
+    if (distance > spellRange && randomFactor < 20) {
         setAction(Spellcasting);
-        attackCooldown = 5.0f; // Increased cooldown for spellcasting
+        attackCooldown = 5.0f;
         setAttackStartTime(SDL_GetTicks());
-        setAttackDelay(500); // Set delay to 500ms
+        setAttackDelay(500);
         setDamageApplied(false);
-    } else if (distance <= thrustRange * 1.2 && randomFactor < 60) { // 60% chance to thrust at very close range
+    } else if (distance <= thrustRange * 1.2 && randomFactor < 60) {
         setAction(Thrusting);
         attackCooldown = 1.0f;
         setAttackStartTime(SDL_GetTicks());
-        setAttackDelay(150); // Set delay to 150ms
+        setAttackDelay(150);
         setDamageApplied(false);
     } else {
         setAction(Walking);
@@ -96,7 +183,7 @@ void Enemy::decideAction(Player& player, float distance) {
 }
 
 SDL_Rect Enemy::getAttackBoundingBox() const {
-    SDL_Rect boundingBox = Entity::getAttackBoundingBox(); // Call base class method for slashing
+    SDL_Rect boundingBox = Entity::getAttackBoundingBox();
 
     if (getAction() == Thrusting) {
         int thrustRange = getThrustRange();
@@ -116,5 +203,5 @@ SDL_Rect Enemy::getAttackBoundingBox() const {
 }
 
 int Enemy::getThrustRange() const {
-    return 60; // Thrust range for the enemy
+    return 60;
 }
