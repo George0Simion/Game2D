@@ -4,7 +4,6 @@
 Enemy::Enemy(float p_x, float p_y, SDL_Texture* p_tex, int numFrames, float animationSpeed)
     : Entity(p_x, p_y, p_tex, numFrames, animationSpeed), attackCooldown(0.0f), spellRange(300.0f), thrustRange(100.0f), moveSpeed(75.0f) {}
 
-
 void Enemy::setSpellTarget(float targetX, float targetY) {
     spellActive = true;
     spellX = x + FRAME_WIDTH / 2;
@@ -13,7 +12,7 @@ void Enemy::setSpellTarget(float targetX, float targetY) {
     spellTargetY = targetY;
     spellStartTime = SDL_GetTicks();
     spellDuration = SPELL_DURATION;
-    setSpellRow(13);
+    setAction(Spellcasting);
 }
 
 void Enemy::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities) {
@@ -53,11 +52,10 @@ void Enemy::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Ent
             float angle = atan2(dy, dx);
             float curve = sin(SDL_GetTicks() * spellCurveFactor);
 
-            float controlPointX = (spellX + spellTargetX) / 2 + curve * 50; // Adding a control point for curve
+            float controlPointX = (spellX + spellTargetX) / 2 + curve * 50;
             float controlPointY = (spellY + spellTargetY) / 2 + curve * 50;
 
-            // Interpolating positions for smooth, curved movement
-            float t = (spellSpeed / 2) * deltaTime / distance; // Parametric time
+            float t = (spellSpeed / 2) * deltaTime / distance;
             spellX = (1 - t) * (1 - t) * spellX + 2 * (1 - t) * t * controlPointX + t * t * spellTargetX;
             spellY = (1 - t) * (1 - t) * spellY + 2 * (1 - t) * t * controlPointY + t * t * spellTargetY;
         } else {

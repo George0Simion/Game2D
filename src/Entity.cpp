@@ -14,8 +14,9 @@ void Entity::takeDamage(int damage) {
     health -= damage;
     if (health <= 0) {
         health = 0;
-        // markForRemoval();
-        std::cout << "Entity marked for removal" << std::endl;
+        if (dynamic_cast<Enemy*>(this)) {
+            markForRemoval();
+        }
     }
 }
 

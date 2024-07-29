@@ -228,16 +228,15 @@ void Game::update() {
 
                 for (auto& otherEntity : entities) {
                     if (otherEntity.get() != entity.get() && Entity::checkCollision(arrowRect, otherEntity->getBoundingBox())) {
-                        // Apply damage to the target if hit by an arrow
                         if (Enemy* enemy = dynamic_cast<Enemy*>(otherEntity.get())) {
                             applyDamage(*entity, *enemy, Player::ARROW_DAMAGE);
                             entity->shootArrow(Entity::Up); // Deactivate the arrow by resetting its position
-                            break; // Exit the inner loop to prevent multiple hits in one frame
+                            break;
                         } else if (Player* player = dynamic_cast<Player*>(otherEntity.get())) {
                             player->updateArrowPosition(deltaTime, entities);
                             applyDamage(*entity, *player, Player::ARROW_DAMAGE); // Adjust arrow damage for player if needed
                             entity->shootArrow(Entity::Up); // Deactivate the arrow by resetting its position
-                            break; // Exit the inner loop to prevent multiple hits in one frame
+                            break;
                         }
                     }
                 }
@@ -264,10 +263,6 @@ void Game::update() {
         }
 
         removeDeadEntities();
-        entities.erase(std::remove_if(entities.begin(), entities.end(),
-                                      [](const std::unique_ptr<Entity>& entity) {
-                                          return entity->isMarkedForRemoval();
-                                      }), entities.end());
 
         float playerX = player->getX();
         float playerY = player->getY();
@@ -278,12 +273,10 @@ void Game::update() {
 }
 
 void Game::removeDeadEntities() {
-    for (Entity* entity : entitiesToRemove) {
-            auto it = std::remove_if(entities.begin(), entities.end(),
-                                    [entity](const std::unique_ptr<Entity>& e) { return e.get() == entity; });
-            entities.erase(it, entities.end());
-        }
-        entitiesToRemove.clear();
+    entities.erase(std::remove_if(entities.begin(), entities.end(),
+                                  [](const std::unique_ptr<Entity>& entity) {
+                                      return entity->isMarkedForRemoval();
+                                  }), entities.end());
 }
 
 void Game::resolveCollision(Player& player, Enemy& enemy) {
