@@ -35,6 +35,12 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
             printf("Failed to load font! SDL_ttf Error: %s\n", TTF_GetError());
             isRunning = false;
         }
+
+        smallFont = TTF_OpenFont("/home/simion/Desktop/3/Game2D/assets/font.ttf", 16); // Adjust the path and size as needed
+        if (!smallFont) {
+            printf("Failed to load small font! SDL_ttf Error: %s\n", TTF_GetError());
+            isRunning = false;
+        }
     }
 
     /* Loading the main character and adding it to the vector */
@@ -479,6 +485,32 @@ void Game::renderText(const char* text, int x, int y, SDL_Color color) {
     SDL_DestroyTexture(texture);
 }
 
+void Game::renderSmallText(const char* text, int x, int y, SDL_Color color) {
+    // Render the outline first
+    SDL_Color outlineColor = {0, 0, 0, 255}; // Black color for outline
+    for (int dx = -1; dx <= 1; ++dx) {
+        for (int dy = -1; dy <= 1; ++dy) {
+            if (dx != 0 || dy != 0) {
+                SDL_Surface* outlineSurface = TTF_RenderText_Solid(smallFont, text, outlineColor);
+                SDL_Texture* outlineTexture = SDL_CreateTextureFromSurface(renderer, outlineSurface);
+                SDL_Rect outlineRect = { x + dx, y + dy, outlineSurface->w, outlineSurface->h };
+                SDL_RenderCopy(renderer, outlineTexture, NULL, &outlineRect);
+                SDL_FreeSurface(outlineSurface);
+                SDL_DestroyTexture(outlineTexture);
+            }
+        }
+    }
+
+    // Render the main text
+    SDL_Surface* surface = TTF_RenderText_Solid(smallFont, text, color);
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_Rect dstRect = { x, y, surface->w, surface->h };
+    SDL_RenderCopy(renderer, texture, NULL, &dstRect);
+
+    SDL_FreeSurface(surface);
+    SDL_DestroyTexture(texture);
+}
+
 void Game::renderCooldowns() {
     if (player) {
         int y = 1000;
@@ -486,16 +518,33 @@ void Game::renderCooldowns() {
         std::unordered_map<std::string, int> abilityPositions = {
             {"Spellcasting", 820},
             {"Slashing", 900},
-            {"Shooting", 980}
+            {"Shooting", 980},
+            {"Thrusting", 1060}
         };
 
-        SDL_Color color = {255, 255, 255, 255}; // White color for text
+        std::unordered_map<std::string, std::string> keybinds = {
+            {"Spellcasting", "Q"},
+            {"Slashing", "E"},
+            {"Shooting", "RC"},
+            {"Thrusting", "LC"}
+        };
+
+        SDL_Color color = {255, 255, 255, 255}; 
+        SDL_Color keybindColor = {200, 200, 0, 255}; // Darker yellow color for keybind text
 
         for (const auto& ability : abilityPositions) {
             float cooldown = player->getCooldownRemaining(ability.first);
             if (cooldown > 0) {
                 std::string cooldownText = std::to_string(static_cast<int>(cooldown));
                 renderText(cooldownText.c_str(), ability.second, y, color);
+            }
+            std::string keybindText = keybinds[ability.first];
+
+            // Different offsets for each keybind to fine-tune their positions
+            if (ability.first == "Shooting" || ability.first == "Thrusting") {
+                renderSmallText(keybindText.c_str(), ability.second - 25, y + 38, keybindColor);
+            } else {
+                renderSmallText(keybindText.c_str(), ability.second - 14, y + 38, keybindColor);
             }
         }
     }
@@ -652,6 +701,11 @@ void Game::clean() {
     if (font) {
         TTF_CloseFont(font);
         font = nullptr;
+    }
+
+    if (smallFont) {
+        TTF_CloseFont(smallFont);
+        smallFont = nullptr;
     }
 
     delete menu;

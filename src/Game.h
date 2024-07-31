@@ -69,8 +69,10 @@ private:
     void renderHUD();
     void renderCooldowns();
     void renderText(const char* text, int x, int y, SDL_Color color);
+    void renderSmallText(const char* text, int x, int y, SDL_Color color);
 
     TTF_Font* font;
+    TTF_Font* smallFont;
 
     friend class Player;
 };
