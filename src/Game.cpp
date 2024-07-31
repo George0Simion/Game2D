@@ -46,6 +46,7 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
 
     world->update(camera.x + camera.w / 2, camera.y + camera.h / 2);
 
+    loadHUDTexture();                                                        /* Load the HUD texture */
     spawnEnemy();
 }
 
@@ -420,6 +421,95 @@ void Game::updateSpellAnimation(float deltaTime, std::vector<std::unique_ptr<Ent
     player->updateSpellPosition(deltaTime, entities);
 }
 
+void Game::loadHUDTexture() {
+    hudTexture = loadTexture("/home/simion/Desktop/3/Game2D/assets/hud.png");
+}
+
+void drawRoundedRect(SDL_Renderer* renderer, SDL_Rect rect, int radius, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
+    int x = rect.x;
+    int y = rect.y;
+    int w = rect.w;
+    int h = rect.h;
+
+    SDL_SetRenderDrawColor(renderer, r, g, b, a);
+
+    // Draw the center rectangle
+    SDL_Rect centerRect = { x + radius, y, w - 2 * radius, h };
+    SDL_RenderFillRect(renderer, &centerRect);
+
+    // Draw the side rectangles
+    SDL_Rect leftRect = { x, y + radius, radius, h - 2 * radius };
+    SDL_Rect rightRect = { x + w - radius, y + radius, radius, h - 2 * radius };
+    SDL_RenderFillRect(renderer, &leftRect);
+    SDL_RenderFillRect(renderer, &rightRect);
+
+    // Draw the corners
+    for (int woff = 0; woff < radius; woff++) {
+        for (int hoff = 0; hoff < radius; hoff++) {
+            if ((woff * woff + hoff * hoff) <= (radius * radius)) {
+                SDL_RenderDrawPoint(renderer, x + radius - woff, y + radius - hoff);
+                SDL_RenderDrawPoint(renderer, x + w - radius + woff, y + radius - hoff);
+                SDL_RenderDrawPoint(renderer, x + radius - woff, y + h - radius + hoff);
+                SDL_RenderDrawPoint(renderer, x + w - radius + woff, y + h - radius + hoff);
+            }
+        }
+    }
+}
+
+void Game::renderHUD() {
+    // Define the source rectangles for player HUD and ability HUD within the texture
+    SDL_Rect playerHudSourceRect = { 0, 0, 550, 85 }; // Coordinates and size of the player HUD in the texture
+    SDL_Rect abilityHudSourceRect = { 0, 80, 250, 150 }; // Coordinates and size of the ability HUD in the texture
+
+    // Define the destination rectangles where the HUD parts will be rendered
+    int playerHudWidth = 550;  // Width of the player HUD
+    int playerHudHeight = 125;  // Height of the player HUD
+    int abilityHudWidth = 325; // Width of the ability HUD
+    int abilityHudHeight = 100; // Height of the ability HUD
+
+    // Player HUD Position (top-left corner)
+    int playerHudX = 10;
+    int playerHudY = 10;
+    SDL_Rect playerHudDestRect = { playerHudX, playerHudY, playerHudWidth, playerHudHeight };
+
+    // Ability HUD Position (bottom middle of the screen)
+    int screenWidth = 1920; // Adjust to your screen width
+    int screenHeight = 1080; // Adjust to your screen height
+    int abilityHudX = (screenWidth / 2) - (abilityHudWidth / 2);
+    int abilityHudY = screenHeight - abilityHudHeight - 10;
+    SDL_Rect abilityHudDestRect = { abilityHudX, abilityHudY, abilityHudWidth, abilityHudHeight };
+
+    // Render player HUD
+    SDL_RenderCopy(renderer, hudTexture, &playerHudSourceRect, &playerHudDestRect);
+
+    // Render player's health in the HUD
+    int healthBarX = playerHudX + 132; // Adjust x position as needed
+    int healthBarY = playerHudY + 32; // Adjust y position as needed
+    int healthBarWidth = 155;  // Adjust as needed
+    int healthBarHeight = 18;  // Adjust as needed
+    float healthRatio = static_cast<float>(player->getHealth()) / static_cast<float>(player->getMaxHealth());
+    if (healthRatio > 0) {
+        SDL_Rect healthRect = { healthBarX, healthBarY, static_cast<int>(healthBarWidth * healthRatio), healthBarHeight };
+        // Draw the health bar with rounded corners and slightly whiter red color
+        drawRoundedRect(renderer, healthRect, 5, 255, 60, 60, 255); // Rounded corners with radius 5
+    }
+
+    // Render the green bar (placeholder)
+    int greenBarX = playerHudX + 132; // Adjust x position as needed
+    int greenBarY = playerHudY + 61; // Adjust y position as needed
+    SDL_Rect greenRect = { greenBarX, greenBarY, healthBarWidth, healthBarHeight };
+    drawRoundedRect(renderer, greenRect, 5, 34, 177, 76, 255); // Rounded corners with radius 5, green color
+
+    // Render the blue bar (placeholder)
+    int blueBarX = playerHudX + 132; // Adjust x position as needed
+    int blueBarY = playerHudY + 91; // Adjust y position as needed
+    SDL_Rect blueRect = { blueBarX, blueBarY, healthBarWidth, healthBarHeight };
+    drawRoundedRect(renderer, blueRect, 5, 0, 162, 232, 255); // Rounded corners with radius 5, blue color
+
+    // Render ability HUD
+    SDL_RenderCopy(renderer, hudTexture, &abilityHudSourceRect, &abilityHudDestRect);
+}
+
 void Game::renderHealthBar(int x, int y, int currentHealth, int maxHealth) {
     int barWidth = 100; // Width of the health bar
     int barHeight = 10; // Height of the health bar
@@ -462,7 +552,6 @@ void Game::render() {
             SDL_RenderCopy(renderer, entity->getTex(), &arrowSrcRect, &arrowDestRect);
         }
 
-        // Render the spell if active
         if (entity->isSpellActive()) {
             SDL_Rect spellSrcRect;
             if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
@@ -480,11 +569,15 @@ void Game::render() {
             SDL_RenderCopy(renderer, entity->getTex(), &spellSrcRect, &spellDestRect);
         }
 
-        // Render health bar above the entity
-        int healthBarX = destRect.x;
-        int healthBarY = destRect.y - 10; // Adjust the Y position to be above the entity
-        renderHealthBar(healthBarX, healthBarY, entity->getHealth(), entity->getMaxHealth());
+        // Render health bar above the entity if it's an enemy
+        if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
+            int healthBarX = destRect.x;
+            int healthBarY = destRect.y - 10; // Adjust the Y position to be above the enemy
+            renderHealthBar(healthBarX, healthBarY, enemy->getHealth(), enemy->getMaxHealth());
+        }
     }
+
+    renderHUD();
 
     if (isMenuOpen) {
         menu->render();
@@ -502,6 +595,11 @@ void Game::clean() {
     if (spriteSheet) {
         SDL_DestroyTexture(spriteSheet);
         spriteSheet = nullptr;
+    }
+
+    if (hudTexture) {
+        SDL_DestroyTexture(hudTexture);
+        hudTexture = nullptr;
     }
 
     delete menu;

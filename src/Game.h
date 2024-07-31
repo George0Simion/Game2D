@@ -8,6 +8,7 @@
 #include <memory>
 #include <algorithm>
 #include <limits>
+#include <cmath>
 #include "Entity.h"
 #include "Player.h"
 #include "Enemy.h"
@@ -49,6 +50,8 @@ private:
 
     SDL_Texture* loadTexture(const char* fileName);
     SDL_Texture* spriteSheet;                                                                   /* Texture variables */
+    void loadHUDTexture();
+    SDL_Texture* hudTexture; 
 
     Player* player;
     Menu* menu;
@@ -63,6 +66,7 @@ private:
     void renderHealthBar(int x, int y, int currentHealth, int maxHealth);
     void updateSpellAnimation(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities);
     void updateEnemySpellAnimation(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities); 
+    void renderHUD();
 
     friend class Player;
 };
