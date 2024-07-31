@@ -53,7 +53,7 @@ void Player::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<En
         }
 
         // Check for collision with enemies
-        SDL_Rect spellRect = { static_cast<int>(spellX), static_cast<int>(spellY), FRAME_WIDTH - 20, FRAME_HEIGHT - 20 }; // Reduced collision box size
+        SDL_Rect spellRect = { static_cast<int>(spellX), static_cast<int>(spellY), FRAME_WIDTH - 40, FRAME_HEIGHT - 40 }; // Reduced collision box size
         for (auto& entity : entities) {
             if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
                 SDL_Rect enemyBoundingBox = enemy->getBoundingBox();

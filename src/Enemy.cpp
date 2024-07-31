@@ -65,7 +65,7 @@ void Enemy::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Ent
             deactivateSpell();
         }
 
-        SDL_Rect spellRect = { static_cast<int>(spellX), static_cast<int>(spellY), FRAME_WIDTH - 20, FRAME_HEIGHT - 20 };
+        SDL_Rect spellRect = { static_cast<int>(spellX), static_cast<int>(spellY), FRAME_WIDTH - 40, FRAME_HEIGHT - 40 };
         for (auto& entity : entities) {
             if (Player* player = dynamic_cast<Player*>(entity.get())) {
                 if (!player->getIsDead()) {
