@@ -10,6 +10,31 @@ Entity::Entity(float p_x, float p_y, SDL_Texture* p_tex, int p_numFrames, float 
     currentFrame = {0, 0, FRAME_WIDTH, FRAME_HEIGHT};
 }
 
+void Entity::updateCooldowns(float deltaTime) {
+    for (auto& pair : abilityTimers) {
+        if (pair.second > 0) {
+            pair.second -= deltaTime;
+            if (pair.second < 0) {
+                pair.second = 0;
+            }
+        }
+    }
+}
+
+bool Entity::isCooldownActive(const std::string& ability) const {
+    auto it = abilityTimers.find(ability);
+    return it != abilityTimers.end() && it->second > 0;
+}
+
+float Entity::getCooldownRemaining(const std::string& ability) const {
+    auto it = abilityTimers.find(ability);
+    return it != abilityTimers.end() ? it->second : 0;
+}
+
+void Entity::setCooldown(const std::string& ability, float time) {
+    abilityTimers[ability] = time;
+}
+
 void Entity::takeDamage(int damage) {
     health -= damage;
     if (health <= 0) {

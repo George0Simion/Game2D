@@ -189,6 +189,7 @@ SimpleGame: CMakeFiles/SimpleGame.dir/src/Player.cpp.o
 SimpleGame: CMakeFiles/SimpleGame.dir/src/Enemy.cpp.o
 SimpleGame: CMakeFiles/SimpleGame.dir/build.make
 SimpleGame: /usr/lib/x86_64-linux-gnu/libSDL2_image.so
+SimpleGame: /usr/lib/x86_64-linux-gnu/libSDL2_ttf.so
 SimpleGame: CMakeFiles/SimpleGame.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/simion/Desktop/3/Game2D/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Linking CXX executable SimpleGame"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/SimpleGame.dir/link.txt --verbose=$(VERBOSE)

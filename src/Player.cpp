@@ -1,6 +1,10 @@
 #include "Player.h"
 #include "Game.h"
 
+const float Player::SPELL_COOLDOWN = 15.0f;
+const float Player::SLASH_COOLDOWN = 10.0f;
+const float Player::SHOOTING_COOLDOWN = 5.0f;
+
 Player::Player(float p_x, float p_y, SDL_Texture* p_tex, int numFrames, float animationSpeed)
     : Entity(p_x, p_y, p_tex, numFrames, animationSpeed), isDead(false), deathAnimationFinished(false) {}
 
@@ -73,13 +77,14 @@ void Player::handleInput(const SDL_Event& event) {
 
     switch (event.type) {
         case SDL_KEYDOWN:
-            if (event.key.keysym.sym == SDLK_e) {
+            if (event.key.keysym.sym == SDLK_e && !isCooldownActive("Slashing")) {
                 setAction(Slashing);
                 startAnimation();
                 setAttackStartTime(SDL_GetTicks());
                 setAttackDelay(200);
                 setDamageApplied(false);
-            } else if (event.key.keysym.sym == SDLK_q && !isMoving()) {
+                setCooldown("Slashing", SLASH_COOLDOWN);
+            } else if (event.key.keysym.sym == SDLK_q && !isMoving() && !isCooldownActive("Spellcasting")) {
                 setAction(Spellcasting);
                 startAnimation();
                 setAttackStartTime(SDL_GetTicks());
@@ -87,6 +92,7 @@ void Player::handleInput(const SDL_Event& event) {
                 setDamageApplied(false);
                 setSpellTarget(x + FRAME_WIDTH / 2, y - 40);
                 spellStartTime = SDL_GetTicks();
+                setCooldown("Spellcasting", SPELL_COOLDOWN);
             } else if (event.key.keysym.sym == SDLK_LSHIFT || event.key.keysym.sym == SDLK_RSHIFT) {
                 setRunning(true);
             }
@@ -97,12 +103,13 @@ void Player::handleInput(const SDL_Event& event) {
             }
             break;
         case SDL_MOUSEBUTTONDOWN:
-            if (event.button.button == SDL_BUTTON_LEFT && !isArrowActive()) {
+            if (event.button.button == SDL_BUTTON_LEFT && !isArrowActive() && !isCooldownActive("Shooting")) {
                 setAction(Shooting);
                 startAnimation();
                 setAttackStartTime(SDL_GetTicks());
                 setAttackDelay(400);
                 setDamageApplied(false);
+                setCooldown("Shooting", SHOOTING_COOLDOWN);
             } else if (event.button.button == SDL_BUTTON_RIGHT) {
                 setAction(Thrusting);
                 startAnimation();
@@ -154,6 +161,15 @@ void Player::updateArrowPosition(float deltaTime, std::vector<std::unique_ptr<En
     }
 }
 
+void Player::handleCooldowns(float deltaTime) {
+    updateCooldowns(deltaTime);
+
+    // Example: When the player shoots, set the shooting cooldown
+    if (isCooldownActive("Shooting")) {
+        setCooldown("Shooting", SHOOTING_COOLDOWN);
+    }
+}
+
 void Player::update(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities, Game& game) {
     if (isDead) {
         if (!deathAnimationFinished) {
@@ -182,6 +198,7 @@ void Player::update(float deltaTime, std::vector<std::unique_ptr<Entity>>& entit
         }
     } else {
         Entity::update(deltaTime);
+        updateCooldowns(deltaTime);
 
         // Check for attack damage application
         if (getAction() == Thrusting && !getDamageApplied() && (SDL_GetTicks() - getAttackStartTime() >= getAttackDelay())) {

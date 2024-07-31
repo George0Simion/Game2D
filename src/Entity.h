@@ -7,6 +7,7 @@
 #include <vector>
 #include <memory>
 #include <limits>
+#include <map>
 
 class Enemy;
 
@@ -83,9 +84,10 @@ public:
     void setSpellRow(int row);
     SDL_Rect getSpellFrameForEnemy() const;
 
-    bool tryDodge();
-    void incrementShotsTaken();
-    void resetShotsTaken();
+    virtual void updateCooldowns(float deltaTime);
+    bool isCooldownActive(const std::string& ability) const;
+    float getCooldownRemaining(const std::string& ability) const;
+    void setCooldown(const std::string& ability, float time);
 
 protected:
     virtual int getActionOffset() const;
@@ -138,8 +140,8 @@ protected:
 
     int health;
 
-    float dodgeChance;
-    int shotsTaken;
+    std::map<std::string, float> abilityCooldowns;
+    std::map<std::string, float> abilityTimers;
 
 private:
     bool markedForRemoval = false;

@@ -1,6 +1,8 @@
 #include "Enemy.h"
 #include <iostream>
 
+const float Enemy::SPELL_COOLDOWN = 10.0f;
+
 Enemy::Enemy(float p_x, float p_y, SDL_Texture* p_tex, int numFrames, float animationSpeed)
     : Entity(p_x, p_y, p_tex, numFrames, animationSpeed), attackCooldown(0.0f), spellRange(300.0f), thrustRange(100.0f), moveSpeed(75.0f) {}
 
@@ -13,6 +15,7 @@ void Enemy::setSpellTarget(float targetX, float targetY) {
     spellStartTime = SDL_GetTicks();
     spellDuration = SPELL_DURATION;
     setAction(Spellcasting);
+    spellCooldownRemaining = SPELL_COOLDOWN;
 }
 
 void Enemy::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities) {
@@ -87,6 +90,10 @@ void Enemy::updateBehavior(float deltaTime, Player& player, std::vector<std::uni
     float distanceX = player.getX() - getX();
     float distanceY = player.getY() - getY();
     float distance = sqrt(distanceX * distanceX + distanceY * distanceY);
+
+    if (spellCooldownRemaining > 0.0f) {
+        spellCooldownRemaining -= deltaTime;
+    }
 
     if (attackCooldown > 0.0f) {
         attackCooldown -= deltaTime;
@@ -164,7 +171,7 @@ int Enemy::getActionOffset() const {
 void Enemy::decideAction(Player& player, float distance) {
     int randomFactor = rand() % 100;
 
-    if (distance > spellRange && randomFactor < 20) {
+    if (distance > spellRange && randomFactor < 20 && spellCooldownRemaining <= 0.0f) {
         setAction(Spellcasting);
         attackCooldown = 5.0f;
         setAttackStartTime(SDL_GetTicks());

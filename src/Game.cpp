@@ -26,6 +26,17 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
         isRunning = false;
     }
 
+    if (TTF_Init() == -1) {
+        printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
+        isRunning = false;
+    } else {
+        font = TTF_OpenFont("/home/simion/Desktop/3/Game2D/assets/font.ttf", 32); // Adjust the path and size as needed
+        if (!font) {
+            printf("Failed to load font! SDL_ttf Error: %s\n", TTF_GetError());
+            isRunning = false;
+        }
+    }
+
     /* Loading the main character and adding it to the vector */
     SDL_Texture* tex = loadTexture("/home/simion/Desktop/3/Game2D/assets/sprite_good_arrow3.png");
     player = new Player(width / 2 - 64, height / 2 - 64, tex, 4, 0.1f);     /* Center the player */
@@ -59,7 +70,7 @@ SDL_Texture* Game::loadTexture(const char* fileName) {                      /* M
 
 void Game::spawnEnemy() {
     SDL_Texture* enemyTex = loadTexture("/home/simion/Desktop/3/Game2D/assets/enemy4.png");
-    float x = 100;
+    float x = 540;
     float y = 100;
     auto enemy = std::make_unique<Enemy>(x, y, enemyTex, 8, 0.1f);
     enemy->setHealth(Enemy::INITIAL_HEALTH);
@@ -205,6 +216,7 @@ void Game::update() {
         }
     } else {
         processInput();
+        player->updateCooldowns(deltaTime);
 
         for (size_t i = 0; i < entities.size(); ++i) {
             auto& entity = entities[i];
@@ -456,6 +468,39 @@ void drawRoundedRect(SDL_Renderer* renderer, SDL_Rect rect, int radius, Uint8 r,
     }
 }
 
+void Game::renderText(const char* text, int x, int y, SDL_Color color) {
+    SDL_Surface* surface = TTF_RenderText_Solid(font, text, color);
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+
+    SDL_Rect dstRect = { x, y, surface->w, surface->h };
+    SDL_RenderCopy(renderer, texture, NULL, &dstRect);
+
+    SDL_FreeSurface(surface);
+    SDL_DestroyTexture(texture);
+}
+
+void Game::renderCooldowns() {
+    if (player) {
+        int y = 1000;
+
+        std::unordered_map<std::string, int> abilityPositions = {
+            {"Spellcasting", 820},
+            {"Slashing", 900},
+            {"Shooting", 980}
+        };
+
+        SDL_Color color = {255, 255, 255, 255}; // White color for text
+
+        for (const auto& ability : abilityPositions) {
+            float cooldown = player->getCooldownRemaining(ability.first);
+            if (cooldown > 0) {
+                std::string cooldownText = std::to_string(static_cast<int>(cooldown));
+                renderText(cooldownText.c_str(), ability.second, y, color);
+            }
+        }
+    }
+}
+
 void Game::renderHUD() {
     // Define the source rectangles for player HUD and ability HUD within the texture
     SDL_Rect playerHudSourceRect = { 0, 0, 550, 85 }; // Coordinates and size of the player HUD in the texture
@@ -464,8 +509,8 @@ void Game::renderHUD() {
     // Define the destination rectangles where the HUD parts will be rendered
     int playerHudWidth = 550;  // Width of the player HUD
     int playerHudHeight = 125;  // Height of the player HUD
-    int abilityHudWidth = 325; // Width of the ability HUD
-    int abilityHudHeight = 100; // Height of the ability HUD
+    int abilityHudWidth = 375; // Width of the ability HUD
+    int abilityHudHeight = 125; // Height of the ability HUD
 
     // Player HUD Position (top-left corner)
     int playerHudX = 10;
@@ -508,6 +553,8 @@ void Game::renderHUD() {
 
     // Render ability HUD
     SDL_RenderCopy(renderer, hudTexture, &abilityHudSourceRect, &abilityHudDestRect);
+
+    renderCooldowns();
 }
 
 void Game::renderHealthBar(int x, int y, int currentHealth, int maxHealth) {
@@ -602,11 +649,17 @@ void Game::clean() {
         hudTexture = nullptr;
     }
 
+    if (font) {
+        TTF_CloseFont(font);
+        font = nullptr;
+    }
+
     delete menu;
     menu = nullptr;
     delete world;
     world = nullptr;
 
+    TTF_Quit();
     IMG_Quit();
     SDL_Quit();
 }

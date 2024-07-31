@@ -19,7 +19,8 @@ public:
     static const int INITIAL_HEALTH = 150;
     static const int THRUST_DAMAGE = 35;
     static const int SPELL_DAMAGE = 40;
-    static const int SPELL_DURATION = 6000; // 6 seconds duration
+    static const int SPELL_DURATION = 6000;
+    static const float SPELL_COOLDOWN;
 
     int getMaxHealth() const override { return INITIAL_HEALTH; }
 
@@ -27,13 +28,14 @@ public:
     void updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities) override;
 
 protected:
-    int getActionOffset() const override; // Override the action offset method
+    int getActionOffset() const override;
 
 private:
     float attackCooldown;
     float spellRange;
     float thrustRange;
     float moveSpeed;
+    float spellCooldownRemaining;
     void decideAction(Player& player, float distance);
 };
 

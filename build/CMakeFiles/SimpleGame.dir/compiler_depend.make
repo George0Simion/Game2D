@@ -356,6 +356,12 @@ CMakeFiles/SimpleGame.dir/src/Enemy.cpp.o: ../src/Enemy.cpp \
   /usr/include/c++/11/backward/auto_ptr.h \
   /usr/include/c++/11/pstl/glue_memory_defs.h \
   /usr/include/c++/11/pstl/execution_defs.h \
+  /usr/include/c++/11/map \
+  /usr/include/c++/11/bits/stl_tree.h \
+  /usr/include/c++/11/bits/node_handle.h \
+  /usr/include/c++/11/bits/stl_map.h \
+  /usr/include/c++/11/bits/stl_multimap.h \
+  /usr/include/c++/11/bits/erase_if.h \
   ../src/Player.h \
   /usr/include/c++/11/iostream \
   /usr/include/c++/11/ostream \
@@ -736,6 +742,12 @@ CMakeFiles/SimpleGame.dir/src/Entity.cpp.o: ../src/Entity.cpp \
   /usr/include/c++/11/backward/auto_ptr.h \
   /usr/include/c++/11/pstl/glue_memory_defs.h \
   /usr/include/c++/11/pstl/execution_defs.h \
+  /usr/include/c++/11/map \
+  /usr/include/c++/11/bits/stl_tree.h \
+  /usr/include/c++/11/bits/node_handle.h \
+  /usr/include/c++/11/bits/stl_map.h \
+  /usr/include/c++/11/bits/stl_multimap.h \
+  /usr/include/c++/11/bits/erase_if.h \
   ../src/Enemy.h \
   ../src/Player.h \
   /usr/include/c++/11/iostream \
@@ -1020,7 +1032,8 @@ CMakeFiles/SimpleGame.dir/src/Game.cpp.o: ../src/Game.cpp \
   /usr/include/SDL2/SDL_misc.h \
   /usr/include/SDL2/SDL_image.h \
   /usr/include/SDL2/SDL.h \
-  /usr/include/c++/11/vector \
+  /usr/include/SDL2/SDL_ttf.h \
+  /usr/include/c++/11/memory \
   /usr/include/c++/11/bits/allocator.h \
   /usr/include/x86_64-linux-gnu/c++/11/bits/c++allocator.h \
   /usr/include/c++/11/ext/new_allocator.h \
@@ -1031,14 +1044,6 @@ CMakeFiles/SimpleGame.dir/src/Game.cpp.o: ../src/Game.cpp \
   /usr/include/c++/11/bits/stl_uninitialized.h \
   /usr/include/c++/11/ext/alloc_traits.h \
   /usr/include/c++/11/bits/alloc_traits.h \
-  /usr/include/c++/11/bits/stl_vector.h \
-  /usr/include/c++/11/initializer_list \
-  /usr/include/c++/11/bits/stl_bvector.h \
-  /usr/include/c++/11/bits/functional_hash.h \
-  /usr/include/c++/11/bits/hash_bytes.h \
-  /usr/include/c++/11/bits/range_access.h \
-  /usr/include/c++/11/bits/vector.tcc \
-  /usr/include/c++/11/memory \
   /usr/include/c++/11/bits/stl_tempbuf.h \
   /usr/include/c++/11/bits/stl_raw_storage_iter.h \
   /usr/include/c++/11/bits/align.h \
@@ -1047,11 +1052,15 @@ CMakeFiles/SimpleGame.dir/src/Game.cpp.o: ../src/Game.cpp \
   /usr/include/c++/11/bits/unique_ptr.h \
   /usr/include/c++/11/utility \
   /usr/include/c++/11/bits/stl_relops.h \
+  /usr/include/c++/11/initializer_list \
   /usr/include/c++/11/tuple \
   /usr/include/c++/11/array \
+  /usr/include/c++/11/bits/range_access.h \
   /usr/include/c++/11/bits/invoke.h \
   /usr/include/c++/11/bits/stl_function.h \
   /usr/include/c++/11/backward/binders.h \
+  /usr/include/c++/11/bits/functional_hash.h \
+  /usr/include/c++/11/bits/hash_bytes.h \
   /usr/include/c++/11/bits/shared_ptr.h \
   /usr/include/c++/11/iosfwd \
   /usr/include/c++/11/bits/stringfwd.h \
@@ -1106,6 +1115,10 @@ CMakeFiles/SimpleGame.dir/src/Game.cpp.o: ../src/Game.cpp \
   /usr/include/c++/11/bits/node_handle.h \
   /usr/include/c++/11/bits/unordered_map.h \
   /usr/include/c++/11/bits/erase_if.h \
+  /usr/include/c++/11/vector \
+  /usr/include/c++/11/bits/stl_vector.h \
+  /usr/include/c++/11/bits/stl_bvector.h \
+  /usr/include/c++/11/bits/vector.tcc \
   ../src/Entity.h \
   /usr/include/c++/11/string \
   /usr/include/c++/11/bits/char_traits.h \
@@ -1133,6 +1146,10 @@ CMakeFiles/SimpleGame.dir/src/Game.cpp.o: ../src/Game.cpp \
   /usr/include/x86_64-linux-gnu/bits/types/error_t.h \
   /usr/include/c++/11/bits/charconv.h \
   /usr/include/c++/11/bits/basic_string.tcc \
+  /usr/include/c++/11/map \
+  /usr/include/c++/11/bits/stl_tree.h \
+  /usr/include/c++/11/bits/stl_map.h \
+  /usr/include/c++/11/bits/stl_multimap.h \
   ../src/Player.h \
   ../src/Enemy.h \
   ../src/Menu.h \
@@ -1423,7 +1440,8 @@ CMakeFiles/SimpleGame.dir/src/Menu.cpp.o: ../src/Menu.cpp \
   ../src/Game.h \
   /usr/include/SDL2/SDL_image.h \
   /usr/include/SDL2/SDL.h \
-  /usr/include/c++/11/vector \
+  /usr/include/SDL2/SDL_ttf.h \
+  /usr/include/c++/11/memory \
   /usr/include/c++/11/bits/allocator.h \
   /usr/include/x86_64-linux-gnu/c++/11/bits/c++allocator.h \
   /usr/include/c++/11/ext/new_allocator.h \
@@ -1434,14 +1452,6 @@ CMakeFiles/SimpleGame.dir/src/Menu.cpp.o: ../src/Menu.cpp \
   /usr/include/c++/11/bits/stl_uninitialized.h \
   /usr/include/c++/11/ext/alloc_traits.h \
   /usr/include/c++/11/bits/alloc_traits.h \
-  /usr/include/c++/11/bits/stl_vector.h \
-  /usr/include/c++/11/initializer_list \
-  /usr/include/c++/11/bits/stl_bvector.h \
-  /usr/include/c++/11/bits/functional_hash.h \
-  /usr/include/c++/11/bits/hash_bytes.h \
-  /usr/include/c++/11/bits/range_access.h \
-  /usr/include/c++/11/bits/vector.tcc \
-  /usr/include/c++/11/memory \
   /usr/include/c++/11/bits/stl_tempbuf.h \
   /usr/include/c++/11/bits/stl_raw_storage_iter.h \
   /usr/include/c++/11/bits/align.h \
@@ -1450,11 +1460,15 @@ CMakeFiles/SimpleGame.dir/src/Menu.cpp.o: ../src/Menu.cpp \
   /usr/include/c++/11/bits/unique_ptr.h \
   /usr/include/c++/11/utility \
   /usr/include/c++/11/bits/stl_relops.h \
+  /usr/include/c++/11/initializer_list \
   /usr/include/c++/11/tuple \
   /usr/include/c++/11/array \
+  /usr/include/c++/11/bits/range_access.h \
   /usr/include/c++/11/bits/invoke.h \
   /usr/include/c++/11/bits/stl_function.h \
   /usr/include/c++/11/backward/binders.h \
+  /usr/include/c++/11/bits/functional_hash.h \
+  /usr/include/c++/11/bits/hash_bytes.h \
   /usr/include/c++/11/bits/shared_ptr.h \
   /usr/include/c++/11/iosfwd \
   /usr/include/c++/11/bits/stringfwd.h \
@@ -1509,6 +1523,10 @@ CMakeFiles/SimpleGame.dir/src/Menu.cpp.o: ../src/Menu.cpp \
   /usr/include/c++/11/bits/node_handle.h \
   /usr/include/c++/11/bits/unordered_map.h \
   /usr/include/c++/11/bits/erase_if.h \
+  /usr/include/c++/11/vector \
+  /usr/include/c++/11/bits/stl_vector.h \
+  /usr/include/c++/11/bits/stl_bvector.h \
+  /usr/include/c++/11/bits/vector.tcc \
   ../src/Entity.h \
   /usr/include/c++/11/string \
   /usr/include/c++/11/bits/char_traits.h \
@@ -1536,6 +1554,10 @@ CMakeFiles/SimpleGame.dir/src/Menu.cpp.o: ../src/Menu.cpp \
   /usr/include/x86_64-linux-gnu/bits/types/error_t.h \
   /usr/include/c++/11/bits/charconv.h \
   /usr/include/c++/11/bits/basic_string.tcc \
+  /usr/include/c++/11/map \
+  /usr/include/c++/11/bits/stl_tree.h \
+  /usr/include/c++/11/bits/stl_map.h \
+  /usr/include/c++/11/bits/stl_multimap.h \
   ../src/Player.h \
   ../src/Enemy.h \
   ../src/World.h \
@@ -1898,7 +1920,14 @@ CMakeFiles/SimpleGame.dir/src/Player.cpp.o: ../src/Player.cpp \
   /usr/include/c++/11/backward/auto_ptr.h \
   /usr/include/c++/11/pstl/glue_memory_defs.h \
   /usr/include/c++/11/pstl/execution_defs.h \
+  /usr/include/c++/11/map \
+  /usr/include/c++/11/bits/stl_tree.h \
+  /usr/include/c++/11/bits/node_handle.h \
+  /usr/include/c++/11/bits/stl_map.h \
+  /usr/include/c++/11/bits/stl_multimap.h \
+  /usr/include/c++/11/bits/erase_if.h \
   ../src/Game.h \
+  /usr/include/SDL2/SDL_ttf.h \
   /usr/include/c++/11/algorithm \
   /usr/include/c++/11/bits/stl_algo.h \
   /usr/include/c++/11/bits/algorithmfwd.h \
@@ -1911,9 +1940,7 @@ CMakeFiles/SimpleGame.dir/src/Player.cpp.o: ../src/Player.cpp \
   /usr/include/c++/11/bits/hashtable.h \
   /usr/include/c++/11/bits/hashtable_policy.h \
   /usr/include/c++/11/bits/enable_special_members.h \
-  /usr/include/c++/11/bits/node_handle.h \
   /usr/include/c++/11/bits/unordered_map.h \
-  /usr/include/c++/11/bits/erase_if.h \
   ../src/Enemy.h \
   ../src/Menu.h \
   ../src/World.h \
@@ -2285,6 +2312,10 @@ CMakeFiles/SimpleGame.dir/src/World.cpp.o: ../src/World.cpp \
   /usr/include/c++/11/backward/auto_ptr.h \
   /usr/include/c++/11/pstl/glue_memory_defs.h \
   /usr/include/c++/11/pstl/execution_defs.h \
+  /usr/include/c++/11/map \
+  /usr/include/c++/11/bits/stl_tree.h \
+  /usr/include/c++/11/bits/stl_map.h \
+  /usr/include/c++/11/bits/stl_multimap.h \
   ../src/FastNoiseLite.h \
   /usr/include/c++/11/iostream \
   /usr/include/c++/11/ostream \
@@ -2568,7 +2599,8 @@ CMakeFiles/SimpleGame.dir/src/main.cpp.o: ../src/main.cpp \
   /usr/include/SDL2/SDL_misc.h \
   /usr/include/SDL2/SDL_image.h \
   /usr/include/SDL2/SDL.h \
-  /usr/include/c++/11/vector \
+  /usr/include/SDL2/SDL_ttf.h \
+  /usr/include/c++/11/memory \
   /usr/include/c++/11/bits/allocator.h \
   /usr/include/x86_64-linux-gnu/c++/11/bits/c++allocator.h \
   /usr/include/c++/11/ext/new_allocator.h \
@@ -2579,14 +2611,6 @@ CMakeFiles/SimpleGame.dir/src/main.cpp.o: ../src/main.cpp \
   /usr/include/c++/11/bits/stl_uninitialized.h \
   /usr/include/c++/11/ext/alloc_traits.h \
   /usr/include/c++/11/bits/alloc_traits.h \
-  /usr/include/c++/11/bits/stl_vector.h \
-  /usr/include/c++/11/initializer_list \
-  /usr/include/c++/11/bits/stl_bvector.h \
-  /usr/include/c++/11/bits/functional_hash.h \
-  /usr/include/c++/11/bits/hash_bytes.h \
-  /usr/include/c++/11/bits/range_access.h \
-  /usr/include/c++/11/bits/vector.tcc \
-  /usr/include/c++/11/memory \
   /usr/include/c++/11/bits/stl_tempbuf.h \
   /usr/include/c++/11/bits/stl_raw_storage_iter.h \
   /usr/include/c++/11/bits/align.h \
@@ -2595,11 +2619,15 @@ CMakeFiles/SimpleGame.dir/src/main.cpp.o: ../src/main.cpp \
   /usr/include/c++/11/bits/unique_ptr.h \
   /usr/include/c++/11/utility \
   /usr/include/c++/11/bits/stl_relops.h \
+  /usr/include/c++/11/initializer_list \
   /usr/include/c++/11/tuple \
   /usr/include/c++/11/array \
+  /usr/include/c++/11/bits/range_access.h \
   /usr/include/c++/11/bits/invoke.h \
   /usr/include/c++/11/bits/stl_function.h \
   /usr/include/c++/11/backward/binders.h \
+  /usr/include/c++/11/bits/functional_hash.h \
+  /usr/include/c++/11/bits/hash_bytes.h \
   /usr/include/c++/11/bits/shared_ptr.h \
   /usr/include/c++/11/iosfwd \
   /usr/include/c++/11/bits/stringfwd.h \
@@ -2654,6 +2682,10 @@ CMakeFiles/SimpleGame.dir/src/main.cpp.o: ../src/main.cpp \
   /usr/include/c++/11/bits/node_handle.h \
   /usr/include/c++/11/bits/unordered_map.h \
   /usr/include/c++/11/bits/erase_if.h \
+  /usr/include/c++/11/vector \
+  /usr/include/c++/11/bits/stl_vector.h \
+  /usr/include/c++/11/bits/stl_bvector.h \
+  /usr/include/c++/11/bits/vector.tcc \
   ../src/Entity.h \
   /usr/include/c++/11/string \
   /usr/include/c++/11/bits/char_traits.h \
@@ -2681,6 +2713,10 @@ CMakeFiles/SimpleGame.dir/src/main.cpp.o: ../src/main.cpp \
   /usr/include/x86_64-linux-gnu/bits/types/error_t.h \
   /usr/include/c++/11/bits/charconv.h \
   /usr/include/c++/11/bits/basic_string.tcc \
+  /usr/include/c++/11/map \
+  /usr/include/c++/11/bits/stl_tree.h \
+  /usr/include/c++/11/bits/stl_map.h \
+  /usr/include/c++/11/bits/stl_multimap.h \
   ../src/Player.h \
   ../src/Enemy.h \
   ../src/Menu.h \
@@ -2737,6 +2773,12 @@ CMakeFiles/SimpleGame.dir/src/main.cpp.o: ../src/main.cpp \
 /usr/include/c++/11/ostream:
 
 ../src/Player.h:
+
+/usr/include/c++/11/bits/stl_multimap.h:
+
+/usr/include/c++/11/bits/stl_tree.h:
+
+/usr/include/c++/11/map:
 
 /usr/include/c++/11/pstl/glue_memory_defs.h:
 
@@ -2960,9 +3002,9 @@ CMakeFiles/SimpleGame.dir/src/main.cpp.o: ../src/main.cpp \
 
 /usr/lib/gcc/x86_64-linux-gnu/11/include/pmmintrin.h:
 
-/usr/include/c++/11/bits/node_handle.h:
-
 /usr/include/c++/11/iostream:
+
+/usr/include/c++/11/bits/node_handle.h:
 
 /usr/include/x86_64-linux-gnu/bits/fp-fast.h:
 
@@ -3037,6 +3079,8 @@ CMakeFiles/SimpleGame.dir/src/main.cpp.o: ../src/main.cpp \
 /usr/include/x86_64-linux-gnu/bits/endianness.h:
 
 /usr/include/c++/11/tr1/modified_bessel_func.tcc:
+
+/usr/include/SDL2/SDL_ttf.h:
 
 /usr/include/inttypes.h:
 
@@ -3489,6 +3533,8 @@ CMakeFiles/SimpleGame.dir/src/main.cpp.o: ../src/main.cpp \
 /usr/lib/gcc/x86_64-linux-gnu/11/include/avx512bitalgintrin.h:
 
 /usr/include/SDL2/SDL_power.h:
+
+/usr/include/c++/11/bits/stl_map.h:
 
 /usr/include/SDL2/SDL_render.h:
 

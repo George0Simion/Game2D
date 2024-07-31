@@ -28,6 +28,7 @@ else()
     message(FATAL_ERROR "SDL2 not found!")
 endif()
 
-# Manually specify SDL2_image paths
+# Manually specify SDL2_image and SDL2_ttf paths
 include_directories(/usr/include/SDL2)
 target_link_libraries(SimpleGame /usr/lib/x86_64-linux-gnu/libSDL2_image.so)
+target_link_libraries(SimpleGame /usr/lib/x86_64-linux-gnu/libSDL2_ttf.so)

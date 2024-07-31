@@ -38,6 +38,12 @@ public:
 private:
     bool isDead;
     bool deathAnimationFinished;
+
+    void handleCooldowns(float deltaTime);
+
+    static const float SPELL_COOLDOWN;
+    static const float SLASH_COOLDOWN;
+    static const float SHOOTING_COOLDOWN;
 };
 
 #endif

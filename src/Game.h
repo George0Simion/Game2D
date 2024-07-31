@@ -4,7 +4,7 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-#include <vector>
+#include <SDL2/SDL_ttf.h>
 #include <memory>
 #include <algorithm>
 #include <limits>
@@ -67,6 +67,10 @@ private:
     void updateSpellAnimation(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities);
     void updateEnemySpellAnimation(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities); 
     void renderHUD();
+    void renderCooldowns();
+    void renderText(const char* text, int x, int y, SDL_Color color);
+
+    TTF_Font* font;
 
     friend class Player;
 };
