@@ -594,11 +594,15 @@ void Game::renderHUD() {
     SDL_Rect greenRect = { greenBarX, greenBarY, healthBarWidth, healthBarHeight };
     drawRoundedRect(renderer, greenRect, 5, 34, 177, 76, 255); // Rounded corners with radius 5, green color
 
-    // Render the blue bar (placeholder)
+    // Render the stamina bar (blue)
     int blueBarX = playerHudX + 132; // Adjust x position as needed
     int blueBarY = playerHudY + 91; // Adjust y position as needed
-    SDL_Rect blueRect = { blueBarX, blueBarY, healthBarWidth, healthBarHeight };
-    drawRoundedRect(renderer, blueRect, 5, 0, 162, 232, 255); // Rounded corners with radius 5, blue color
+    float staminaRatio = static_cast<float>(player->getStamina()) / static_cast<float>(player->getMaxStamina());
+    int blueBarWidth = static_cast<int>(healthBarWidth * staminaRatio);
+    if (blueBarWidth > 4.75) {
+        SDL_Rect blueRect = { blueBarX, blueBarY, blueBarWidth, healthBarHeight };
+        drawRoundedRect(renderer, blueRect, 5, 0, 162, 232, 255); // Rounded corners with radius 5, blue color
+    }
 
     // Render ability HUD
     SDL_RenderCopy(renderer, hudTexture, &abilityHudSourceRect, &abilityHudDestRect);

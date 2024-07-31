@@ -6,7 +6,7 @@ const float Player::SLASH_COOLDOWN = 10.0f;
 const float Player::SHOOTING_COOLDOWN = 5.0f;
 
 Player::Player(float p_x, float p_y, SDL_Texture* p_tex, int numFrames, float animationSpeed)
-    : Entity(p_x, p_y, p_tex, numFrames, animationSpeed), isDead(false), deathAnimationFinished(false) {}
+    : Entity(p_x, p_y, p_tex, numFrames, animationSpeed), isDead(false), deathAnimationFinished(false), stamina(INITIAL_STAMINA) {}
 
 void Player::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities) {
     if (spellActive) {
@@ -77,14 +77,16 @@ void Player::handleInput(const SDL_Event& event) {
 
     switch (event.type) {
         case SDL_KEYDOWN:
-            if (event.key.keysym.sym == SDLK_e && !isCooldownActive("Slashing")) {
+            if (event.key.keysym.sym == SDLK_e && !isCooldownActive("Slashing") && stamina >= 15) {
                 setAction(Slashing);
                 startAnimation();
                 setAttackStartTime(SDL_GetTicks());
                 setAttackDelay(200);
                 setDamageApplied(false);
                 setCooldown("Slashing", SLASH_COOLDOWN);
-            } else if (event.key.keysym.sym == SDLK_q && !isMoving() && !isCooldownActive("Spellcasting")) {
+                useStamina(15);
+
+            } else if (event.key.keysym.sym == SDLK_q && !isMoving() && !isCooldownActive("Spellcasting") && stamina >= 20) {
                 setAction(Spellcasting);
                 startAnimation();
                 setAttackStartTime(SDL_GetTicks());
@@ -93,6 +95,8 @@ void Player::handleInput(const SDL_Event& event) {
                 setSpellTarget(x + FRAME_WIDTH / 2, y - 40);
                 spellStartTime = SDL_GetTicks();
                 setCooldown("Spellcasting", SPELL_COOLDOWN);
+                useStamina(20);
+
             } else if (event.key.keysym.sym == SDLK_LSHIFT || event.key.keysym.sym == SDLK_RSHIFT) {
                 setRunning(true);
             }
@@ -103,19 +107,22 @@ void Player::handleInput(const SDL_Event& event) {
             }
             break;
         case SDL_MOUSEBUTTONDOWN:
-            if (event.button.button == SDL_BUTTON_LEFT && !isArrowActive() && !isCooldownActive("Shooting")) {
+            if (event.button.button == SDL_BUTTON_LEFT && !isArrowActive() && !isCooldownActive("Shooting") && stamina >= 10) {
                 setAction(Shooting);
                 startAnimation();
                 setAttackStartTime(SDL_GetTicks());
                 setAttackDelay(400);
                 setDamageApplied(false);
                 setCooldown("Shooting", SHOOTING_COOLDOWN);
-            } else if (event.button.button == SDL_BUTTON_RIGHT) {
+                useStamina(10);
+
+            } else if (event.button.button == SDL_BUTTON_RIGHT && stamina >= 5) {
                 setAction(Thrusting);
                 startAnimation();
                 setAttackStartTime(SDL_GetTicks());
                 setAttackDelay(150);
                 setDamageApplied(false);
+                useStamina(5);
             }
             break;
         case SDL_MOUSEBUTTONUP:
@@ -200,6 +207,16 @@ void Player::update(float deltaTime, std::vector<std::unique_ptr<Entity>>& entit
         Entity::update(deltaTime);
         updateCooldowns(deltaTime);
 
+        if (isRunning()) {
+            useStamina(3 * deltaTime);
+        } else {
+            regenerateStamina(deltaTime);
+        }
+
+        if (stamina <= 0) {
+            setRunning(false);
+        }
+
         // Check for attack damage application
         if (getAction() == Thrusting && !getDamageApplied() && (SDL_GetTicks() - getAttackStartTime() >= getAttackDelay())) {
             for (auto& entity : entities) {
@@ -219,6 +236,22 @@ void Player::update(float deltaTime, std::vector<std::unique_ptr<Entity>>& entit
                     }
                 }
             }
+        }
+    }
+}
+
+void Player::useStamina(float amount) {
+    stamina -= amount;
+    if (stamina < 0) {
+        stamina = 0;
+    }
+}
+
+void Player::regenerateStamina(float deltaTime) {
+    if (!isRunning()) {
+        stamina += 4 * deltaTime;
+        if (stamina > INITIAL_STAMINA) {
+            stamina = INITIAL_STAMINA;
         }
     }
 }

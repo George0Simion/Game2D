@@ -19,12 +19,14 @@ public:
     SDL_Rect getAttackBoundingBox() const override;
 
     static const int INITIAL_HEALTH = 100;
+    static const int INITIAL_STAMINA = 100;
     static const int THRUST_DAMAGE = 15;
     static const int SPELL_DAMAGE = 35;
     static const int SLASH_DAMAGE = 25;
     static const int ARROW_DAMAGE = 20;
 
     int getMaxHealth() const override { return INITIAL_HEALTH; }
+    float getMaxStamina() const { return INITIAL_STAMINA; }
 
     bool getIsDead() const { return isDead; }
     void setIsDead(bool dead) { isDead = dead; }
@@ -35,9 +37,14 @@ public:
     void setDeathAnimationFinished(bool finished) { deathAnimationFinished = finished; }
     bool isDeathAnimationFinished() const;
 
+    float getStamina() const { return stamina; }
+    void useStamina(float amount);
+    void regenerateStamina(float deltaTime);
+
 private:
     bool isDead;
     bool deathAnimationFinished;
+    float stamina;
 
     void handleCooldowns(float deltaTime);
 
