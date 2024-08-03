@@ -401,15 +401,49 @@ void Game::updateCamera(float playerX, float playerY) {
 }
 
 void Game::applyDamage(Entity& attacker, Entity& target, int damage) {
+    if (!target.isAlive()) return;
+
+    // Check if the target is facing the attacker
+    if (isFacing(target, attacker)) {
+        float dodgeChance = 0.2f;
+        if (static_cast<float>(rand()) / static_cast<float>(RAND_MAX) < dodgeChance) {
+            // Dodge successful
+            return;
+        }
+    }
+
+    // Apply damage if not dodged
     target.takeDamage(damage);
+    
+    // Handle target death
     if (!target.isAlive()) {
         if (Player* player = dynamic_cast<Player*>(&target)) {
             player->setIsDead(true);
             deathTime = SDL_GetTicks();
-
         } else if (Enemy* enemy = dynamic_cast<Enemy*>(&target)) {
             entitiesToRemove.push_back(&target);
         }
+    }
+}
+
+bool Game::isFacing(Entity& entity, Entity& target) {
+    Entity::Direction facingDirection = entity.getDirection();
+    float targetX = target.getX();
+    float targetY = target.getY();
+    float entityX = entity.getX();
+    float entityY = entity.getY();
+
+    switch (facingDirection) {
+        case Entity::Up:
+            return targetY < entityY;
+        case Entity::Down:
+            return targetY > entityY;
+        case Entity::Left:
+            return targetX < entityX;
+        case Entity::Right:
+            return targetX > entityX;
+        default:
+            return false;
     }
 }
 

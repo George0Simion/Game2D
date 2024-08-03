@@ -70,6 +70,7 @@ private:
     void renderCooldowns();
     void renderText(const char* text, int x, int y, SDL_Color color);
     void renderSmallText(const char* text, int x, int y, SDL_Color color);
+    bool isFacing(Entity& entity, Entity& target);
 
     TTF_Font* font;
     TTF_Font* smallFont;

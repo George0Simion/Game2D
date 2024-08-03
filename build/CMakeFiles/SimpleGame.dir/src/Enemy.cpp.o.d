@@ -1,7 +1,7 @@
 CMakeFiles/SimpleGame.dir/src/Enemy.cpp.o: \
- /home/simion/Desktop/3/Game2D/src/Enemy.cpp /usr/include/stdc-predef.h \
- /home/simion/Desktop/3/Game2D/src/Enemy.h \
- /home/simion/Desktop/3/Game2D/src/Entity.h /usr/include/SDL2/SDL.h \
+ /home/simion/Desktop/4/Game2D/src/Enemy.cpp /usr/include/stdc-predef.h \
+ /home/simion/Desktop/4/Game2D/src/Enemy.h \
+ /home/simion/Desktop/4/Game2D/src/Entity.h /usr/include/SDL2/SDL.h \
  /usr/include/SDL2/SDL_main.h /usr/include/SDL2/SDL_stdinc.h \
  /usr/include/SDL2/SDL_config.h \
  /usr/include/x86_64-linux-gnu/SDL2/_real_SDL_config.h \
@@ -295,7 +295,7 @@ CMakeFiles/SimpleGame.dir/src/Enemy.cpp.o: \
  /usr/include/c++/11/bits/stl_map.h \
  /usr/include/c++/11/bits/stl_multimap.h \
  /usr/include/c++/11/bits/erase_if.h \
- /home/simion/Desktop/3/Game2D/src/Player.h /usr/include/c++/11/iostream \
+ /home/simion/Desktop/4/Game2D/src/Player.h /usr/include/c++/11/iostream \
  /usr/include/c++/11/ostream /usr/include/c++/11/ios \
  /usr/include/c++/11/bits/ios_base.h \
  /usr/include/c++/11/bits/locale_classes.h \

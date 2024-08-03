@@ -1,6 +1,6 @@
 CMakeFiles/SimpleGame.dir/src/main.cpp.o: \
- /home/simion/Desktop/3/Game2D/src/main.cpp /usr/include/stdc-predef.h \
- /home/simion/Desktop/3/Game2D/src/Game.h /usr/include/SDL2/SDL.h \
+ /home/simion/Desktop/4/Game2D/src/main.cpp /usr/include/stdc-predef.h \
+ /home/simion/Desktop/4/Game2D/src/Game.h /usr/include/SDL2/SDL.h \
  /usr/include/SDL2/SDL_main.h /usr/include/SDL2/SDL_stdinc.h \
  /usr/include/SDL2/SDL_config.h \
  /usr/include/x86_64-linux-gnu/SDL2/_real_SDL_config.h \
@@ -284,7 +284,7 @@ CMakeFiles/SimpleGame.dir/src/main.cpp.o: \
  /usr/include/c++/11/bits/stl_vector.h \
  /usr/include/c++/11/bits/stl_bvector.h \
  /usr/include/c++/11/bits/vector.tcc \
- /home/simion/Desktop/3/Game2D/src/Entity.h /usr/include/c++/11/string \
+ /home/simion/Desktop/4/Game2D/src/Entity.h /usr/include/c++/11/string \
  /usr/include/c++/11/bits/char_traits.h /usr/include/c++/11/cstdint \
  /usr/include/c++/11/bits/localefwd.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++locale.h \
@@ -304,10 +304,10 @@ CMakeFiles/SimpleGame.dir/src/main.cpp.o: \
  /usr/include/c++/11/bits/basic_string.tcc /usr/include/c++/11/map \
  /usr/include/c++/11/bits/stl_tree.h /usr/include/c++/11/bits/stl_map.h \
  /usr/include/c++/11/bits/stl_multimap.h \
- /home/simion/Desktop/3/Game2D/src/Player.h \
- /home/simion/Desktop/3/Game2D/src/Enemy.h \
- /home/simion/Desktop/3/Game2D/src/Menu.h \
- /home/simion/Desktop/3/Game2D/src/World.h \
+ /home/simion/Desktop/4/Game2D/src/Player.h \
+ /home/simion/Desktop/4/Game2D/src/Enemy.h \
+ /home/simion/Desktop/4/Game2D/src/Menu.h \
+ /home/simion/Desktop/4/Game2D/src/World.h \
  /usr/include/c++/11/unordered_set \
  /usr/include/c++/11/bits/unordered_set.h \
- /home/simion/Desktop/3/Game2D/src/FastNoiseLite.h
+ /home/simion/Desktop/4/Game2D/src/FastNoiseLite.h

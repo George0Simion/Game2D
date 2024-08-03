@@ -1,6 +1,6 @@
 CMakeFiles/SimpleGame.dir/src/World.cpp.o: \
- /home/simion/Desktop/3/Game2D/src/World.cpp /usr/include/stdc-predef.h \
- /home/simion/Desktop/3/Game2D/src/World.h /usr/include/c++/11/vector \
+ /home/simion/Desktop/4/Game2D/src/World.cpp /usr/include/stdc-predef.h \
+ /home/simion/Desktop/4/Game2D/src/World.h /usr/include/c++/11/vector \
  /usr/include/c++/11/bits/stl_algobase.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++config.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/os_defines.h \
@@ -279,7 +279,7 @@ CMakeFiles/SimpleGame.dir/src/World.cpp.o: \
  /usr/include/SDL2/SDL_shape.h /usr/include/SDL2/SDL_system.h \
  /usr/include/SDL2/SDL_timer.h /usr/include/SDL2/SDL_version.h \
  /usr/include/SDL2/SDL_locale.h /usr/include/SDL2/SDL_misc.h \
- /home/simion/Desktop/3/Game2D/src/Entity.h /usr/include/SDL2/SDL_image.h \
+ /home/simion/Desktop/4/Game2D/src/Entity.h /usr/include/SDL2/SDL_image.h \
  /usr/include/SDL2/SDL.h /usr/include/c++/11/memory \
  /usr/include/c++/11/bits/stl_tempbuf.h \
  /usr/include/c++/11/bits/stl_raw_storage_iter.h \
@@ -300,7 +300,7 @@ CMakeFiles/SimpleGame.dir/src/World.cpp.o: \
  /usr/include/c++/11/pstl/execution_defs.h /usr/include/c++/11/map \
  /usr/include/c++/11/bits/stl_tree.h /usr/include/c++/11/bits/stl_map.h \
  /usr/include/c++/11/bits/stl_multimap.h \
- /home/simion/Desktop/3/Game2D/src/FastNoiseLite.h \
+ /home/simion/Desktop/4/Game2D/src/FastNoiseLite.h \
  /usr/include/c++/11/iostream /usr/include/c++/11/ostream \
  /usr/include/c++/11/ios /usr/include/c++/11/bits/ios_base.h \
  /usr/include/c++/11/bits/locale_classes.h \

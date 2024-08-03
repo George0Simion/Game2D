@@ -1,7 +1,7 @@
 CMakeFiles/SimpleGame.dir/src/Player.cpp.o: \
- /home/simion/Desktop/3/Game2D/src/Player.cpp /usr/include/stdc-predef.h \
- /home/simion/Desktop/3/Game2D/src/Player.h \
- /home/simion/Desktop/3/Game2D/src/Entity.h /usr/include/SDL2/SDL.h \
+ /home/simion/Desktop/4/Game2D/src/Player.cpp /usr/include/stdc-predef.h \
+ /home/simion/Desktop/4/Game2D/src/Player.h \
+ /home/simion/Desktop/4/Game2D/src/Entity.h /usr/include/SDL2/SDL.h \
  /usr/include/SDL2/SDL_main.h /usr/include/SDL2/SDL_stdinc.h \
  /usr/include/SDL2/SDL_config.h \
  /usr/include/x86_64-linux-gnu/SDL2/_real_SDL_config.h \
@@ -295,7 +295,7 @@ CMakeFiles/SimpleGame.dir/src/Player.cpp.o: \
  /usr/include/c++/11/bits/stl_map.h \
  /usr/include/c++/11/bits/stl_multimap.h \
  /usr/include/c++/11/bits/erase_if.h \
- /home/simion/Desktop/3/Game2D/src/Game.h /usr/include/SDL2/SDL_ttf.h \
+ /home/simion/Desktop/4/Game2D/src/Game.h /usr/include/SDL2/SDL_ttf.h \
  /usr/include/c++/11/algorithm /usr/include/c++/11/bits/stl_algo.h \
  /usr/include/c++/11/bits/algorithmfwd.h \
  /usr/include/c++/11/bits/stl_heap.h \
@@ -306,9 +306,9 @@ CMakeFiles/SimpleGame.dir/src/Player.cpp.o: \
  /usr/include/c++/11/bits/hashtable_policy.h \
  /usr/include/c++/11/bits/enable_special_members.h \
  /usr/include/c++/11/bits/unordered_map.h \
- /home/simion/Desktop/3/Game2D/src/Enemy.h \
- /home/simion/Desktop/3/Game2D/src/Menu.h \
- /home/simion/Desktop/3/Game2D/src/World.h \
+ /home/simion/Desktop/4/Game2D/src/Enemy.h \
+ /home/simion/Desktop/4/Game2D/src/Menu.h \
+ /home/simion/Desktop/4/Game2D/src/World.h \
  /usr/include/c++/11/unordered_set \
  /usr/include/c++/11/bits/unordered_set.h \
- /home/simion/Desktop/3/Game2D/src/FastNoiseLite.h
+ /home/simion/Desktop/4/Game2D/src/FastNoiseLite.h
