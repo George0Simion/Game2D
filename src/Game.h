@@ -14,6 +14,7 @@
 #include "Enemy.h"
 #include "Menu.h"
 #include "World.h"
+#include "MazeGenerator.h"
 
 class Game {
 public:
@@ -35,6 +36,9 @@ public:
     bool checkDungeonEntrance();
     void exitDungeon();
     bool checkDungeonExit();
+    void transitionToNextLevel();
+    bool checkNextLevelDoor();
+    void startLevel(int difficulty);
 
     bool isRunning;
     bool isMenuOpen;                                                                            /* Window sem - variables */
@@ -83,6 +87,11 @@ private:
     SDL_Rect dungeonEntrance;
     SDL_Rect dungeonExit;                                                                       /* Enemy, font and dungeon variables */
     float lastPlayerX, lastPlayerY;
+
+    MazeGenerator* mazeGenerator;
+    std::vector<std::vector<int>> dungeonMaze;
+
+    int difficulty;
 
     friend class Player;
 };

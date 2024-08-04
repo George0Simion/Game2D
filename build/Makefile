@@ -201,6 +201,30 @@ src/Game.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/SimpleGame.dir/build.make CMakeFiles/SimpleGame.dir/src/Game.cpp.s
 .PHONY : src/Game.cpp.s
 
+src/MazeGenerator.o: src/MazeGenerator.cpp.o
+.PHONY : src/MazeGenerator.o
+
+# target to build an object file
+src/MazeGenerator.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SimpleGame.dir/build.make CMakeFiles/SimpleGame.dir/src/MazeGenerator.cpp.o
+.PHONY : src/MazeGenerator.cpp.o
+
+src/MazeGenerator.i: src/MazeGenerator.cpp.i
+.PHONY : src/MazeGenerator.i
+
+# target to preprocess a source file
+src/MazeGenerator.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SimpleGame.dir/build.make CMakeFiles/SimpleGame.dir/src/MazeGenerator.cpp.i
+.PHONY : src/MazeGenerator.cpp.i
+
+src/MazeGenerator.s: src/MazeGenerator.cpp.s
+.PHONY : src/MazeGenerator.s
+
+# target to generate assembly for a file
+src/MazeGenerator.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SimpleGame.dir/build.make CMakeFiles/SimpleGame.dir/src/MazeGenerator.cpp.s
+.PHONY : src/MazeGenerator.cpp.s
+
 src/Menu.o: src/Menu.cpp.o
 .PHONY : src/Menu.o
 
@@ -315,6 +339,9 @@ help:
 	@echo "... src/Game.o"
 	@echo "... src/Game.i"
 	@echo "... src/Game.s"
+	@echo "... src/MazeGenerator.o"
+	@echo "... src/MazeGenerator.i"
+	@echo "... src/MazeGenerator.s"
 	@echo "... src/Menu.o"
 	@echo "... src/Menu.i"
 	@echo "... src/Menu.s"

@@ -14,6 +14,7 @@ add_executable(SimpleGame
     src/World.cpp
     src/Player.cpp
     src/Enemy.cpp
+    src/MazeGenerator.cpp
 )
 
 # Include directories

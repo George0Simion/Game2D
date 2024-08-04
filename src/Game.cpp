@@ -2,7 +2,7 @@
 #include <iostream>
 
 /* Constructor and Destructor */
-Game::Game() : window(nullptr), renderer(nullptr), isRunning(false), player(nullptr), world(nullptr) {}
+Game::Game() : window(nullptr), renderer(nullptr), isRunning(false), player(nullptr), world(nullptr), mazeGenerator(nullptr), difficulty(0) {}
 
 Game::~Game() {
     clean();
@@ -213,23 +213,70 @@ bool Game::checkDungeonEntrance() {
     return SDL_HasIntersection(&playerRect, &dungeonEntrance);
 }
 
+void Game::startLevel(int difficulty) {
+    if (mazeGenerator) {
+        delete mazeGenerator;
+    }
+
+    int mazeWidth = 21 + difficulty;  // Adjust dimensions based on difficulty
+    int mazeHeight = 21 + difficulty; // Adjust dimensions based on difficulty
+
+    mazeGenerator = new MazeGenerator(mazeWidth, mazeHeight);
+    dungeonMaze = mazeGenerator->generateMaze();
+
+    dungeonMaze[1][1] = 2;  // Spawn point at (1, 1)
+    dungeonMaze[mazeHeight - 2][mazeWidth - 2] = 3; // Exit to next level at (mazeHeight-2, mazeWidth-2)
+
+    int cellSize = 92;  // Assuming cellSize is 92
+
+    // Set dungeon entrance and exit coordinates
+    dungeonEntrance = {1 * cellSize, 1 * cellSize, cellSize, cellSize};
+    dungeonExit = {(mazeWidth - 2) * cellSize, (mazeHeight - 2) * cellSize, cellSize, cellSize};
+
+    player->setX(dungeonEntrance.x + 64); // Spawn 64 pixels further along x-axis
+    player->setY(dungeonEntrance.y + 64); // Spawn 64 pixels further along y-axis
+
+    // Adjust the camera to center the player
+    camera.x = player->getX() - camera.w / 2 + cellSize / 2;
+    camera.y = player->getY() - camera.h / 2 + cellSize / 2;
+
+    // Ensure the camera doesn't go out of bounds
+    int mazePixelWidth = mazeWidth * cellSize;
+    int mazePixelHeight = mazeHeight * cellSize;
+    camera.x = std::max(0, std::min(camera.x, mazePixelWidth - camera.w));
+    camera.y = std::max(0, std::min(camera.y, mazePixelHeight - camera.h));
+}
+
 void Game::enterDungeon() {
     lastPlayerX = player->getX();
     lastPlayerY = player->getY();
     isPlayerInDungeon = true;
+    startLevel(0);
+}
+
+void Game::transitionToNextLevel() {
+    difficulty++;
+    startLevel(difficulty);
 }
 
 bool Game::checkDungeonExit() {
     SDL_Rect playerRect = {static_cast<int>(player->getX()), static_cast<int>(player->getY()), 64, 64};
-    return SDL_HasIntersection(&playerRect, &dungeonExit);
+    SDL_Rect exitRect = {dungeonEntrance.x, dungeonEntrance.y, dungeonEntrance.w - 32, dungeonEntrance.h - 32};
+    return SDL_HasIntersection(&playerRect, &exitRect);
+}
+
+bool Game::checkNextLevelDoor() {
+    SDL_Rect playerRect = {static_cast<int>(player->getX()), static_cast<int>(player->getY()), 64, 64};
+    SDL_Rect nextLevelRect = {dungeonExit.x, dungeonExit.y, dungeonExit.w - 32, dungeonExit.h - 32}; // Adjusted for the next level door
+    return SDL_HasIntersection(&playerRect, &nextLevelRect);
 }
 
 void Game::exitDungeon() {
     isPlayerInDungeon = false;
+    difficulty = 0; // Reset difficulty
     player->setX(lastPlayerX);
     player->setY(lastPlayerY);
 
-    // Move the player 64 pixels away from the entrance to prevent immediate re-entry
     if (player->getX() > dungeonEntrance.x) {
         player->setX(player->getX() + 64);
     } else {
@@ -241,6 +288,9 @@ void Game::exitDungeon() {
     } else {
         player->setY(player->getY() - 64);
     }
+
+    delete mazeGenerator;
+    mazeGenerator = nullptr;
 }
 
 void Game::update() {
@@ -264,8 +314,12 @@ void Game::update() {
 
         if (!isPlayerInDungeon && checkDungeonEntrance()) {
             enterDungeon();
-        } else if (isPlayerInDungeon && checkDungeonExit()) {
-            exitDungeon();
+        } else if (isPlayerInDungeon) {
+            if (checkDungeonExit()) {
+                exitDungeon();
+            } else if (checkNextLevelDoor()) {
+                transitionToNextLevel();
+            }
         }
 
         if (isPlayerInDungeon) {
@@ -313,6 +367,10 @@ void Game::update() {
                     }
                 }
             }
+
+            float playerX = player->getX();
+            float playerY = player->getY();
+            updateCamera(playerX, playerY);
         }
 
         for (size_t i = 0; i < entities.size(); ++i) {
@@ -332,8 +390,6 @@ void Game::update() {
         float playerX = player->getX();
         float playerY = player->getY();
         updateCamera(playerX, playerY);
-
-        // std::cout << "Player position: (" << playerX << ", " << playerY << ")\n";
 
         world->update(camera.x + camera.w / 2, camera.y + camera.h / 2);
     }
@@ -710,29 +766,40 @@ void Game::renderHealthBar(int x, int y, int currentHealth, int maxHealth) {
 
 void Game::render() {
     SDL_RenderClear(renderer);
-    
+
     if (isPlayerInDungeon) {
-        // Render the dungeon
-        SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); // Green color for the dungeon
-        SDL_Rect dungeonRect = { 0, 0, 1680, 900 };  // Adjust to your dungeon size
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Black color for the background
+        SDL_Rect dungeonRect = {0, 0, 1920, 1080}; // Adjust to your screen size
         SDL_RenderFillRect(renderer, &dungeonRect);
 
-        // Render dungeon exit
-        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Red color for the exit door
-        SDL_Rect exitRect = {
-            dungeonExit.x,
-            dungeonExit.y,
-            dungeonExit.w,
-            dungeonExit.h
-        };
-        SDL_RenderFillRect(renderer, &exitRect);
+        int cellSize = 96; // Adjust cell size as needed
+        for (int y = 0; y < dungeonMaze.size(); ++y) {
+            for (int x = 0; x < dungeonMaze[y].size(); ++x) {
+                if (dungeonMaze[y][x] == -1) {
+                    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // White color for walls
+                } else if (dungeonMaze[y][x] == 0) {
+                    SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); // Green color for paths
+                } else if (dungeonMaze[y][x] == 2) {
+                    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255); // Blue color for spawn/exit point
+                } else if (dungeonMaze[y][x] == 3) {
+                    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Red color for next level entrance
+                }
+                SDL_Rect cellRect = {
+                    x * cellSize - camera.x,
+                    y * cellSize - camera.y,
+                    cellSize,
+                    cellSize
+                };
+                SDL_RenderFillRect(renderer, &cellRect);
+            }
+        }
     } else {
         // Render the world
         world->render(camera.x + camera.w / 2 + 192, camera.y + camera.h / 2 - 256, isPlayerInDungeon, dungeonEntrance, camera);
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     }
 
-    // Render entities
+    // Render entities and HUD as before
     for (const auto& entity : entities) {
         SDL_Rect srcRect = entity->getCurrentFrame();
         SDL_Rect destRect = { 

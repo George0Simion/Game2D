@@ -311,6 +311,10 @@ CMakeFiles/SimpleGame.dir/src/Game.cpp.o: \
  /usr/include/c++/11/unordered_set \
  /usr/include/c++/11/bits/unordered_set.h \
  /home/simion/Desktop/5/Game2D/src/FastNoiseLite.h \
+ /home/simion/Desktop/5/Game2D/src/MazeGenerator.h \
+ /usr/include/c++/11/stack /usr/include/c++/11/deque \
+ /usr/include/c++/11/bits/stl_deque.h /usr/include/c++/11/bits/deque.tcc \
+ /usr/include/c++/11/bits/stl_stack.h /usr/include/c++/11/ctime \
  /usr/include/c++/11/iostream /usr/include/c++/11/ostream \
  /usr/include/c++/11/ios /usr/include/c++/11/bits/ios_base.h \
  /usr/include/c++/11/bits/locale_classes.h \

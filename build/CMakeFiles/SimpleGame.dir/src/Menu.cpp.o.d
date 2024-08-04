@@ -309,4 +309,8 @@ CMakeFiles/SimpleGame.dir/src/Menu.cpp.o: \
  /home/simion/Desktop/5/Game2D/src/World.h \
  /usr/include/c++/11/unordered_set \
  /usr/include/c++/11/bits/unordered_set.h \
- /home/simion/Desktop/5/Game2D/src/FastNoiseLite.h
+ /home/simion/Desktop/5/Game2D/src/FastNoiseLite.h \
+ /home/simion/Desktop/5/Game2D/src/MazeGenerator.h \
+ /usr/include/c++/11/stack /usr/include/c++/11/deque \
+ /usr/include/c++/11/bits/stl_deque.h /usr/include/c++/11/bits/deque.tcc \
+ /usr/include/c++/11/bits/stl_stack.h /usr/include/c++/11/ctime
