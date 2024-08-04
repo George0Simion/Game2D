@@ -31,6 +31,10 @@ public:
     bool isPlayerDeathAnimationFinished() const;
     void removeDeadEntities();                                                                  /* Game thods */
     void updateCamera(float playerX, float playerY);
+    void enterDungeon();
+    bool checkDungeonEntrance();
+    void exitDungeon();
+    bool checkDungeonExit();
 
     bool isRunning;
     bool isMenuOpen;                                                                            /* Window sem - variables */
@@ -74,6 +78,11 @@ private:
 
     TTF_Font* font;
     TTF_Font* smallFont;
+
+    bool isPlayerInDungeon;
+    SDL_Rect dungeonEntrance;
+    SDL_Rect dungeonExit;                                                                       /* Enemy, font and dungeon variables */
+    float lastPlayerX, lastPlayerY;
 
     friend class Player;
 };

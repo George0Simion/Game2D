@@ -14,12 +14,11 @@ public:
     World(SDL_Renderer* p_renderer, int seed);
     ~World();
     void update(float playerX, float playerY);
-    void render(float playerX, float playerY);
+    void render(float playerX, float playerY, bool isPlayerInDungeon, SDL_Rect dungeonEntrance, const SDL_Rect& camera); // Update method signature
     
 private:
     void generateChunk(int chunkX, int chunkY);
     void renderChunk(int chunkX, int chunkY, float playerX, float playerY);
-    void despawnChunks(float playerX, float playerY);
     std::string getChunkKey(int chunkX, int chunkY);
     
     SDL_Renderer* renderer;

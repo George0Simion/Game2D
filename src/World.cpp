@@ -50,12 +50,28 @@ void World::update(float playerX, float playerY) {
     visibleChunks = newVisibleChunks;
 }
 
-void World::render(float playerX, float playerY) {
+void World::render(float playerX, float playerY, bool isPlayerInDungeon, SDL_Rect dungeonEntrance, const SDL_Rect& camera) {
     for (const auto& chunkKey : visibleChunks) {
         int delimiterPos = chunkKey.find(",");
         int chunkX = std::stoi(chunkKey.substr(0, delimiterPos));
         int chunkY = std::stoi(chunkKey.substr(delimiterPos + 1));
         renderChunk(chunkX, chunkY, playerX, playerY);
+    }
+
+    if (!isPlayerInDungeon) {
+        // Calculate the correct position for rendering the dungeon entrance
+        int entranceRenderX = dungeonEntrance.x - camera.x;
+        int entranceRenderY = dungeonEntrance.y - camera.y;
+
+        // Render dungeon entrance at adjusted coordinates
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Black color for the entrance
+        SDL_Rect entranceRect = {
+            entranceRenderX,
+            entranceRenderY,
+            dungeonEntrance.w,
+            dungeonEntrance.h
+        };
+        SDL_RenderFillRect(renderer, &entranceRect);
     }
 }
 

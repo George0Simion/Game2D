@@ -55,6 +55,10 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
     menu = new Menu(this);                                                  /* Allocating memory for the menu */
     world = new World(renderer, 12345);                                     /* Initialize the world with a seed for procedural generation */
 
+    isPlayerInDungeon = false;
+    dungeonEntrance = {500, 500, 50, 50};
+    dungeonExit = {800, 800, 50, 50}; 
+
     camera = {0, 0, 1680, 900};                                             /* Initialize the camera */
 
     // Center the camera on the player initially
@@ -64,7 +68,7 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
     world->update(camera.x + camera.w / 2, camera.y + camera.h / 2);
 
     loadHUDTexture();                                                        /* Load the HUD texture */
-    spawnEnemy();
+    //cspawnEnemy();
 }
 
 SDL_Texture* Game::loadTexture(const char* fileName) {                      /* Method for loading the texture for the main character */
@@ -106,7 +110,6 @@ void Game::resetGame() {
 
     spawnEnemy();
 
-    // init("Game Window", 1920, 1080, false);  // Reinitialize the game
     isMenuOpen = false;
     isRunning = true;
 }
@@ -205,6 +208,41 @@ void Game::updateEnemySpellAnimation(float deltaTime, std::vector<std::unique_pt
     }
 }
 
+bool Game::checkDungeonEntrance() {
+    SDL_Rect playerRect = {static_cast<int>(player->getX()), static_cast<int>(player->getY()), 64, 64};
+    return SDL_HasIntersection(&playerRect, &dungeonEntrance);
+}
+
+void Game::enterDungeon() {
+    lastPlayerX = player->getX();
+    lastPlayerY = player->getY();
+    isPlayerInDungeon = true;
+}
+
+bool Game::checkDungeonExit() {
+    SDL_Rect playerRect = {static_cast<int>(player->getX()), static_cast<int>(player->getY()), 64, 64};
+    return SDL_HasIntersection(&playerRect, &dungeonExit);
+}
+
+void Game::exitDungeon() {
+    isPlayerInDungeon = false;
+    player->setX(lastPlayerX);
+    player->setY(lastPlayerY);
+
+    // Move the player 64 pixels away from the entrance to prevent immediate re-entry
+    if (player->getX() > dungeonEntrance.x) {
+        player->setX(player->getX() + 64);
+    } else {
+        player->setX(player->getX() - 64);
+    }
+
+    if (player->getY() > dungeonEntrance.y) {
+        player->setY(player->getY() + 64);
+    } else {
+        player->setY(player->getY() - 64);
+    }
+}
+
 void Game::update() {
     Uint32 currentTime = SDL_GetTicks();
     deltaTime = (currentTime - lastTime) / 1000.0f;
@@ -224,6 +262,59 @@ void Game::update() {
         processInput();
         player->updateCooldowns(deltaTime);
 
+        if (!isPlayerInDungeon && checkDungeonEntrance()) {
+            enterDungeon();
+        } else if (isPlayerInDungeon && checkDungeonExit()) {
+            exitDungeon();
+        }
+
+        if (isPlayerInDungeon) {
+            updateSpellAnimation(deltaTime, entities);
+            updateEnemySpellAnimation(deltaTime, entities);
+
+            for (auto& entity : entities) {
+                if (entity->isArrowActive()) {
+                    SDL_Rect arrowRect = entity->getArrowFrame();
+                    arrowRect.x = static_cast<int>(entity->getArrowX());
+                    arrowRect.y = static_cast<int>(entity->getArrowY());
+
+                    for (auto& otherEntity : entities) {
+                        if (otherEntity.get() != entity.get() && Entity::checkCollision(arrowRect, otherEntity->getBoundingBox())) {
+                            if (Enemy* enemy = dynamic_cast<Enemy*>(otherEntity.get())) {
+                                applyDamage(*entity, *enemy, Player::ARROW_DAMAGE);
+                                entity->shootArrow(Entity::Up); // Deactivate the arrow by resetting its position
+                                break;
+                            } else if (Player* player = dynamic_cast<Player*>(otherEntity.get())) {
+                                player->updateArrowPosition(deltaTime, entities);
+                                applyDamage(*entity, *player, Player::ARROW_DAMAGE); // Adjust arrow damage for player if needed
+                                entity->shootArrow(Entity::Up); // Deactivate the arrow by resetting its position
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            for (size_t i = 0; i < entities.size(); ++i) {
+                if (entities[i]->isMarkedForRemoval()) continue;
+                for (size_t j = i + 1; j < entities.size(); ++j) {
+                    if (entities[j]->isMarkedForRemoval()) continue;
+
+                    if (Entity::checkCollision(entities[i]->getBoundingBox(), entities[j]->getBoundingBox())) {
+                        if (Player* player = dynamic_cast<Player*>(entities[i].get())) {
+                            if (Enemy* enemy = dynamic_cast<Enemy*>(entities[j].get())) {
+                                resolveCollision(*player, *enemy);
+                            }
+                        } else if (Player* player = dynamic_cast<Player*>(entities[j].get())) {
+                            if (Enemy* enemy = dynamic_cast<Enemy*>(entities[i].get())) {
+                                resolveCollision(*player, *enemy);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         for (size_t i = 0; i < entities.size(); ++i) {
             auto& entity = entities[i];
             if (entity->isMarkedForRemoval()) continue;
@@ -236,56 +327,13 @@ void Game::update() {
             }
         }
 
-        updateSpellAnimation(deltaTime, entities);
-        updateEnemySpellAnimation(deltaTime, entities);
-
-        for (auto& entity : entities) {
-            if (entity->isArrowActive()) {
-                SDL_Rect arrowRect = entity->getArrowFrame();
-                arrowRect.x = static_cast<int>(entity->getArrowX());
-                arrowRect.y = static_cast<int>(entity->getArrowY());
-
-                for (auto& otherEntity : entities) {
-                    if (otherEntity.get() != entity.get() && Entity::checkCollision(arrowRect, otherEntity->getBoundingBox())) {
-                        if (Enemy* enemy = dynamic_cast<Enemy*>(otherEntity.get())) {
-                            applyDamage(*entity, *enemy, Player::ARROW_DAMAGE);
-                            entity->shootArrow(Entity::Up); // Deactivate the arrow by resetting its position
-                            break;
-                        } else if (Player* player = dynamic_cast<Player*>(otherEntity.get())) {
-                            player->updateArrowPosition(deltaTime, entities);
-                            applyDamage(*entity, *player, Player::ARROW_DAMAGE); // Adjust arrow damage for player if needed
-                            entity->shootArrow(Entity::Up); // Deactivate the arrow by resetting its position
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        for (size_t i = 0; i < entities.size(); ++i) {
-            if (entities[i]->isMarkedForRemoval()) continue;
-            for (size_t j = i + 1; j < entities.size(); ++j) {
-                if (entities[j]->isMarkedForRemoval()) continue;
-
-                if (Entity::checkCollision(entities[i]->getBoundingBox(), entities[j]->getBoundingBox())) {
-                    if (Player* player = dynamic_cast<Player*>(entities[i].get())) {
-                        if (Enemy* enemy = dynamic_cast<Enemy*>(entities[j].get())) {
-                            resolveCollision(*player, *enemy);
-                        }
-                    } else if (Player* player = dynamic_cast<Player*>(entities[j].get())) {
-                        if (Enemy* enemy = dynamic_cast<Enemy*>(entities[i].get())) {
-                            resolveCollision(*player, *enemy);
-                        }
-                    }
-                }
-            }
-        }
-
         removeDeadEntities();
 
         float playerX = player->getX();
         float playerY = player->getY();
         updateCamera(playerX, playerY);
+
+        // std::cout << "Player position: (" << playerX << ", " << playerY << ")\n";
 
         world->update(camera.x + camera.w / 2, camera.y + camera.h / 2);
     }
@@ -662,9 +710,29 @@ void Game::renderHealthBar(int x, int y, int currentHealth, int maxHealth) {
 
 void Game::render() {
     SDL_RenderClear(renderer);
-    world->render(camera.x + camera.w / 2 + 192, camera.y + camera.h / 2 - 256);
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    
+    if (isPlayerInDungeon) {
+        // Render the dungeon
+        SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); // Green color for the dungeon
+        SDL_Rect dungeonRect = { 0, 0, 1680, 900 };  // Adjust to your dungeon size
+        SDL_RenderFillRect(renderer, &dungeonRect);
 
+        // Render dungeon exit
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Red color for the exit door
+        SDL_Rect exitRect = {
+            dungeonExit.x,
+            dungeonExit.y,
+            dungeonExit.w,
+            dungeonExit.h
+        };
+        SDL_RenderFillRect(renderer, &exitRect);
+    } else {
+        // Render the world
+        world->render(camera.x + camera.w / 2 + 192, camera.y + camera.h / 2 - 256, isPlayerInDungeon, dungeonEntrance, camera);
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+    }
+
+    // Render entities
     for (const auto& entity : entities) {
         SDL_Rect srcRect = entity->getCurrentFrame();
         SDL_Rect destRect = { 
