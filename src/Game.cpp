@@ -160,29 +160,52 @@ void Game::processInput() {
     bool moved = false;
 
     float speed = player->isRunning() ? 150.0f : 100.0f;
+    float newX = player->getX();
+    float newY = player->getY();
 
     if (state[SDL_SCANCODE_W] || state[SDL_SCANCODE_UP]) {
-        player->setY(player->getY() - speed * deltaTime);
+        newY -= speed * deltaTime;
         player->setDirection(Entity::Up);
         moved = true;
     }
     if (state[SDL_SCANCODE_S] || state[SDL_SCANCODE_DOWN]) {
-        player->setY(player->getY() + speed * deltaTime);
+        newY += speed * deltaTime;
         player->setDirection(Entity::Down);
         moved = true;
     }
     if (state[SDL_SCANCODE_A] || state[SDL_SCANCODE_LEFT]) {
-        player->setX(player->getX() - speed * deltaTime);
+        newX -= speed * deltaTime;
         player->setDirection(Entity::Left);
         moved = true;
     }
     if (state[SDL_SCANCODE_D] || state[SDL_SCANCODE_RIGHT]) {
-        player->setX(player->getX() + speed * deltaTime);
+        newX += speed * deltaTime;
         player->setDirection(Entity::Right);
         moved = true;
     }
 
     if (moved) {
+        if (isPlayerInDungeon) {
+            // Perform wall collision check only if the player is inside the dungeon
+            SDL_Rect playerRect = player->getBoundingBox();
+            float playerLeft = newX;
+            float playerRight = newX + playerRect.w - 8;
+            float playerTop = newY + 16;
+            float playerBottom = newY + playerRect.h;
+            
+            if (!isWall(playerLeft, playerTop) && 
+                !isWall(playerRight, playerTop) &&
+                !isWall(playerLeft, playerBottom) &&
+                !isWall(playerRight, playerBottom)) {
+                player->setX(newX);
+                player->setY(newY);
+            }
+        } else {
+            // Update the player's position directly if outside the dungeon
+            player->setX(newX);
+            player->setY(newY);
+        }
+
         if (player->getAction() != Entity::Shooting && player->getAction() != Entity::Thrusting) {
             player->setAction(Entity::Walking);
             player->startAnimation();
@@ -227,7 +250,7 @@ void Game::startLevel(int difficulty) {
     dungeonMaze[1][1] = 2;  // Spawn point at (1, 1)
     dungeonMaze[mazeHeight - 2][mazeWidth - 2] = 3; // Exit to next level at (mazeHeight-2, mazeWidth-2)
 
-    int cellSize = 92;  // Assuming cellSize is 92
+    int cellSize = 96;  // Assuming cellSize is 92
 
     // Set dungeon entrance and exit coordinates
     dungeonEntrance = {1 * cellSize, 1 * cellSize, cellSize, cellSize};
@@ -291,6 +314,20 @@ void Game::exitDungeon() {
 
     delete mazeGenerator;
     mazeGenerator = nullptr;
+}
+
+bool Game::isWall(float x, float y) {
+    int cellSize = 96; // Adjust cell size as needed
+    int mazeX = static_cast<int>(x + 32) / cellSize;
+    int mazeY = static_cast<int>(y + 64) / cellSize;
+
+    // Check bounds
+    if (mazeY < 0 || mazeY >= dungeonMaze.size() || mazeX < 0 || mazeX >= dungeonMaze[0].size()) {
+        return true;
+    }
+
+    printf("MazeX: %d, MazeY: %d\n", mazeX, mazeY);
+    return dungeonMaze[mazeY][mazeX] == -1;
 }
 
 void Game::update() {

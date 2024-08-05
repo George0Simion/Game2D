@@ -39,6 +39,7 @@ public:
     void transitionToNextLevel();
     bool checkNextLevelDoor();
     void startLevel(int difficulty);
+    bool isWall(float x, float y);
 
     bool isRunning;
     bool isMenuOpen;                                                                            /* Window sem - variables */
