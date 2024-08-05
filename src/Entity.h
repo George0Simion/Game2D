@@ -89,6 +89,8 @@ public:
     float getCooldownRemaining(const std::string& ability) const;
     void setCooldown(const std::string& ability, float time);
 
+    bool isArrowCollidingWithWall(float arrowX, float arrowY, int cellSize, const std::vector<std::vector<int>>& dungeonMaze);
+
 protected:
     virtual int getActionOffset() const;
     float getAnimationTimer() const;

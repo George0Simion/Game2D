@@ -376,13 +376,13 @@ void Game::update() {
                                 entity->shootArrow(Entity::Up); // Deactivate the arrow by resetting its position
                                 break;
                             } else if (Player* player = dynamic_cast<Player*>(otherEntity.get())) {
-                                player->updateArrowPosition(deltaTime, entities);
                                 applyDamage(*entity, *player, Player::ARROW_DAMAGE); // Adjust arrow damage for player if needed
                                 entity->shootArrow(Entity::Up); // Deactivate the arrow by resetting its position
                                 break;
                             }
                         }
                     }
+                    player->updateArrowPosition(deltaTime, dungeonMaze, 96);
                 }
             }
 

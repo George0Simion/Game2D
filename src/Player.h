@@ -32,7 +32,7 @@ public:
     void setIsDead(bool dead) { isDead = dead; }
 
     void updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities) override;
-    void updateArrowPosition(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities); // Add this line
+    void updateArrowPosition(float deltaTime, const std::vector<std::vector<int>>& dungeonMaze, int cellSize);
 
     void setDeathAnimationFinished(bool finished) { deathAnimationFinished = finished; }
     bool isDeathAnimationFinished() const;

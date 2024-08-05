@@ -149,21 +149,23 @@ void Player::handleInput(const SDL_Event& event) {
     }
 }
 
-void Player::updateArrowPosition(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities) {
+void Player::updateArrowPosition(float deltaTime, const std::vector<std::vector<int>>& dungeonMaze, int cellSize) {
     if (arrowActive) {
         float distance = arrowSpeed * deltaTime;
         arrowTravelDistance += distance;
 
+        float newArrowX = arrowX;
+        float newArrowY = arrowY;
+
         switch (arrowDirection) {
-            case Up:    arrowY -= distance; break;
-            case Down:  arrowY += distance; break;
-            case Left:  arrowX -= distance; break;
-            case Right: arrowX += distance; break;
+            case Up:    newArrowY -= distance; break;
+            case Down:  newArrowY += distance; break;
+            case Left:  newArrowX -= distance; break;
+            case Right: newArrowX += distance; break;
         }
 
-        if (arrowTravelDistance >= arrowMaxDistance) {
+        if (arrowTravelDistance >= arrowMaxDistance || isArrowCollidingWithWall(newArrowX, newArrowY, cellSize, dungeonMaze)) {
             arrowActive = false;
-            return;
         }
     }
 }
