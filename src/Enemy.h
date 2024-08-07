@@ -56,7 +56,7 @@ private:
     bool hasPath;
     
     std::vector<std::pair<int, int>> findPathToPlayer(Player& player, Game& game);
-
+    void moveDirectlyToPlayer(float deltaTime, Player& player, Game& game);
 };
 
 #endif

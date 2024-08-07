@@ -224,6 +224,47 @@ void Enemy::followPlayer(float deltaTime, Player& player, Game& game) {
     startAnimation();
 }
 
+void Enemy::moveDirectlyToPlayer(float deltaTime, Player& player, Game& game) {
+    if (isMarkedForRemoval()) return;
+
+    float distanceX = player.getX() - getX();
+    float distanceY = player.getY() - getY();
+    float distance = sqrt(distanceX * distanceX + distanceY * distanceY);
+
+    if (spellCooldownRemaining > 0.0f) {
+        spellCooldownRemaining -= deltaTime;
+    }
+
+    if (attackCooldown > 0.0f) {
+        attackCooldown -= deltaTime;
+    } else {
+        decideAction(player, distance);
+    }
+
+    if (getAction() == Walking) {
+        float moveSpeed = 100.0f;
+        if (fabs(distanceX) > fabs(distanceY)) {
+            if (distanceX > 0) {
+                setX(getX() + moveSpeed * deltaTime);
+                setDirection(Right);
+            } else {
+                setX(getX() - moveSpeed * deltaTime);
+                setDirection(Left);
+            }
+        } else {
+            if (distanceY > 0) {
+                setY(getY() + moveSpeed * deltaTime);
+                setDirection(Down);
+            } else {
+                setY(getY() - moveSpeed * deltaTime);
+                setDirection(Up);
+            }
+        }
+    }
+
+    startAnimation();
+}
+
 void Enemy::randomMove(float deltaTime, Game& game) {
     float moveSpeed = 100.0f;
     bool moved = false;
@@ -347,7 +388,10 @@ void Enemy::updateBehavior(float deltaTime, Player& player, std::vector<std::uni
         attackCooldown -= deltaTime;
     }
 
-    if (distance <= 600.0f) {  // Adjust the range as needed
+    // Check distances and decide behavior
+    if (distance <= 175.0f) {
+        moveDirectlyToPlayer(deltaTime, player, game);
+    } else if (distance <= 750.0f) {
         if (spellCooldownRemaining <= 0.0f) {
             decideAction(player, distance);
         }
@@ -412,14 +456,12 @@ void Enemy::decideAction(Player& player, float distance) {
         setAttackDelay(500);
         setDamageApplied(false);
         spellCooldownRemaining = SPELL_COOLDOWN;
-    
     } else if (distance <= thrustRange * 1.2 && randomFactor < 60) {
         setAction(Thrusting);
         attackCooldown = 1.0f;
         setAttackStartTime(SDL_GetTicks());
         setAttackDelay(150);
         setDamageApplied(false);
-
     } else {
         setAction(Walking);
     }
