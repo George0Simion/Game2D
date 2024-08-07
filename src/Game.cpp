@@ -68,7 +68,7 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
     world->update(camera.x + camera.w / 2, camera.y + camera.h / 2);
 
     loadHUDTexture();                                                        /* Load the HUD texture */
-    //cspawnEnemy();
+    // spawnEnemy();
 }
 
 SDL_Texture* Game::loadTexture(const char* fileName) {                      /* Method for loading the texture for the main character */
@@ -78,7 +78,9 @@ SDL_Texture* Game::loadTexture(const char* fileName) {                      /* M
     return tex;
 }
 
-void Game::spawnEnemy() {
+void Game::spawnEnemy()
+/* No longer needed but keeping it just in case */
+{
     SDL_Texture* enemyTex = loadTexture("/home/simion/Desktop/3/Game2D/assets/enemy4.png");
     float x = 540;
     float y = 100;
@@ -192,13 +194,50 @@ void Game::processInput() {
             float playerRight = newX + playerRect.w - 8;
             float playerTop = newY + 16;
             float playerBottom = newY + playerRect.h;
-            
-            if (!isWall(playerLeft, playerTop) && 
-                !isWall(playerRight, playerTop) &&
-                !isWall(playerLeft, playerBottom) &&
-                !isWall(playerRight, playerBottom)) {
+
+            bool collision = isWall(playerLeft, playerTop) || 
+                             isWall(playerRight, playerTop) ||
+                             isWall(playerLeft, playerBottom) ||
+                             isWall(playerRight, playerBottom);
+
+            if (!collision) {
                 player->setX(newX);
                 player->setY(newY);
+            } else {
+                // Apply sliding effect
+                if (state[SDL_SCANCODE_W] || state[SDL_SCANCODE_UP]) {
+                    if (!isWall(playerLeft - 1, playerTop) && !isWall(playerLeft - 1, playerBottom)) {
+                        player->setX(player->getX() - 1);
+                    } else if (!isWall(playerRight + 1, playerTop) && !isWall(playerRight + 1, playerBottom)) {
+                        player->setX(player->getX() + 1);
+                    } else {
+                        player->setY(player->getY());
+                    }
+                } else if (state[SDL_SCANCODE_S] || state[SDL_SCANCODE_DOWN]) {
+                    if (!isWall(playerLeft - 1, playerBottom) && !isWall(playerLeft - 1, playerTop)) {
+                        player->setX(player->getX() - 1);
+                    } else if (!isWall(playerRight + 1, playerBottom) && !isWall(playerRight + 1, playerTop)) {
+                        player->setX(player->getX() + 1);
+                    } else {
+                        player->setY(player->getY());
+                    }
+                } else if (state[SDL_SCANCODE_A] || state[SDL_SCANCODE_LEFT]) {
+                    if (!isWall(playerLeft, playerTop - 1) && !isWall(playerRight, playerTop - 1)) {
+                        player->setY(player->getY() - 1);
+                    } else if (!isWall(playerLeft, playerBottom + 1) && !isWall(playerRight, playerBottom + 1)) {
+                        player->setY(player->getY() + 1);
+                    } else {
+                        player->setX(player->getX());
+                    }
+                } else if (state[SDL_SCANCODE_D] || state[SDL_SCANCODE_RIGHT]) {
+                    if (!isWall(playerRight, playerTop - 1) && !isWall(playerLeft, playerTop - 1)) {
+                        player->setY(player->getY() - 1);
+                    } else if (!isWall(playerRight, playerBottom + 1) && !isWall(playerLeft, playerBottom + 1)) {
+                        player->setY(player->getY() + 1);
+                    } else {
+                        player->setX(player->getX());
+                    }
+                }
             }
         } else {
             // Update the player's position directly if outside the dungeon
@@ -241,23 +280,23 @@ void Game::startLevel(int difficulty) {
         delete mazeGenerator;
     }
 
-    int mazeWidth = 21 + difficulty;  // Adjust dimensions based on difficulty
-    int mazeHeight = 21 + difficulty; // Adjust dimensions based on difficulty
+    int mazeWidth = 21 + difficulty;
+    int mazeHeight = 21 + difficulty;
 
     mazeGenerator = new MazeGenerator(mazeWidth, mazeHeight);
     dungeonMaze = mazeGenerator->generateMaze();
 
-    dungeonMaze[1][1] = 2;  // Spawn point at (1, 1)
-    dungeonMaze[mazeHeight - 2][mazeWidth - 2] = 3; // Exit to next level at (mazeHeight-2, mazeWidth-2)
+    dungeonMaze[1][1] = 2;
+    dungeonMaze[mazeHeight - 2][mazeWidth - 2] = 3;
 
-    int cellSize = 96;  // Assuming cellSize is 92
+    int cellSize = 96;
 
     // Set dungeon entrance and exit coordinates
     dungeonEntrance = {1 * cellSize, 1 * cellSize, cellSize, cellSize};
     dungeonExit = {(mazeWidth - 2) * cellSize, (mazeHeight - 2) * cellSize, cellSize, cellSize};
 
-    player->setX(dungeonEntrance.x + 64); // Spawn 64 pixels further along x-axis
-    player->setY(dungeonEntrance.y + 64); // Spawn 64 pixels further along y-axis
+    player->setX(dungeonEntrance.x + 64);
+    player->setY(dungeonEntrance.y + 64);
 
     // Adjust the camera to center the player
     camera.x = player->getX() - camera.w / 2 + cellSize / 2;
@@ -268,6 +307,36 @@ void Game::startLevel(int difficulty) {
     int mazePixelHeight = mazeHeight * cellSize;
     camera.x = std::max(0, std::min(camera.x, mazePixelWidth - camera.w));
     camera.y = std::max(0, std::min(camera.y, mazePixelHeight - camera.h));
+
+    spawnEnemiesInDungeon(difficulty + 1);
+}
+
+void Game::spawnEnemiesInDungeon(int numberOfEnemies) {
+    std::vector<std::pair<int, int>> pathCells;
+
+    for (int y = 0; y < dungeonMaze.size(); ++y) {
+        for (int x = 0; x < dungeonMaze[y].size(); ++x) {
+            if (dungeonMaze[y][x] == 0) {
+                pathCells.push_back({x, y});
+            }
+        }
+    }
+
+    std::srand(static_cast<unsigned int>(std::time(nullptr)));
+    std::random_shuffle(pathCells.begin(), pathCells.end());
+
+    for (int i = 0; i < numberOfEnemies && i < pathCells.size(); ++i) {
+        int x = pathCells[i].first;
+        int y = pathCells[i].second;
+
+        float enemyX = x * 96.0f;
+        float enemyY = y * 96.0f;
+
+        SDL_Texture* enemyTex = loadTexture("/home/simion/Desktop/3/Game2D/assets/enemy4.png");
+        auto enemy = std::make_unique<Enemy>(enemyX, enemyY, enemyTex, 8, 0.1f);
+        enemy->setHealth(Enemy::INITIAL_HEALTH);
+        entities.push_back(std::move(enemy));
+    }
 }
 
 void Game::enterDungeon() {
@@ -326,8 +395,16 @@ bool Game::isWall(float x, float y) {
         return true;
     }
 
-    printf("MazeX: %d, MazeY: %d\n", mazeX, mazeY);
     return dungeonMaze[mazeY][mazeX] == -1;
+}
+
+bool Game::areAllEnemiesCleared() const {
+    for (const auto& entity : entities) {
+        if (dynamic_cast<const Enemy*>(entity.get())) {
+            return false;
+        }
+    }
+    return true;
 }
 
 void Game::update() {
@@ -352,10 +429,10 @@ void Game::update() {
         if (!isPlayerInDungeon && checkDungeonEntrance()) {
             enterDungeon();
         } else if (isPlayerInDungeon) {
-            if (checkDungeonExit()) {
-                exitDungeon();
-            } else if (checkNextLevelDoor()) {
+            if (checkNextLevelDoor() && areAllEnemiesCleared()) {
                 transitionToNextLevel();
+            } else if (checkDungeonExit() && areAllEnemiesCleared()) {
+                exitDungeon();
             }
         }
 
@@ -415,8 +492,7 @@ void Game::update() {
             if (entity->isMarkedForRemoval()) continue;
 
             if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
-                enemy->updateBehavior(deltaTime, *player, entities);
-
+                enemy->updateBehavior(deltaTime, *player, entities, *this);
             } else if (Player* playerEntity = dynamic_cast<Player*>(entity.get())) {
                 playerEntity->update(deltaTime, entities, *this);
             }

@@ -40,12 +40,15 @@ public:
     bool checkNextLevelDoor();
     void startLevel(int difficulty);
     bool isWall(float x, float y);
+    std::vector<std::vector<int>>& getDungeonMaze() { return dungeonMaze; }
 
     bool isRunning;
     bool isMenuOpen;                                                                            /* Window sem - variables */
 
     SDL_Window* window;
     SDL_Renderer* renderer;                                                                     /* Window variables */
+
+    const std::vector<std::vector<int>>& getDungeonMaze() const { return dungeonMaze; }
 
 private:
     Uint32 lastTime;
@@ -80,6 +83,8 @@ private:
     void renderText(const char* text, int x, int y, SDL_Color color);
     void renderSmallText(const char* text, int x, int y, SDL_Color color);
     bool isFacing(Entity& entity, Entity& target);
+    void spawnEnemiesInDungeon(int numberOfEnemies);
+    bool areAllEnemiesCleared() const;
 
     TTF_Font* font;
     TTF_Font* smallFont;

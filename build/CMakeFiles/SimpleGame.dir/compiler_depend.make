@@ -363,6 +363,35 @@ CMakeFiles/SimpleGame.dir/src/Enemy.cpp.o: ../src/Enemy.cpp \
   /usr/include/c++/11/bits/stl_multimap.h \
   /usr/include/c++/11/bits/erase_if.h \
   ../src/Player.h \
+  ../src/Game.h \
+  /usr/include/SDL2/SDL_ttf.h \
+  /usr/include/c++/11/algorithm \
+  /usr/include/c++/11/bits/stl_algo.h \
+  /usr/include/c++/11/bits/algorithmfwd.h \
+  /usr/include/c++/11/bits/stl_heap.h \
+  /usr/include/c++/11/bits/uniform_int_dist.h \
+  /usr/include/c++/11/pstl/glue_algorithm_defs.h \
+  /usr/include/c++/11/functional \
+  /usr/include/c++/11/bits/std_function.h \
+  /usr/include/c++/11/unordered_map \
+  /usr/include/c++/11/bits/hashtable.h \
+  /usr/include/c++/11/bits/hashtable_policy.h \
+  /usr/include/c++/11/bits/enable_special_members.h \
+  /usr/include/c++/11/bits/unordered_map.h \
+  ../src/Menu.h \
+  ../src/World.h \
+  /usr/include/c++/11/unordered_set \
+  /usr/include/c++/11/bits/unordered_set.h \
+  ../src/FastNoiseLite.h \
+  ../src/MazeGenerator.h \
+  /usr/include/c++/11/stack \
+  /usr/include/c++/11/deque \
+  /usr/include/c++/11/bits/stl_deque.h \
+  /usr/include/c++/11/bits/deque.tcc \
+  /usr/include/c++/11/bits/stl_stack.h \
+  /usr/include/c++/11/ctime \
+  /usr/include/c++/11/queue \
+  /usr/include/c++/11/bits/stl_queue.h \
   /usr/include/c++/11/iostream \
   /usr/include/c++/11/ostream \
   /usr/include/c++/11/ios \
@@ -750,6 +779,35 @@ CMakeFiles/SimpleGame.dir/src/Entity.cpp.o: ../src/Entity.cpp \
   /usr/include/c++/11/bits/erase_if.h \
   ../src/Enemy.h \
   ../src/Player.h \
+  ../src/Game.h \
+  /usr/include/SDL2/SDL_ttf.h \
+  /usr/include/c++/11/algorithm \
+  /usr/include/c++/11/bits/stl_algo.h \
+  /usr/include/c++/11/bits/algorithmfwd.h \
+  /usr/include/c++/11/bits/stl_heap.h \
+  /usr/include/c++/11/bits/uniform_int_dist.h \
+  /usr/include/c++/11/pstl/glue_algorithm_defs.h \
+  /usr/include/c++/11/functional \
+  /usr/include/c++/11/bits/std_function.h \
+  /usr/include/c++/11/unordered_map \
+  /usr/include/c++/11/bits/hashtable.h \
+  /usr/include/c++/11/bits/hashtable_policy.h \
+  /usr/include/c++/11/bits/enable_special_members.h \
+  /usr/include/c++/11/bits/unordered_map.h \
+  ../src/Menu.h \
+  ../src/World.h \
+  /usr/include/c++/11/unordered_set \
+  /usr/include/c++/11/bits/unordered_set.h \
+  ../src/FastNoiseLite.h \
+  ../src/MazeGenerator.h \
+  /usr/include/c++/11/stack \
+  /usr/include/c++/11/deque \
+  /usr/include/c++/11/bits/stl_deque.h \
+  /usr/include/c++/11/bits/deque.tcc \
+  /usr/include/c++/11/bits/stl_stack.h \
+  /usr/include/c++/11/ctime \
+  /usr/include/c++/11/queue \
+  /usr/include/c++/11/bits/stl_queue.h \
   /usr/include/c++/11/iostream \
   /usr/include/c++/11/ostream \
   /usr/include/c++/11/ios \
@@ -1152,6 +1210,11 @@ CMakeFiles/SimpleGame.dir/src/Game.cpp.o: ../src/Game.cpp \
   /usr/include/c++/11/bits/stl_multimap.h \
   ../src/Player.h \
   ../src/Enemy.h \
+  /usr/include/c++/11/queue \
+  /usr/include/c++/11/deque \
+  /usr/include/c++/11/bits/stl_deque.h \
+  /usr/include/c++/11/bits/deque.tcc \
+  /usr/include/c++/11/bits/stl_queue.h \
   ../src/Menu.h \
   ../src/World.h \
   /usr/include/c++/11/unordered_set \
@@ -1159,9 +1222,6 @@ CMakeFiles/SimpleGame.dir/src/Game.cpp.o: ../src/Game.cpp \
   ../src/FastNoiseLite.h \
   ../src/MazeGenerator.h \
   /usr/include/c++/11/stack \
-  /usr/include/c++/11/deque \
-  /usr/include/c++/11/bits/stl_deque.h \
-  /usr/include/c++/11/bits/deque.tcc \
   /usr/include/c++/11/bits/stl_stack.h \
   /usr/include/c++/11/ctime \
   /usr/include/c++/11/iostream \
@@ -1790,15 +1850,17 @@ CMakeFiles/SimpleGame.dir/src/Menu.cpp.o: ../src/Menu.cpp \
   /usr/include/c++/11/bits/stl_multimap.h \
   ../src/Player.h \
   ../src/Enemy.h \
+  /usr/include/c++/11/queue \
+  /usr/include/c++/11/deque \
+  /usr/include/c++/11/bits/stl_deque.h \
+  /usr/include/c++/11/bits/deque.tcc \
+  /usr/include/c++/11/bits/stl_queue.h \
   ../src/World.h \
   /usr/include/c++/11/unordered_set \
   /usr/include/c++/11/bits/unordered_set.h \
   ../src/FastNoiseLite.h \
   ../src/MazeGenerator.h \
   /usr/include/c++/11/stack \
-  /usr/include/c++/11/deque \
-  /usr/include/c++/11/bits/stl_deque.h \
-  /usr/include/c++/11/bits/deque.tcc \
   /usr/include/c++/11/bits/stl_stack.h \
   /usr/include/c++/11/ctime
 
@@ -2179,6 +2241,11 @@ CMakeFiles/SimpleGame.dir/src/Player.cpp.o: ../src/Player.cpp \
   /usr/include/c++/11/bits/enable_special_members.h \
   /usr/include/c++/11/bits/unordered_map.h \
   ../src/Enemy.h \
+  /usr/include/c++/11/queue \
+  /usr/include/c++/11/deque \
+  /usr/include/c++/11/bits/stl_deque.h \
+  /usr/include/c++/11/bits/deque.tcc \
+  /usr/include/c++/11/bits/stl_queue.h \
   ../src/Menu.h \
   ../src/World.h \
   /usr/include/c++/11/unordered_set \
@@ -2186,9 +2253,6 @@ CMakeFiles/SimpleGame.dir/src/Player.cpp.o: ../src/Player.cpp \
   ../src/FastNoiseLite.h \
   ../src/MazeGenerator.h \
   /usr/include/c++/11/stack \
-  /usr/include/c++/11/deque \
-  /usr/include/c++/11/bits/stl_deque.h \
-  /usr/include/c++/11/bits/deque.tcc \
   /usr/include/c++/11/bits/stl_stack.h \
   /usr/include/c++/11/ctime
 
@@ -2963,6 +3027,11 @@ CMakeFiles/SimpleGame.dir/src/main.cpp.o: ../src/main.cpp \
   /usr/include/c++/11/bits/stl_multimap.h \
   ../src/Player.h \
   ../src/Enemy.h \
+  /usr/include/c++/11/queue \
+  /usr/include/c++/11/deque \
+  /usr/include/c++/11/bits/stl_deque.h \
+  /usr/include/c++/11/bits/deque.tcc \
+  /usr/include/c++/11/bits/stl_queue.h \
   ../src/Menu.h \
   ../src/World.h \
   /usr/include/c++/11/unordered_set \
@@ -2970,9 +3039,6 @@ CMakeFiles/SimpleGame.dir/src/main.cpp.o: ../src/main.cpp \
   ../src/FastNoiseLite.h \
   ../src/MazeGenerator.h \
   /usr/include/c++/11/stack \
-  /usr/include/c++/11/deque \
-  /usr/include/c++/11/bits/stl_deque.h \
-  /usr/include/c++/11/bits/deque.tcc \
   /usr/include/c++/11/bits/stl_stack.h \
   /usr/include/c++/11/ctime
 
@@ -2986,6 +3052,26 @@ CMakeFiles/SimpleGame.dir/src/main.cpp.o: ../src/main.cpp \
 /usr/include/c++/11/bits/random.h:
 
 ../src/MazeGenerator.cpp:
+
+../src/Entity.cpp:
+
+/usr/include/c++/11/bits/istream.tcc:
+
+/usr/include/c++/11/istream:
+
+/usr/include/x86_64-linux-gnu/c++/11/bits/ctype_inline.h:
+
+/usr/include/x86_64-linux-gnu/bits/wctype-wchar.h:
+
+/usr/include/c++/11/cwctype:
+
+/usr/include/c++/11/streambuf:
+
+/usr/include/c++/11/bits/locale_classes.tcc:
+
+/usr/include/c++/11/bits/locale_classes.h:
+
+/usr/include/c++/11/ostream:
 
 /usr/include/c++/11/ctime:
 
@@ -3007,37 +3093,17 @@ CMakeFiles/SimpleGame.dir/src/main.cpp.o: ../src/main.cpp \
 
 /usr/include/c++/11/unordered_map:
 
-/usr/include/c++/11/bits/stl_algo.h:
-
-/usr/include/c++/11/algorithm:
-
-../src/Entity.cpp:
-
-/usr/include/c++/11/bits/istream.tcc:
-
-/usr/include/c++/11/istream:
-
-/usr/include/x86_64-linux-gnu/c++/11/bits/ctype_inline.h:
-
-/usr/include/x86_64-linux-gnu/bits/wctype-wchar.h:
-
-/usr/include/c++/11/cwctype:
-
-/usr/include/c++/11/bits/uniform_int_dist.h:
-
-/usr/include/c++/11/bits/basic_ios.h:
-
-/usr/include/c++/11/streambuf:
+/usr/include/c++/11/stdexcept:
 
 /usr/include/c++/11/pstl/glue_algorithm_defs.h:
 
-/usr/include/c++/11/stdexcept:
+/usr/include/c++/11/bits/basic_ios.h:
 
-/usr/include/c++/11/bits/locale_classes.tcc:
+/usr/include/c++/11/bits/uniform_int_dist.h:
 
-/usr/include/c++/11/bits/locale_classes.h:
+/usr/include/c++/11/bits/stl_algo.h:
 
-/usr/include/c++/11/ostream:
+/usr/include/c++/11/algorithm:
 
 ../src/Player.h:
 
@@ -3190,6 +3256,8 @@ CMakeFiles/SimpleGame.dir/src/main.cpp.o: ../src/main.cpp \
 /usr/include/c++/11/cwchar:
 
 /usr/include/c++/11/bits/char_traits.h:
+
+/usr/include/c++/11/queue:
 
 /usr/include/c++/11/bits/shared_ptr_atomic.h:
 
@@ -3449,9 +3517,9 @@ CMakeFiles/SimpleGame.dir/src/main.cpp.o: ../src/main.cpp \
 
 /usr/include/x86_64-linux-gnu/c++/11/bits/opt_random.h:
 
-/usr/include/c++/11/bits/enable_special_members.h:
-
 /usr/include/c++/11/bits/basic_ios.tcc:
+
+/usr/include/c++/11/bits/enable_special_members.h:
 
 /usr/include/SDL2/SDL_events.h:
 
@@ -3572,6 +3640,8 @@ CMakeFiles/SimpleGame.dir/src/main.cpp.o: ../src/main.cpp \
 /usr/include/c++/11/bits/std_abs.h:
 
 /usr/lib/gcc/x86_64-linux-gnu/11/include/sgxintrin.h:
+
+/usr/include/c++/11/bits/stl_queue.h:
 
 /usr/include/x86_64-linux-gnu/bits/stdint-uintn.h:
 

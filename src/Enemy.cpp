@@ -1,10 +1,13 @@
 #include "Enemy.h"
 #include <iostream>
+#include <queue>
+#include <unordered_map>
+#include <algorithm>
 
 const float Enemy::SPELL_COOLDOWN = 10.0f;
 
 Enemy::Enemy(float p_x, float p_y, SDL_Texture* p_tex, int numFrames, float animationSpeed)
-    : Entity(p_x, p_y, p_tex, numFrames, animationSpeed), attackCooldown(0.0f), spellRange(300.0f), thrustRange(100.0f), moveSpeed(75.0f) {}
+    : Entity(p_x, p_y, p_tex, numFrames, animationSpeed), attackCooldown(0.0f), spellRange(300.0f), thrustRange(100.0f), moveSpeed(75.0f), directionChangeCooldown(0.5f), timeSinceLastDirectionChange(0.0f), hasTarget(false), hasPath(false) {}
 
 void Enemy::setSpellTarget(float targetX, float targetY) {
     spellActive = true;
@@ -84,7 +87,252 @@ void Enemy::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Ent
     }
 }
 
-void Enemy::updateBehavior(float deltaTime, Player& player, std::vector<std::unique_ptr<Entity>>& entities) {
+std::vector<std::pair<int, int>> Enemy::findPathToPlayer(Player& player, Game& game) {
+    auto& dungeonMaze = game.getDungeonMaze();
+    int cellSize = 96;
+    int startX = static_cast<int>(getX() / cellSize);
+    int startY = static_cast<int>(getY() / cellSize);
+    int goalX = static_cast<int>(player.getX() / cellSize);
+    int goalY = static_cast<int>(player.getY() / cellSize);
+
+    std::vector<std::pair<int, int>> path;
+    if (startX == goalX && startY == goalY) return path;
+
+    std::priority_queue<std::tuple<int, int, int, int, std::vector<std::pair<int, int>>>> openSet;
+    std::unordered_map<int, std::unordered_map<int, int>> costSoFar;
+    openSet.emplace(0, startX, startY, 0, path);
+    costSoFar[startX][startY] = 0;
+
+    while (!openSet.empty()) {
+        auto [priority, x, y, cost, path] = openSet.top();
+        openSet.pop();
+
+        if (x == goalX && y == goalY) return path;
+
+        static const std::vector<std::pair<int, int>> directions = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
+        for (const auto& [dx, dy] : directions) {
+            int nextX = x + dx;
+            int nextY = y + dy;
+            int newCost = cost + 1;
+
+            if (nextX >= 0 && nextX < dungeonMaze[0].size() && nextY >= 0 && nextY < dungeonMaze.size() && dungeonMaze[nextY][nextX] != -1) {
+                if (!costSoFar.count(nextX) || !costSoFar[nextX].count(nextY) || newCost < costSoFar[nextX][nextY]) {
+                    costSoFar[nextX][nextY] = newCost;
+                    int priority = newCost + abs(nextX - goalX) + abs(nextY - goalY);
+                    auto newPath = path;
+                    newPath.emplace_back(nextX, nextY);
+                    openSet.emplace(priority, nextX, nextY, newCost, newPath);
+                }
+            }
+        }
+    }
+
+    return {}; // Return an empty path if no path is found
+}
+
+int heuristic(int x1, int y1, int x2, int y2) {
+    return abs(x1 - x2) + abs(y1 - y2);
+}
+
+void Enemy::followPlayer(float deltaTime, Player& player, Game& game) {
+    float moveSpeed = 100.0f;
+    bool moved = false;
+
+    timeSinceLastDirectionChange += deltaTime;
+
+    auto& dungeonMaze = game.getDungeonMaze(); // Access the dungeonMaze using the getter method
+
+    if (!hasPath) {
+        pathToPlayer = findPathToPlayer(player, game);
+        hasPath = true;
+    }
+
+    if (!pathToPlayer.empty()) {
+        auto [nextX, nextY] = pathToPlayer.front();
+        float targetX = nextX * 96.0f;
+        float targetY = nextY * 96.0f;
+
+        if (abs(targetX - getX()) > abs(targetY - getY())) {
+            if (targetX > getX()) {
+                if (!game.isWall(getX() + moveSpeed * deltaTime, getY())) {
+                    setX(getX() + moveSpeed * deltaTime);
+                    moved = true;
+                }
+                setDirection(Right);
+            } else {
+                if (!game.isWall(getX() - moveSpeed * deltaTime, getY())) {
+                    setX(getX() - moveSpeed * deltaTime);
+                    moved = true;
+                }
+                setDirection(Left);
+            }
+        } else {
+            if (targetY > getY()) {
+                if (!game.isWall(getX(), getY() + moveSpeed * deltaTime)) {
+                    setY(getY() + moveSpeed * deltaTime);
+                    moved = true;
+                }
+                setDirection(Down);
+            } else {
+                if (!game.isWall(getX(), getY() - moveSpeed * deltaTime)) {
+                    setY(getY() - moveSpeed * deltaTime);
+                    moved = true;
+                }
+                setDirection(Up);
+            }
+        }
+
+        if (moved && abs(getX() - targetX) < moveSpeed * deltaTime && abs(getY() - targetY) < moveSpeed * deltaTime) {
+            pathToPlayer.erase(pathToPlayer.begin());
+        }
+    }
+
+    if (!moved && timeSinceLastDirectionChange >= directionChangeCooldown) {
+        timeSinceLastDirectionChange = 0.0f; // Reset timer
+
+        // Choose a new direction where there is no wall
+        std::vector<Direction> directions = {Up, Down, Left, Right};
+        std::random_shuffle(directions.begin(), directions.end());
+        for (Direction dir : directions) {
+            float newX = getX();
+            float newY = getY();
+            switch (dir) {
+                case Up:
+                    newY -= moveSpeed * deltaTime;
+                    break;
+                case Down:
+                    newY += moveSpeed * deltaTime;
+                    break;
+                case Left:
+                    newX -= moveSpeed * deltaTime;
+                    break;
+                case Right:
+                    newX += moveSpeed * deltaTime;
+                    break;
+            }
+            if (!game.isWall(newX, newY)) {
+                setX(newX);
+                setY(newY);
+                setDirection(dir);
+                break;
+            }
+        }
+    } else if (!moved) {
+        timeSinceLastDirectionChange = directionChangeCooldown; // Force direction change if stuck
+    }
+
+    startAnimation();
+}
+
+void Enemy::randomMove(float deltaTime, Game& game) {
+    float moveSpeed = 100.0f;
+    bool moved = false;
+
+    timeSinceLastDirectionChange += deltaTime;
+
+    if (timeSinceLastDirectionChange >= directionChangeCooldown) {  // Check if cooldown has passed
+        timeSinceLastDirectionChange = 0.0f;  // Reset timer
+        std::vector<Direction> directions = {Up, Down, Left, Right};
+        std::random_shuffle(directions.begin(), directions.end());
+        for (Direction dir : directions) {
+            float newX = getX();
+            float newY = getY();
+            switch (dir) {
+                case Up:
+                    newY -= moveSpeed * deltaTime;
+                    break;
+                case Down:
+                    newY += moveSpeed * deltaTime;
+                    break;
+                case Left:
+                    newX -= moveSpeed * deltaTime;
+                    break;
+                case Right:
+                    newX += moveSpeed * deltaTime;
+                    break;
+            }
+            if (!game.isWall(newX, newY)) {
+                setX(newX);
+                setY(newY);
+                setDirection(dir);
+                moved = true;
+                break;
+            }
+        }
+    }
+
+    if (!moved) {
+        // Continue moving in the same direction if not changed
+        switch (getDirection()) {
+            case Up:
+                if (!game.isWall(getX(), getY() - moveSpeed * deltaTime)) {
+                    setY(getY() - moveSpeed * deltaTime);
+                    moved = true;
+                } else {
+                    timeSinceLastDirectionChange = directionChangeCooldown; // Force direction change
+                }
+                break;
+            case Down:
+                if (!game.isWall(getX(), getY() + moveSpeed * deltaTime)) {
+                    setY(getY() + moveSpeed * deltaTime);
+                    moved = true;
+                } else {
+                    timeSinceLastDirectionChange = directionChangeCooldown; // Force direction change
+                }
+                break;
+            case Left:
+                if (!game.isWall(getX() - moveSpeed * deltaTime, getY())) {
+                    setX(getX() - moveSpeed * deltaTime);
+                    moved = true;
+                } else {
+                    timeSinceLastDirectionChange = directionChangeCooldown; // Force direction change
+                }
+                break;
+            case Right:
+                if (!game.isWall(getX() + moveSpeed * deltaTime, getY())) {
+                    setX(getX() + moveSpeed * deltaTime);
+                    moved = true;
+                } else {
+                    timeSinceLastDirectionChange = directionChangeCooldown; // Force direction change
+                }
+                break;
+        }
+    }
+
+    if (!moved) {
+        // Choose a new direction where there is no wall
+        std::vector<Direction> directions = {Up, Down, Left, Right};
+        std::random_shuffle(directions.begin(), directions.end());
+        for (Direction dir : directions) {
+            float newX = getX();
+            float newY = getY();
+            switch (dir) {
+                case Up:
+                    newY -= moveSpeed * deltaTime;
+                    break;
+                case Down:
+                    newY += moveSpeed * deltaTime;
+                    break;
+                case Left:
+                    newX -= moveSpeed * deltaTime;
+                    break;
+                case Right:
+                    newX += moveSpeed * deltaTime;
+                    break;
+            }
+            if (!game.isWall(newX, newY)) {
+                setX(newX);
+                setY(newY);
+                setDirection(dir);
+                break;
+            }
+        }
+    }
+
+    startAnimation();
+}
+
+void Enemy::updateBehavior(float deltaTime, Player& player, std::vector<std::unique_ptr<Entity>>& entities, Game& game) {
     if (isMarkedForRemoval()) return;
 
     float distanceX = player.getX() - getX();
@@ -97,30 +345,16 @@ void Enemy::updateBehavior(float deltaTime, Player& player, std::vector<std::uni
 
     if (attackCooldown > 0.0f) {
         attackCooldown -= deltaTime;
-    } else {
-        decideAction(player, distance);
     }
 
-    if (getAction() == Walking) {
-        float moveSpeed = 100.0f;
-        if (fabs(distanceX) > fabs(distanceY)) {
-            if (distanceX > 0) {
-                setX(getX() + moveSpeed * deltaTime);
-                setDirection(Right);
-            } else {
-                setX(getX() - moveSpeed * deltaTime);
-                setDirection(Left);
-            }
-        } else {
-            if (distanceY > 0) {
-                setY(getY() + moveSpeed * deltaTime);
-                setDirection(Down);
-            } else {
-                setY(getY() - moveSpeed * deltaTime);
-                setDirection(Up);
-            }
+    if (distance <= 600.0f) {  // Adjust the range as needed
+        if (spellCooldownRemaining <= 0.0f) {
+            decideAction(player, distance);
         }
-        startAnimation();
+        followPlayer(deltaTime, player, game);
+    } else {
+        randomMove(deltaTime, game);
+        hasPath = false;  // Reset path when player is far
     }
 
     updateEnemy(deltaTime, player, entities);
@@ -177,12 +411,15 @@ void Enemy::decideAction(Player& player, float distance) {
         setAttackStartTime(SDL_GetTicks());
         setAttackDelay(500);
         setDamageApplied(false);
+        spellCooldownRemaining = SPELL_COOLDOWN;
+    
     } else if (distance <= thrustRange * 1.2 && randomFactor < 60) {
         setAction(Thrusting);
         attackCooldown = 1.0f;
         setAttackStartTime(SDL_GetTicks());
         setAttackDelay(150);
         setDamageApplied(false);
+
     } else {
         setAction(Walking);
     }

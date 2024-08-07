@@ -8,6 +8,7 @@ MazeGenerator::MazeGenerator(int width, int height) : width(width), height(heigh
 std::vector<std::vector<int>> MazeGenerator::generateMaze() {
     initializeMaze();
     carveMaze(1, 1);
+    refineMaze();
     return maze;
 }
 
@@ -46,6 +47,40 @@ void MazeGenerator::carveMaze(int x, int y) {
             }
         }
     }
+}
+
+void MazeGenerator::refineMaze() {
+    std::vector<std::vector<int>> newMaze = maze;
+    int directions[4][2] = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
+
+    // Ensure the margins of the maze are all -1
+    for (int x = 0; x < width; ++x) {
+        newMaze[0][x] = -1;
+        newMaze[height - 1][x] = -1;
+    }
+    for (int y = 0; y < height; ++y) {
+        newMaze[y][0] = -1;
+        newMaze[y][width - 1] = -1;
+    }
+
+    for (int y = 1; y < height - 1; ++y) {
+        for (int x = 1; x < width - 1; ++x) {
+            if (maze[y][x] == 0) {
+                int wallCount = 0;
+                for (const auto& dir : directions) {
+                    int nx = x + dir[0];
+                    int ny = y + dir[1];
+                    if (maze[ny][nx] == -1) {
+                        ++wallCount;
+                    }
+                }
+                if (wallCount >= 3) {
+                    newMaze[y][x] = -1;
+                }
+            }
+        }
+    }
+    maze = newMaze;
 }
 
 bool MazeGenerator::isInBounds(int x, int y) {

@@ -21,6 +21,7 @@ private:
     void initializeMaze();
     void carveMaze(int x, int y);
     bool isInBounds(int x, int y);
+    void refineMaze();
 };
 
 #endif // MAZEGENERATOR_H
