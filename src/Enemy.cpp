@@ -6,6 +6,11 @@
 
 const float Enemy::SPELL_COOLDOWN = 10.0f;
 
+const int ENEMY_PADDING_X = 0;
+const int ENEMY_PADDING_Y = 0;
+
+const int CELL_SIZE = 96;
+
 Enemy::Enemy(float p_x, float p_y, SDL_Texture* p_tex, int numFrames, float animationSpeed)
     : Entity(p_x, p_y, p_tex, numFrames, animationSpeed), attackCooldown(0.0f), spellRange(300.0f), thrustRange(100.0f), moveSpeed(75.0f), directionChangeCooldown(0.5f), timeSinceLastDirectionChange(0.0f), hasTarget(false), hasPath(false) {}
 
@@ -89,11 +94,10 @@ void Enemy::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Ent
 
 std::vector<std::pair<int, int>> Enemy::findPathToPlayer(Player& player, Game& game) {
     auto& dungeonMaze = game.getDungeonMaze();
-    int cellSize = 96;
-    int startX = static_cast<int>(getX() / cellSize);
-    int startY = static_cast<int>(getY() / cellSize);
-    int goalX = static_cast<int>(player.getX() / cellSize);
-    int goalY = static_cast<int>(player.getY() / cellSize);
+    int startX = static_cast<int>((getX() + ENEMY_PADDING_X) / CELL_SIZE);
+    int startY = static_cast<int>((getY() + ENEMY_PADDING_Y) / CELL_SIZE);
+    int goalX = static_cast<int>((player.getX()) / CELL_SIZE);
+    int goalY = static_cast<int>((player.getY()) / CELL_SIZE);
 
     std::vector<std::pair<int, int>> path;
     if (startX == goalX && startY == goalY) return path;
@@ -142,25 +146,20 @@ void Enemy::followPlayer(float deltaTime, Player& player, Game& game) {
 
     auto& dungeonMaze = game.getDungeonMaze(); // Access the dungeonMaze using the getter method
 
-    if (!hasPath) {
-        pathToPlayer = findPathToPlayer(player, game);
-        hasPath = true;
-    }
-
     if (!pathToPlayer.empty()) {
-        auto [nextX, nextY] = pathToPlayer.front();
-        float targetX = nextX * 96.0f;
-        float targetY = nextY * 96.0f;
+        auto [nextX, nextY] = pathToPlayer[currentPathIndex];
+        float targetX = nextX * CELL_SIZE;
+        float targetY = nextY * CELL_SIZE;
 
         if (abs(targetX - getX()) > abs(targetY - getY())) {
             if (targetX > getX()) {
-                if (!game.isWall(getX() + moveSpeed * deltaTime, getY())) {
+                if (!game.isWall(getX() + moveSpeed * deltaTime + ENEMY_PADDING_X, getY() + ENEMY_PADDING_Y)) {
                     setX(getX() + moveSpeed * deltaTime);
                     moved = true;
                 }
                 setDirection(Right);
             } else {
-                if (!game.isWall(getX() - moveSpeed * deltaTime, getY())) {
+                if (!game.isWall(getX() - moveSpeed * deltaTime + ENEMY_PADDING_X, getY() + ENEMY_PADDING_Y)) {
                     setX(getX() - moveSpeed * deltaTime);
                     moved = true;
                 }
@@ -168,13 +167,13 @@ void Enemy::followPlayer(float deltaTime, Player& player, Game& game) {
             }
         } else {
             if (targetY > getY()) {
-                if (!game.isWall(getX(), getY() + moveSpeed * deltaTime)) {
+                if (!game.isWall(getX() + ENEMY_PADDING_X, getY() + moveSpeed * deltaTime + ENEMY_PADDING_Y)) {
                     setY(getY() + moveSpeed * deltaTime);
                     moved = true;
                 }
                 setDirection(Down);
             } else {
-                if (!game.isWall(getX(), getY() - moveSpeed * deltaTime)) {
+                if (!game.isWall(getX() + ENEMY_PADDING_X, getY() - moveSpeed * deltaTime + ENEMY_PADDING_Y)) {
                     setY(getY() - moveSpeed * deltaTime);
                     moved = true;
                 }
@@ -183,7 +182,7 @@ void Enemy::followPlayer(float deltaTime, Player& player, Game& game) {
         }
 
         if (moved && abs(getX() - targetX) < moveSpeed * deltaTime && abs(getY() - targetY) < moveSpeed * deltaTime) {
-            pathToPlayer.erase(pathToPlayer.begin());
+            currentPathIndex++;
         }
     }
 
@@ -210,7 +209,7 @@ void Enemy::followPlayer(float deltaTime, Player& player, Game& game) {
                     newX += moveSpeed * deltaTime;
                     break;
             }
-            if (!game.isWall(newX, newY)) {
+            if (!game.isWall(newX + ENEMY_PADDING_X, newY + ENEMY_PADDING_Y)) {
                 setX(newX);
                 setY(newY);
                 setDirection(dir);
@@ -243,22 +242,42 @@ void Enemy::moveDirectlyToPlayer(float deltaTime, Player& player, Game& game) {
 
     if (getAction() == Walking) {
         float moveSpeed = 100.0f;
+        bool moved = false;
+
         if (fabs(distanceX) > fabs(distanceY)) {
             if (distanceX > 0) {
-                setX(getX() + moveSpeed * deltaTime);
+                if (!game.isWall(getX() + moveSpeed * deltaTime + ENEMY_PADDING_X, getY() + ENEMY_PADDING_Y)) {
+                    setX(getX() + moveSpeed * deltaTime);
+                    moved = true;
+                }
                 setDirection(Right);
             } else {
-                setX(getX() - moveSpeed * deltaTime);
+                if (!game.isWall(getX() - moveSpeed * deltaTime + ENEMY_PADDING_X, getY() + ENEMY_PADDING_Y)) {
+                    setX(getX() - moveSpeed * deltaTime);
+                    moved = true;
+                }
                 setDirection(Left);
             }
         } else {
             if (distanceY > 0) {
-                setY(getY() + moveSpeed * deltaTime);
+                if (!game.isWall(getX() + ENEMY_PADDING_X, getY() + moveSpeed * deltaTime + ENEMY_PADDING_Y)) {
+                    setY(getY() + moveSpeed * deltaTime);
+                    moved = true;
+                }
                 setDirection(Down);
             } else {
-                setY(getY() - moveSpeed * deltaTime);
+                if (!game.isWall(getX() + ENEMY_PADDING_X, getY() - moveSpeed * deltaTime + ENEMY_PADDING_Y)) {
+                    setY(getY() - moveSpeed * deltaTime);
+                    moved = true;
+                }
                 setDirection(Up);
             }
+        }
+
+        if (!moved) {
+            pathToPlayer = findPathToPlayer(player, game);
+            currentPathIndex = 0;
+            followPlayer(deltaTime, player, game);
         }
     }
 
@@ -281,24 +300,50 @@ void Enemy::randomMove(float deltaTime, Game& game) {
             switch (dir) {
                 case Up:
                     newY -= moveSpeed * deltaTime;
+                    if (!game.isWall(newX + ENEMY_PADDING_X, newY + ENEMY_PADDING_Y) && 
+                        !game.isWall(newX + ENEMY_PADDING_X + FRAME_WIDTH - 1, newY + ENEMY_PADDING_Y) &&
+                        !game.isWall(newX + ENEMY_PADDING_X, newY + ENEMY_PADDING_Y + FRAME_HEIGHT - 1) &&
+                        !game.isWall(newX + ENEMY_PADDING_X + FRAME_WIDTH - 1, newY + ENEMY_PADDING_Y + FRAME_HEIGHT - 1)) {
+                        setY(newY);
+                        setDirection(Up);
+                        moved = true;
+                    }
                     break;
                 case Down:
                     newY += moveSpeed * deltaTime;
+                    if (!game.isWall(newX + ENEMY_PADDING_X, newY + ENEMY_PADDING_Y) && 
+                        !game.isWall(newX + ENEMY_PADDING_X + FRAME_WIDTH - 1, newY + ENEMY_PADDING_Y) &&
+                        !game.isWall(newX + ENEMY_PADDING_X, newY + ENEMY_PADDING_Y + FRAME_HEIGHT - 1) &&
+                        !game.isWall(newX + ENEMY_PADDING_X + FRAME_WIDTH - 1, newY + ENEMY_PADDING_Y + FRAME_HEIGHT - 1)) {
+                        setY(newY);
+                        setDirection(Down);
+                        moved = true;
+                    }
                     break;
                 case Left:
                     newX -= moveSpeed * deltaTime;
+                    if (!game.isWall(newX + ENEMY_PADDING_X, newY + ENEMY_PADDING_Y) && 
+                        !game.isWall(newX + ENEMY_PADDING_X + FRAME_WIDTH - 1, newY + ENEMY_PADDING_Y) &&
+                        !game.isWall(newX + ENEMY_PADDING_X, newY + ENEMY_PADDING_Y + FRAME_HEIGHT - 1) &&
+                        !game.isWall(newX + ENEMY_PADDING_X + FRAME_WIDTH - 1, newY + ENEMY_PADDING_Y + FRAME_HEIGHT - 1)) {
+                        setX(newX);
+                        setDirection(Left);
+                        moved = true;
+                    }
                     break;
                 case Right:
                     newX += moveSpeed * deltaTime;
+                    if (!game.isWall(newX + ENEMY_PADDING_X, newY + ENEMY_PADDING_Y) && 
+                        !game.isWall(newX + ENEMY_PADDING_X + FRAME_WIDTH - 1, newY + ENEMY_PADDING_Y) &&
+                        !game.isWall(newX + ENEMY_PADDING_X, newY + ENEMY_PADDING_Y + FRAME_HEIGHT - 1) &&
+                        !game.isWall(newX + ENEMY_PADDING_X + FRAME_WIDTH - 1, newY + ENEMY_PADDING_Y + FRAME_HEIGHT - 1)) {
+                        setX(newX);
+                        setDirection(Right);
+                        moved = true;
+                    }
                     break;
             }
-            if (!game.isWall(newX, newY)) {
-                setX(newX);
-                setY(newY);
-                setDirection(dir);
-                moved = true;
-                break;
-            }
+            if (moved) break;
         }
     }
 
@@ -306,7 +351,10 @@ void Enemy::randomMove(float deltaTime, Game& game) {
         // Continue moving in the same direction if not changed
         switch (getDirection()) {
             case Up:
-                if (!game.isWall(getX(), getY() - moveSpeed * deltaTime)) {
+                if (!game.isWall(getX() + ENEMY_PADDING_X, getY() - moveSpeed * deltaTime + ENEMY_PADDING_Y) &&
+                    !game.isWall(getX() + ENEMY_PADDING_X + FRAME_WIDTH - 1, getY() - moveSpeed * deltaTime + ENEMY_PADDING_Y) &&
+                    !game.isWall(getX() + ENEMY_PADDING_X, getY() - moveSpeed * deltaTime + ENEMY_PADDING_Y + FRAME_HEIGHT - 1) &&
+                    !game.isWall(getX() + ENEMY_PADDING_X + FRAME_WIDTH - 1, getY() - moveSpeed * deltaTime + ENEMY_PADDING_Y + FRAME_HEIGHT - 1)) {
                     setY(getY() - moveSpeed * deltaTime);
                     moved = true;
                 } else {
@@ -314,7 +362,10 @@ void Enemy::randomMove(float deltaTime, Game& game) {
                 }
                 break;
             case Down:
-                if (!game.isWall(getX(), getY() + moveSpeed * deltaTime)) {
+                if (!game.isWall(getX() + ENEMY_PADDING_X, getY() + moveSpeed * deltaTime + ENEMY_PADDING_Y) &&
+                    !game.isWall(getX() + ENEMY_PADDING_X + FRAME_WIDTH - 1, getY() + moveSpeed * deltaTime + ENEMY_PADDING_Y) &&
+                    !game.isWall(getX() + ENEMY_PADDING_X, getY() + moveSpeed * deltaTime + ENEMY_PADDING_Y + FRAME_HEIGHT - 1) &&
+                    !game.isWall(getX() + ENEMY_PADDING_X + FRAME_WIDTH - 1, getY() + moveSpeed * deltaTime + ENEMY_PADDING_Y + FRAME_HEIGHT - 1)) {
                     setY(getY() + moveSpeed * deltaTime);
                     moved = true;
                 } else {
@@ -322,7 +373,10 @@ void Enemy::randomMove(float deltaTime, Game& game) {
                 }
                 break;
             case Left:
-                if (!game.isWall(getX() - moveSpeed * deltaTime, getY())) {
+                if (!game.isWall(getX() - moveSpeed * deltaTime + ENEMY_PADDING_X, getY() + ENEMY_PADDING_Y) &&
+                    !game.isWall(getX() - moveSpeed * deltaTime + ENEMY_PADDING_X + FRAME_WIDTH - 1, getY() + ENEMY_PADDING_Y) &&
+                    !game.isWall(getX() - moveSpeed * deltaTime + ENEMY_PADDING_X, getY() + ENEMY_PADDING_Y + FRAME_HEIGHT - 1) &&
+                    !game.isWall(getX() - moveSpeed * deltaTime + ENEMY_PADDING_X + FRAME_WIDTH - 1, getY() + ENEMY_PADDING_Y + FRAME_HEIGHT - 1)) {
                     setX(getX() - moveSpeed * deltaTime);
                     moved = true;
                 } else {
@@ -330,7 +384,10 @@ void Enemy::randomMove(float deltaTime, Game& game) {
                 }
                 break;
             case Right:
-                if (!game.isWall(getX() + moveSpeed * deltaTime, getY())) {
+                if (!game.isWall(getX() + moveSpeed * deltaTime + ENEMY_PADDING_X, getY() + ENEMY_PADDING_Y) &&
+                    !game.isWall(getX() + moveSpeed * deltaTime + ENEMY_PADDING_X + FRAME_WIDTH - 1, getY() + ENEMY_PADDING_Y) &&
+                    !game.isWall(getX() + moveSpeed * deltaTime + ENEMY_PADDING_X, getY() + ENEMY_PADDING_Y + FRAME_HEIGHT - 1) &&
+                    !game.isWall(getX() + moveSpeed * deltaTime + ENEMY_PADDING_X + FRAME_WIDTH - 1, getY() + ENEMY_PADDING_Y + FRAME_HEIGHT - 1)) {
                     setX(getX() + moveSpeed * deltaTime);
                     moved = true;
                 } else {
@@ -361,7 +418,10 @@ void Enemy::randomMove(float deltaTime, Game& game) {
                     newX += moveSpeed * deltaTime;
                     break;
             }
-            if (!game.isWall(newX, newY)) {
+            if (!game.isWall(newX + ENEMY_PADDING_X, newY + ENEMY_PADDING_Y) && 
+                !game.isWall(newX + ENEMY_PADDING_X + FRAME_WIDTH - 1, newY + ENEMY_PADDING_Y) &&
+                !game.isWall(newX + ENEMY_PADDING_X, newY + ENEMY_PADDING_Y + FRAME_HEIGHT - 1) &&
+                !game.isWall(newX + ENEMY_PADDING_X + FRAME_WIDTH - 1, newY + ENEMY_PADDING_Y + FRAME_HEIGHT - 1)) {
                 setX(newX);
                 setY(newY);
                 setDirection(dir);
@@ -388,10 +448,26 @@ void Enemy::updateBehavior(float deltaTime, Player& player, std::vector<std::uni
         attackCooldown -= deltaTime;
     }
 
+    // Track player's cell position
+    static int lastPlayerCellX = static_cast<int>(player.getX() / 96);
+    static int lastPlayerCellY = static_cast<int>(player.getY() / 96);
+    
+    int currentPlayerCellX = static_cast<int>(player.getX() / 96);
+    int currentPlayerCellY = static_cast<int>(player.getY() / 96);
+
+    // Recalculate path if player moves to a new cell
+    if (currentPlayerCellX != lastPlayerCellX || currentPlayerCellY != lastPlayerCellY) {
+        pathToPlayer = findPathToPlayer(player, game);
+        currentPathIndex = 0;
+        lastPlayerCellX = currentPlayerCellX;
+        lastPlayerCellY = currentPlayerCellY;
+        hasPath = true;
+    }
+
     // Check distances and decide behavior
-    if (distance <= 175.0f) {
+    if (distance <= 150.0f) {
         moveDirectlyToPlayer(deltaTime, player, game);
-    } else if (distance <= 750.0f) {
+    } else if (distance <= 800.0f) {
         if (spellCooldownRemaining <= 0.0f) {
             decideAction(player, distance);
         }

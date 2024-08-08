@@ -329,8 +329,8 @@ void Game::spawnEnemiesInDungeon(int numberOfEnemies) {
         int x = pathCells[i].first;
         int y = pathCells[i].second;
 
-        float enemyX = x * 96.0f;
-        float enemyY = y * 96.0f;
+        float enemyX = x * 96.0f - 32;
+        float enemyY = y * 96.0f - 64;
 
         SDL_Texture* enemyTex = loadTexture("/home/simion/Desktop/3/Game2D/assets/enemy4.png");
         auto enemy = std::make_unique<Enemy>(enemyX, enemyY, enemyTex, 8, 0.1f);
