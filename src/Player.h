@@ -31,7 +31,7 @@ public:
     bool getIsDead() const { return isDead; }
     void setIsDead(bool dead) { isDead = dead; }
 
-    void updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities) override;
+    void updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities, Game& game) override;
     void updateArrowPosition(float deltaTime, const std::vector<std::vector<int>>& dungeonMaze, int cellSize);
 
     void setDeathAnimationFinished(bool finished) { deathAnimationFinished = finished; }
@@ -41,16 +41,36 @@ public:
     void useStamina(float amount);
     void regenerateStamina(float deltaTime);
 
+    void deactivateSpell();
+
 private:
     bool isDead;
     bool deathAnimationFinished;
     float stamina;
 
+    float spellDirX;
+    float spellDirY;
+
     void handleCooldowns(float deltaTime);
+
+    enum SpellState {
+        CURVED_TRAJECTORY,
+        BOUNCING
+    };
+
+    SpellState spellState;
+    Uint32 lastBounceTime;
+    float bounceDistance;
+
+    const Uint32 curveInterval = 3000;  // Time to return to curve after bounce (e.g., 3 seconds)
+    const float maxBounceDistance = 500.0f;
 
     static const float SPELL_COOLDOWN;
     static const float SLASH_COOLDOWN;
     static const float SHOOTING_COOLDOWN;
+
+    int bounceCount;
+    const int maxBounces = 3;
 };
 
 #endif

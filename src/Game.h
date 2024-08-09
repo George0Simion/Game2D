@@ -41,6 +41,8 @@ public:
     void startLevel(int difficulty);
     bool isWall(float x, float y);
     std::vector<std::vector<int>>& getDungeonMaze() { return dungeonMaze; }
+    int getDungeonWidth() const;
+    int getDungeonHeight() const;
 
     bool isRunning;
     bool isMenuOpen;                                                                            /* Window sem - variables */

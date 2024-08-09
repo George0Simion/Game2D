@@ -12,7 +12,17 @@ const int ENEMY_PADDING_Y = 0;
 const int CELL_SIZE = 96;
 
 Enemy::Enemy(float p_x, float p_y, SDL_Texture* p_tex, int numFrames, float animationSpeed)
-    : Entity(p_x, p_y, p_tex, numFrames, animationSpeed), attackCooldown(0.0f), spellRange(300.0f), thrustRange(100.0f), moveSpeed(75.0f), directionChangeCooldown(0.5f), timeSinceLastDirectionChange(0.0f), hasTarget(false), hasPath(false) {}
+    : Entity(p_x, p_y, p_tex, numFrames, animationSpeed), 
+      bounceCount(0),
+      attackCooldown(0.0f), 
+      spellRange(300.0f), 
+      thrustRange(100.0f), 
+      moveSpeed(75.0f), 
+      directionChangeCooldown(0.5f), 
+      timeSinceLastDirectionChange(0.0f), 
+      hasTarget(false), 
+      hasPath(false) {}
+
 
 void Enemy::setSpellTarget(float targetX, float targetY) {
     spellActive = true;
@@ -26,7 +36,7 @@ void Enemy::setSpellTarget(float targetX, float targetY) {
     spellCooldownRemaining = SPELL_COOLDOWN;
 }
 
-void Enemy::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities) {
+void Enemy::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities, Game& game) {
     if (spellActive) {
         Uint32 currentTime = SDL_GetTicks();
         if (currentTime - spellStartTime > spellDuration) {
@@ -63,7 +73,7 @@ void Enemy::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Ent
             float angle = atan2(dy, dx);
             float curve = sin(SDL_GetTicks() * spellCurveFactor);
 
-            float controlPointX = (spellX + spellTargetX) / 2 + curve * 50; // Adding a control point for curve
+            float controlPointX = (spellX + spellTargetX) / 2 + curve * 50;
             float controlPointY = (spellY + spellTargetY) / 2 + curve * 50;
 
             float t = (spellSpeed / 2) * deltaTime / distance;
@@ -87,6 +97,20 @@ void Enemy::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Ent
                         break;
                     }
                 }
+            }
+        }
+
+        if (isSpellCollidingWithWall(spellX, spellY, 64, game.getDungeonMaze())) {
+            if (bounceCount < maxBounces) {
+                if (spellX <= 0 || spellX >= game.getDungeonWidth() - FRAME_WIDTH) {
+                    dx = -dx;
+                }
+                if (spellY <= 0 || spellY >= game.getDungeonHeight() - FRAME_HEIGHT) {
+                    dy = -dy;
+                }
+                bounceCount++;
+            } else {
+                deactivateSpell();
             }
         }
     }
@@ -477,10 +501,10 @@ void Enemy::updateBehavior(float deltaTime, Player& player, std::vector<std::uni
         hasPath = false;  // Reset path when player is far
     }
 
-    updateEnemy(deltaTime, player, entities);
+    updateEnemy(deltaTime, player, entities, game);
 }
 
-void Enemy::updateEnemy(float deltaTime, Player& player, std::vector<std::unique_ptr<Entity>>& entities) {
+void Enemy::updateEnemy(float deltaTime, Player& player, std::vector<std::unique_ptr<Entity>>& entities, Game& game) {
     if (isMarkedForRemoval()) return;
 
     float actualSpeed = isRunning() ? 1.5f * moveSpeed : moveSpeed;
@@ -507,7 +531,7 @@ void Enemy::updateEnemy(float deltaTime, Player& player, std::vector<std::unique
     }
 
     if (isSpellActive()) {
-        updateSpellPosition(deltaTime, entities);
+        updateSpellPosition(deltaTime, entities, game);
     }
 }
 

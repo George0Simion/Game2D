@@ -10,9 +10,24 @@ Entity::Entity(float p_x, float p_y, SDL_Texture* p_tex, int p_numFrames, float 
     currentFrame = {0, 0, FRAME_WIDTH, FRAME_HEIGHT};
 }
 
+void Entity::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities, Game& game) {
+    // Base class has no specific implementation.
+}
+
 bool Entity::isArrowCollidingWithWall(float arrowX, float arrowY, int cellSize, const std::vector<std::vector<int>>& dungeonMaze) {
     int mazeX = static_cast<int>(arrowX + 32) / cellSize;
     int mazeY = static_cast<int>(arrowY + 64) / cellSize;
+
+    if (mazeY < 0 || mazeY >= dungeonMaze.size() || mazeX < 0 || mazeX >= dungeonMaze[0].size()) {
+        return true;
+    }
+
+    return dungeonMaze[mazeY][mazeX] == -1;
+}
+
+bool Entity::isSpellCollidingWithWall(float spellX, float spellY, int cellSize, const std::vector<std::vector<int>>& dungeonMaze) {
+    int mazeX = static_cast<int>(spellX + 32) / cellSize;
+    int mazeY = static_cast<int>(spellY + 64) / cellSize;
 
     if (mazeY < 0 || mazeY >= dungeonMaze.size() || mazeX < 0 || mazeX >= dungeonMaze[0].size()) {
         return true;

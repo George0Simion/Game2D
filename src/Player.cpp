@@ -1,21 +1,46 @@
 #include "Player.h"
 #include "Game.h"
+#include <iostream>
 
 const float Player::SPELL_COOLDOWN = 15.0f;
 const float Player::SLASH_COOLDOWN = 10.0f;
 const float Player::SHOOTING_COOLDOWN = 5.0f;
+const float INITIAL_SPELL_SPEED = 200.0f;
 
 Player::Player(float p_x, float p_y, SDL_Texture* p_tex, int numFrames, float animationSpeed)
-    : Entity(p_x, p_y, p_tex, numFrames, animationSpeed), isDead(false), deathAnimationFinished(false), stamina(INITIAL_STAMINA) {}
+    : Entity(p_x, p_y, p_tex, numFrames, animationSpeed),
+      isDead(false),
+      deathAnimationFinished(false),
+      stamina(INITIAL_STAMINA),
+      bounceCount(0),
+      spellDirX(0.0f),  // Initialize direction vectors to zero
+      spellDirY(0.0f),
+      spellState(CURVED_TRAJECTORY),  // Start in the curved trajectory state
+      lastBounceTime(0),
+      bounceDistance(0.0f) {}
 
-void Player::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities) {
-    if (spellActive) {
-        Uint32 currentTime = SDL_GetTicks();
-        if (currentTime - spellStartTime > spellDuration) {
-            deactivateSpell();
-            return;
-        }
+void Player::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities, Game& game) {
+    if (!spellActive) {
+        return;
+    }
 
+    Uint32 currentTime = SDL_GetTicks();
+
+    // Check if the spell duration has expired
+    if (currentTime - spellStartTime > spellDuration) {
+        deactivateSpell();
+        return;
+    }
+
+    // Padding to transition to bouncing before impact
+    const float wallPadding = 5.0f;
+
+    // Switch to curved trajectory if enough time has passed since the last bounce
+    if (spellState == BOUNCING && currentTime - lastBounceTime > 2000) { // 3 seconds
+        spellState = CURVED_TRAJECTORY;
+    }
+
+    if (spellState == CURVED_TRAJECTORY) {
         // Update target position more frequently to ensure smooth tracking
         Enemy* closestEnemy = nullptr;
         float minDistance = std::numeric_limits<float>::max();
@@ -38,38 +63,101 @@ void Player::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<En
         float distance = std::hypot(dx, dy);
 
         if (distance > 5.0f) {
-            float angle = atan2(dy, dx);
-            float curve = sin(SDL_GetTicks() * spellCurveFactor);
+            float curve = sin(SDL_GetTicks() * 0.001f);
 
-            float controlPointX = (spellX + spellTargetX) / 2 + curve * 50; // Adding a control point for curve
+            float controlPointX = (spellX + spellTargetX) / 2 + curve * 50;  // Adding a control point for curve
             float controlPointY = (spellY + spellTargetY) / 2 + curve * 50;
 
             // Interpolating positions for smooth, curved movement
-            float t = spellSpeed * deltaTime / distance; // Parametric time
+            float t = spellSpeed * deltaTime / distance;  // Parametric time
             spellX = (1 - t) * (1 - t) * spellX + 2 * (1 - t) * t * controlPointX + t * t * spellTargetX;
             spellY = (1 - t) * (1 - t) * spellY + 2 * (1 - t) * t * controlPointY + t * t * spellTargetY;
+
+            // Check for collision with walls while in curved trajectory state
+            if (isSpellCollidingWithWall(spellX + spellDirX * wallPadding, spellY + spellDirY * wallPadding, 96, game.getDungeonMaze())) {
+                std::cout << "Collision detected during curved trajectory. Switching to bouncing state." << std::endl;
+
+                spellState = BOUNCING;
+                lastBounceTime = currentTime;
+                bounceDistance = 0.0f;
+
+                // Set initial direction based on the current trajectory
+                float directionDx = spellTargetX - spellX;
+                float directionDy = spellTargetY - spellY;
+                float directionDistance = std::hypot(directionDx, directionDy);
+
+                if (directionDistance > 0) {
+                    spellDirX = directionDx / directionDistance;
+                    spellDirY = directionDy / directionDistance;
+                }
+            }
         } else {
             deactivateSpell();
+            return;
+        }
+    } else if (spellState == BOUNCING) {
+        // Calculate the new position during the bouncing state
+        float newSpellX = spellX + spellDirX * spellSpeed * deltaTime;
+        float newSpellY = spellY + spellDirY * spellSpeed * deltaTime;
+
+        // Track the distance traveled during bouncing
+        bounceDistance += std::hypot(newSpellX - spellX, newSpellY - spellY);
+
+        // Check for collision with walls using the existing method
+        if (isSpellCollidingWithWall(newSpellX + spellDirX * wallPadding, newSpellY + spellDirY * wallPadding, 96, game.getDungeonMaze())) {
+            std::cout << "Collision detected. Bounce Count: " << bounceCount << std::endl;
+
+            // Reflect the direction vector based on the collision
+            if (isSpellCollidingWithWall(newSpellX + spellDirX * wallPadding, spellY, 96, game.getDungeonMaze())) {
+                spellDirX = -spellDirX;  // Reverse horizontal direction
+            }
+            if (isSpellCollidingWithWall(spellX, newSpellY + spellDirY * wallPadding, 96, game.getDungeonMaze())) {
+                spellDirY = -spellDirY;  // Reverse vertical direction
+            }
+
+            // Recalculate the new position after reflection
+            newSpellX = spellX + spellDirX * spellSpeed * deltaTime;
+            newSpellY = spellY + spellDirY * spellSpeed * deltaTime;
+
+            bounceCount++;
+            lastBounceTime = currentTime;  // Reset the bounce time
+            bounceDistance = 0.0f;  // Reset the bounce distance
+
+            // Deactivate the spell if the maximum number of bounces is reached
+            if (bounceCount >= 10) {
+                deactivateSpell();
+                return;
+            }
         }
 
-        // Check for collision with enemies
-        SDL_Rect spellRect = { static_cast<int>(spellX), static_cast<int>(spellY), FRAME_WIDTH - 40, FRAME_HEIGHT - 40 }; // Reduced collision box size
-        for (auto& entity : entities) {
-            if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
-                SDL_Rect enemyBoundingBox = enemy->getBoundingBox();
-                if (SDL_HasIntersection(&spellRect, &enemyBoundingBox)) {
-                    enemy->takeDamage(Player::SPELL_DAMAGE);
-                    if (!enemy->isAlive()) {
-                        // Mark the enemy for removal
-                        enemy->markForRemoval();
-                    }
+        // Update spell position
+        spellX = newSpellX;
+        spellY = newSpellY;
+    }
 
-                    deactivateSpell();
-                    break;
+    // Check for collision with enemies
+    SDL_Rect spellRect = { static_cast<int>(spellX), static_cast<int>(spellY), FRAME_WIDTH - 40, FRAME_HEIGHT - 40 };
+    for (auto& entity : entities) {
+        if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
+            SDL_Rect enemyBoundingBox = enemy->getBoundingBox();
+            if (SDL_HasIntersection(&spellRect, &enemyBoundingBox)) {
+                enemy->takeDamage(Player::SPELL_DAMAGE);
+                if (!enemy->isAlive()) {
+                    enemy->markForRemoval();
                 }
+
+                deactivateSpell();
+                return;
             }
         }
     }
+}
+
+void Player::deactivateSpell() {
+    spellActive = false;
+    bounceCount = 0;  // Reset bounce count when the spell is deactivated
+    spellSpeed = INITIAL_SPELL_SPEED;  // Reset spell speed to its initial value
+    spellState = CURVED_TRAJECTORY;  // Reset to curved trajectory state
 }
 
 void Player::handleInput(const SDL_Event& event) {

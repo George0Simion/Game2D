@@ -9,6 +9,7 @@
 #include <limits>
 #include <map>
 
+class Game;
 class Enemy;
 
 class Entity {
@@ -71,7 +72,7 @@ public:
     void setNumFrames(int numFrames);
 
     virtual void setSpellTarget(float targetX, float targetY);
-    virtual void updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities) = 0;
+    virtual void updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities, Game& game);
     bool isSpellActive() const;
     SDL_Rect getSpellFrame() const;
     float getSpellX() const;
@@ -90,6 +91,7 @@ public:
     void setCooldown(const std::string& ability, float time);
 
     bool isArrowCollidingWithWall(float arrowX, float arrowY, int cellSize, const std::vector<std::vector<int>>& dungeonMaze);
+    bool isSpellCollidingWithWall(float spellX, float spellY, int cellSize, const std::vector<std::vector<int>>& dungeonMaze); // New method for spell collision
 
 protected:
     virtual int getActionOffset() const;

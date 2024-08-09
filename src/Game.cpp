@@ -260,7 +260,7 @@ void Game::updateEnemySpellAnimation(float deltaTime, std::vector<std::unique_pt
             if (enemy->getAction() == Entity::Spellcasting && !enemy->isSpellActive()) {
                 enemy->setSpellTarget(player->getX(), player->getY());
             }
-            enemy->updateSpellPosition(deltaTime, entities);
+            enemy->updateSpellPosition(deltaTime, entities, *this);
 
             // Ensure the enemy's texture is restored after spellcasting
             if (enemy->getAction() == Entity::Spellcasting && !enemy->isSpellActive()) {
@@ -405,6 +405,14 @@ bool Game::areAllEnemiesCleared() const {
         }
     }
     return true;
+}
+
+int Game::getDungeonWidth() const {
+    return dungeonMaze.empty() ? 0 : dungeonMaze[0].size() * 96; // Assuming each cell is 96 pixels
+}
+
+int Game::getDungeonHeight() const {
+    return dungeonMaze.size() * 96; // Assuming each cell is 96 pixels
 }
 
 void Game::update() {
@@ -687,7 +695,7 @@ void Game::updateSpellAnimation(float deltaTime, std::vector<std::unique_ptr<Ent
     }
 
     // Update spell position
-    player->updateSpellPosition(deltaTime, entities);
+    player->updateSpellPosition(deltaTime, entities, *this);
 }
 
 void Game::loadHUDTexture() {

@@ -16,7 +16,7 @@ public:
     Enemy(float p_x, float p_y, SDL_Texture* p_tex, int numFrames, float animationSpeed);
 
     void updateBehavior(float deltaTime, Player& player, std::vector<std::unique_ptr<Entity>>& entities, Game& game);
-    void updateEnemy(float deltaTime, Player& player, std::vector<std::unique_ptr<Entity>>& entities);
+    void updateEnemy(float deltaTime, Player& player, std::vector<std::unique_ptr<Entity>>& entities, Game& game);
     SDL_Rect getAttackBoundingBox() const override;
     int getThrustRange() const override;
 
@@ -29,7 +29,7 @@ public:
     int getMaxHealth() const override { return INITIAL_HEALTH; }
 
     void setSpellTarget(float targetX, float targetY) override;
-    void updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities) override;
+    void updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities, Game& game);
 
 protected:
     int getActionOffset() const override;
@@ -57,6 +57,9 @@ private:
     
     std::vector<std::pair<int, int>> findPathToPlayer(Player& player, Game& game);
     void moveDirectlyToPlayer(float deltaTime, Player& player, Game& game);
+
+    int bounceCount;
+    const int maxBounces = 3;
 };
 
 #endif
