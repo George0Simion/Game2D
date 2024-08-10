@@ -26,8 +26,8 @@ bool Entity::isArrowCollidingWithWall(float arrowX, float arrowY, int cellSize, 
 }
 
 bool Entity::isSpellCollidingWithWall(float spellX, float spellY, int cellSize, const std::vector<std::vector<int>>& dungeonMaze) {
-    int mazeX = static_cast<int>(spellX + 32) / cellSize;
-    int mazeY = static_cast<int>(spellY + 64) / cellSize;
+    int mazeX = static_cast<int>(spellX + 38) / cellSize;
+    int mazeY = static_cast<int>(spellY + 38) / cellSize;
 
     if (mazeY < 0 || mazeY >= dungeonMaze.size() || mazeX < 0 || mazeX >= dungeonMaze[0].size()) {
         return true;

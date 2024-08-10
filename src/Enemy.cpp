@@ -134,7 +134,6 @@ void Enemy::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Ent
 
         // Check for collision with walls using the existing method
         if (isSpellCollidingWithWall(newSpellX + spellDirX * wallPadding, newSpellY + spellDirY * wallPadding, 96, game.getDungeonMaze())) {
-            std::cout << "Collision detected. Bounce Count: " << bounceCount << std::endl;
 
             // Reflect the direction vector based on the collision
             if (isSpellCollidingWithWall(newSpellX + spellDirX * wallPadding, spellY, 96, game.getDungeonMaze())) {
