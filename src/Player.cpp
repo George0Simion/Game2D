@@ -36,7 +36,7 @@ void Player::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<En
     const float wallPadding = 5.0f;
 
     // Switch to curved trajectory if enough time has passed since the last bounce
-    if (spellState == BOUNCING && currentTime - lastBounceTime > 2000) { // 3 seconds
+    if (spellState == BOUNCING && currentTime - lastBounceTime > 2000) {
         spellState = CURVED_TRAJECTORY;
     }
 
@@ -75,7 +75,6 @@ void Player::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<En
 
             // Check for collision with walls while in curved trajectory state
             if (isSpellCollidingWithWall(spellX + spellDirX * wallPadding, spellY + spellDirY * wallPadding, 96, game.getDungeonMaze())) {
-                std::cout << "Collision detected during curved trajectory. Switching to bouncing state." << std::endl;
 
                 spellState = BOUNCING;
                 lastBounceTime = currentTime;

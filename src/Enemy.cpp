@@ -21,8 +21,15 @@ Enemy::Enemy(float p_x, float p_y, SDL_Texture* p_tex, int numFrames, float anim
       directionChangeCooldown(0.5f), 
       timeSinceLastDirectionChange(0.0f), 
       hasTarget(false), 
-      hasPath(false) {}
-
+      hasPath(false),
+      spellDirX(0.0f),  // Initialize direction vectors to zero
+      spellDirY(0.0f),
+      spellState(CURVED_TRAJECTORY),  // Start in the curved trajectory state
+      lastBounceTime(0),
+      bounceDistance(0.0f)
+{
+    spellSpeed = 100.0f;
+}
 
 void Enemy::setSpellTarget(float targetX, float targetY) {
     spellActive = true;
@@ -32,18 +39,34 @@ void Enemy::setSpellTarget(float targetX, float targetY) {
     spellTargetY = targetY;
     spellStartTime = SDL_GetTicks();
     spellDuration = SPELL_DURATION;
+    spellSpeed = 100.0f;
     setAction(Spellcasting);
     spellCooldownRemaining = SPELL_COOLDOWN;
 }
 
 void Enemy::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities, Game& game) {
-    if (spellActive) {
-        Uint32 currentTime = SDL_GetTicks();
-        if (currentTime - spellStartTime > spellDuration) {
-            deactivateSpell();
-            return;
-        }
+    if (!spellActive) {
+        return;
+    }
 
+    Uint32 currentTime = SDL_GetTicks();
+
+    // Check if the spell duration has expired
+    if (currentTime - spellStartTime > spellDuration) {
+        deactivateSpell();
+        return;
+    }
+
+    // Padding to transition to bouncing before impact
+    const float wallPadding = 5.0f;
+
+    // Switch to curved trajectory if enough time has passed since the last bounce
+    if (spellState == BOUNCING && currentTime - lastBounceTime > 2000) {
+        spellState = CURVED_TRAJECTORY;
+    }
+
+    if (spellState == CURVED_TRAJECTORY) {
+        // Update target position more frequently to ensure smooth tracking
         Player* closestPlayer = nullptr;
         float minDistance = std::numeric_limits<float>::max();
         for (const auto& entity : entities) {
@@ -70,47 +93,92 @@ void Enemy::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Ent
         float distance = std::hypot(dx, dy);
 
         if (distance > 5.0f) {
-            float angle = atan2(dy, dx);
-            float curve = sin(SDL_GetTicks() * spellCurveFactor);
+            float curve = sin(SDL_GetTicks() * 0.001f);
 
-            float controlPointX = (spellX + spellTargetX) / 2 + curve * 50;
+            float controlPointX = (spellX + spellTargetX) / 2 + curve * 50;  // Adding a control point for curve
             float controlPointY = (spellY + spellTargetY) / 2 + curve * 50;
 
-            float t = (spellSpeed / 2) * deltaTime / distance;
+            // Interpolating positions for smooth, curved movement
+            float t = spellSpeed * deltaTime / distance;  // Parametric time
             spellX = (1 - t) * (1 - t) * spellX + 2 * (1 - t) * t * controlPointX + t * t * spellTargetX;
             spellY = (1 - t) * (1 - t) * spellY + 2 * (1 - t) * t * controlPointY + t * t * spellTargetY;
+
+            // Check for collision with walls while in curved trajectory state
+            if (isSpellCollidingWithWall(spellX + spellDirX * wallPadding, spellY + spellDirY * wallPadding, 96, game.getDungeonMaze())) {
+
+                spellState = BOUNCING;
+                lastBounceTime = currentTime;
+                bounceDistance = 0.0f;
+
+                // Set initial direction based on the current trajectory
+                float directionDx = spellTargetX - spellX;
+                float directionDy = spellTargetY - spellY;
+                float directionDistance = std::hypot(directionDx, directionDy);
+
+                if (directionDistance > 0) {
+                    spellDirX = directionDx / directionDistance;
+                    spellDirY = directionDy / directionDistance;
+                }
+            }
         } else {
             deactivateSpell();
+            return;
         }
+    } else if (spellState == BOUNCING) {
+        // Calculate the new position during the bouncing state
+        float newSpellX = spellX + spellDirX * spellSpeed * deltaTime;
+        float newSpellY = spellY + spellDirY * spellSpeed * deltaTime;
 
-        SDL_Rect spellRect = { static_cast<int>(spellX), static_cast<int>(spellY), FRAME_WIDTH - 40, FRAME_HEIGHT - 40 };
-        for (auto& entity : entities) {
-            if (Player* player = dynamic_cast<Player*>(entity.get())) {
-                if (!player->getIsDead()) {
-                    SDL_Rect playerBoundingBox = player->getBoundingBox();
-                    if (SDL_HasIntersection(&spellRect, &playerBoundingBox)) {
-                        player->takeDamage(SPELL_DAMAGE);
-                        if (!player->isAlive()) {
-                            player->setIsDead(true);
-                        }
-                        deactivateSpell();
-                        break;
-                    }
-                }
+        // Track the distance traveled during bouncing
+        bounceDistance += std::hypot(newSpellX - spellX, newSpellY - spellY);
+
+        // Check for collision with walls using the existing method
+        if (isSpellCollidingWithWall(newSpellX + spellDirX * wallPadding, newSpellY + spellDirY * wallPadding, 96, game.getDungeonMaze())) {
+            std::cout << "Collision detected. Bounce Count: " << bounceCount << std::endl;
+
+            // Reflect the direction vector based on the collision
+            if (isSpellCollidingWithWall(newSpellX + spellDirX * wallPadding, spellY, 96, game.getDungeonMaze())) {
+                spellDirX = -spellDirX;  // Reverse horizontal direction
+            }
+            if (isSpellCollidingWithWall(spellX, newSpellY + spellDirY * wallPadding, 96, game.getDungeonMaze())) {
+                spellDirY = -spellDirY;  // Reverse vertical direction
+            }
+
+            // Recalculate the new position after reflection
+            newSpellX = spellX + spellDirX * spellSpeed * deltaTime;
+            newSpellY = spellY + spellDirY * spellSpeed * deltaTime;
+
+            bounceCount++;
+            lastBounceTime = currentTime;  // Reset the bounce time
+            bounceDistance = 0.0f;  // Reset the bounce distance
+
+            // Deactivate the spell if the maximum number of bounces is reached
+            if (bounceCount >= 10) {
+                deactivateSpell();
+                return;
             }
         }
 
-        if (isSpellCollidingWithWall(spellX, spellY, 64, game.getDungeonMaze())) {
-            if (bounceCount < maxBounces) {
-                if (spellX <= 0 || spellX >= game.getDungeonWidth() - FRAME_WIDTH) {
-                    dx = -dx;
+        // Update spell position
+        spellX = newSpellX;
+        spellY = newSpellY;
+    }
+
+    // Check for collision with the player
+    SDL_Rect spellRect = { static_cast<int>(spellX), static_cast<int>(spellY), FRAME_WIDTH - 40, FRAME_HEIGHT - 40 };
+    for (auto& entity : entities) {
+        if (Player* player = dynamic_cast<Player*>(entity.get())) {
+            if (!player->getIsDead()) {
+                SDL_Rect playerBoundingBox = player->getBoundingBox();
+                if (SDL_HasIntersection(&spellRect, &playerBoundingBox)) {
+                    player->takeDamage(SPELL_DAMAGE);
+                    if (!player->isAlive()) {
+                        player->setIsDead(true);
+                    }
+
+                    deactivateSpell();
+                    return;
                 }
-                if (spellY <= 0 || spellY >= game.getDungeonHeight() - FRAME_HEIGHT) {
-                    dy = -dy;
-                }
-                bounceCount++;
-            } else {
-                deactivateSpell();
             }
         }
     }

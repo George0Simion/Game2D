@@ -22,7 +22,7 @@ public:
 
     static const int INITIAL_HEALTH = 150;
     static const int THRUST_DAMAGE = 35;
-    static const int SPELL_DAMAGE = 0;
+    static const int SPELL_DAMAGE = 45;
     static const int SPELL_DURATION = 6000;
     static const float SPELL_COOLDOWN;
 
@@ -58,8 +58,21 @@ private:
     std::vector<std::pair<int, int>> findPathToPlayer(Player& player, Game& game);
     void moveDirectlyToPlayer(float deltaTime, Player& player, Game& game);
 
+    enum SpellState {
+        CURVED_TRAJECTORY,
+        BOUNCING
+    };
+
+    SpellState spellState;
+    Uint32 lastBounceTime;
+    float bounceDistance;
+
+    const Uint32 curveInterval = 2000;
+    const float maxBounceDistance = 500.0f;
     int bounceCount;
-    const int maxBounces = 3;
+    const int maxBounces = 10;
+    float spellDirX;
+    float spellDirY;
 };
 
 #endif
