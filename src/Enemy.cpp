@@ -6,8 +6,8 @@
 
 const float Enemy::SPELL_COOLDOWN = 10.0f;
 
-const int ENEMY_PADDING_X = 0;
-const int ENEMY_PADDING_Y = 0;
+const int ENEMY_PADDING_X = 45;
+const int ENEMY_PADDING_Y = 60;
 
 const int CELL_SIZE = 96;
 
@@ -225,90 +225,63 @@ std::vector<std::pair<int, int>> Enemy::findPathToPlayer(Player& player, Game& g
     return {}; // Return an empty path if no path is found
 }
 
-int heuristic(int x1, int y1, int x2, int y2) {
-    return abs(x1 - x2) + abs(y1 - y2);
-}
-
 void Enemy::followPlayer(float deltaTime, Player& player, Game& game) {
+    if (isMarkedForRemoval()) return;
+
     float moveSpeed = 100.0f;
     bool moved = false;
 
     timeSinceLastDirectionChange += deltaTime;
 
-    auto& dungeonMaze = game.getDungeonMaze(); // Access the dungeonMaze using the getter method
+    // If there's no path or the path is finished, don't move
+    if (!hasPath || currentPathIndex >= pathToPlayer.size()) {
+        return;
+    }
 
-    if (!pathToPlayer.empty()) {
-        auto [nextX, nextY] = pathToPlayer[currentPathIndex];
-        float targetX = nextX * CELL_SIZE;
-        float targetY = nextY * CELL_SIZE;
+    // Get the next target position in the path
+    auto [nextX, nextY] = pathToPlayer[currentPathIndex];
+    float targetX = nextX * CELL_SIZE;
+    float targetY = nextY * CELL_SIZE;
 
-        if (abs(targetX - getX()) > abs(targetY - getY())) {
-            if (targetX > getX()) {
-                if (!game.isWall(getX() + moveSpeed * deltaTime + ENEMY_PADDING_X, getY() + ENEMY_PADDING_Y)) {
-                    setX(getX() + moveSpeed * deltaTime);
-                    moved = true;
-                }
-                setDirection(Right);
-            } else {
-                if (!game.isWall(getX() - moveSpeed * deltaTime + ENEMY_PADDING_X, getY() + ENEMY_PADDING_Y)) {
-                    setX(getX() - moveSpeed * deltaTime);
-                    moved = true;
-                }
-                setDirection(Left);
+    // Move towards the next path point
+    if (abs(targetX - getX()) > abs(targetY - getY())) {
+        if (targetX > getX()) {
+            if (!game.isWall(getX() + moveSpeed * deltaTime + ENEMY_PADDING_X, getY() + ENEMY_PADDING_Y)) {
+                setX(getX() + moveSpeed * deltaTime);
+                moved = true;
             }
+            setDirection(Right);
         } else {
-            if (targetY > getY()) {
-                if (!game.isWall(getX() + ENEMY_PADDING_X, getY() + moveSpeed * deltaTime + ENEMY_PADDING_Y)) {
-                    setY(getY() + moveSpeed * deltaTime);
-                    moved = true;
-                }
-                setDirection(Down);
-            } else {
-                if (!game.isWall(getX() + ENEMY_PADDING_X, getY() - moveSpeed * deltaTime + ENEMY_PADDING_Y)) {
-                    setY(getY() - moveSpeed * deltaTime);
-                    moved = true;
-                }
-                setDirection(Up);
+            if (!game.isWall(getX() - moveSpeed * deltaTime + ENEMY_PADDING_X, getY() + ENEMY_PADDING_Y)) {
+                setX(getX() - moveSpeed * deltaTime);
+                moved = true;
             }
+            setDirection(Left);
         }
-
-        if (moved && abs(getX() - targetX) < moveSpeed * deltaTime && abs(getY() - targetY) < moveSpeed * deltaTime) {
-            currentPathIndex++;
+    } else {
+        if (targetY > getY()) {
+            if (!game.isWall(getX() + ENEMY_PADDING_X, getY() + moveSpeed * deltaTime + ENEMY_PADDING_Y)) {
+                setY(getY() + moveSpeed * deltaTime);
+                moved = true;
+            }
+            setDirection(Down);
+        } else {
+            if (!game.isWall(getX() + ENEMY_PADDING_X, getY() - moveSpeed * deltaTime + ENEMY_PADDING_Y)) {
+                setY(getY() - moveSpeed * deltaTime);
+                moved = true;
+            }
+            setDirection(Up);
         }
     }
 
-    if (!moved && timeSinceLastDirectionChange >= directionChangeCooldown) {
-        timeSinceLastDirectionChange = 0.0f; // Reset timer
+    // If the enemy has reached the current target point, move to the next one in the path
+    if (moved && abs(getX() - targetX) < moveSpeed * deltaTime && abs(getY() - targetY) < moveSpeed * deltaTime) {
+        currentPathIndex++;
+    }
 
-        // Choose a new direction where there is no wall
-        std::vector<Direction> directions = {Up, Down, Left, Right};
-        std::random_shuffle(directions.begin(), directions.end());
-        for (Direction dir : directions) {
-            float newX = getX();
-            float newY = getY();
-            switch (dir) {
-                case Up:
-                    newY -= moveSpeed * deltaTime;
-                    break;
-                case Down:
-                    newY += moveSpeed * deltaTime;
-                    break;
-                case Left:
-                    newX -= moveSpeed * deltaTime;
-                    break;
-                case Right:
-                    newX += moveSpeed * deltaTime;
-                    break;
-            }
-            if (!game.isWall(newX + ENEMY_PADDING_X, newY + ENEMY_PADDING_Y)) {
-                setX(newX);
-                setY(newY);
-                setDirection(dir);
-                break;
-            }
-        }
-    } else if (!moved) {
-        timeSinceLastDirectionChange = directionChangeCooldown; // Force direction change if stuck
+    // If the path is finished, stop moving
+    if (currentPathIndex >= pathToPlayer.size()) {
+        hasPath = false;
     }
 
     startAnimation();
