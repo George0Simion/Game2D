@@ -68,7 +68,6 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
     world->update(camera.x + camera.w / 2, camera.y + camera.h / 2);
 
     loadHUDTexture();                                                        /* Load the HUD texture */
-    // spawnEnemy();
 }
 
 SDL_Texture* Game::loadTexture(const char* fileName) {                      /* Method for loading the texture for the main character */
@@ -89,31 +88,40 @@ void Game::spawnEnemy()
     entities.push_back(std::move(enemy));
 }
 
-void Game::resetGame() {
+void Game::resetGame(bool resetDungeon) {
+    // Clear all entities, including enemies
     for (auto& entity : entities) {
         entity.reset();
     }
     entities.clear();
 
-    // Reinitialize game state without recreating the window and renderer
+    // Reinitialize the player
     player = new Player(1920 / 2 - 64, 1080 / 2 - 64, loadTexture("/home/simion/Desktop/3/Game2D/assets/sprite_good_arrow3.png"), 4, 0.1f);
     player->setHealth(Player::INITIAL_HEALTH);
     entities.push_back(std::unique_ptr<Entity>(player));
 
+    // Reset the world
     world = new World(renderer, 12345); // Reinitialize the world with a seed for procedural generation
 
-    camera = {0, 0, 1680, 900}; // Initialize the camera
-
-    // Center the camera on the player initially
+    // Reset the camera position
+    camera = {0, 0, 1680, 900};
     camera.x = player->getX() - camera.w / 2;
     camera.y = player->getY() - camera.h / 2;
 
     world->update(camera.x + camera.w / 2, camera.y + camera.h / 2);
 
-    spawnEnemy();
-
     isMenuOpen = false;
     isRunning = true;
+
+    if (resetDungeon) {
+        // Reset dungeon state
+        isPlayerInDungeon = false;
+        difficulty = 0;
+        if (mazeGenerator) {
+            delete mazeGenerator;
+            mazeGenerator = nullptr;
+        }
+    }
 }
 
 /* Handling the events of the game such as the opening of the menu, if the game is running or not
@@ -429,6 +437,7 @@ void Game::update() {
         if (isPlayerDeathAnimationFinished() && currentTime - deathTime >= DEATH_DELAY) {
             menu->setState(Menu::RESPAWN_MENU);
             isMenuOpen = true;
+            // resetGame(true);
         }
     } else {
         processInput();
@@ -507,11 +516,7 @@ void Game::update() {
         }
 
         removeDeadEntities();
-
-        float playerX = player->getX();
-        float playerY = player->getY();
-        updateCamera(playerX, playerY);
-
+        updateCamera(player->getX(), player->getY());
         world->update(camera.x + camera.w / 2, camera.y + camera.h / 2);
     }
 }

@@ -27,7 +27,7 @@ public:
     void render();
     void clean();
     bool running() { return isRunning; }
-    void resetGame();
+    void resetGame(bool resetDungeon = true);
     void applyDamage(Entity& attacker, Entity& target, int damage);
     bool isPlayerDeathAnimationFinished() const;
     void removeDeadEntities();                                                                  /* Game thods */
