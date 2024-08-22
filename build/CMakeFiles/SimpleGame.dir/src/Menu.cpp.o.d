@@ -305,9 +305,11 @@ CMakeFiles/SimpleGame.dir/src/Menu.cpp.o: \
  /usr/include/c++/11/bits/stl_tree.h /usr/include/c++/11/bits/stl_map.h \
  /usr/include/c++/11/bits/stl_multimap.h \
  /home/simion/Desktop/5/Game2D/src/Player.h \
- /home/simion/Desktop/5/Game2D/src/Enemy.h /usr/include/c++/11/queue \
- /usr/include/c++/11/deque /usr/include/c++/11/bits/stl_deque.h \
- /usr/include/c++/11/bits/deque.tcc /usr/include/c++/11/bits/stl_queue.h \
+ /home/simion/Desktop/5/Game2D/src/Enemy.h \
+ /home/simion/Desktop/5/Game2D/src/PathfindingManager.h \
+ /usr/include/c++/11/queue /usr/include/c++/11/deque \
+ /usr/include/c++/11/bits/stl_deque.h /usr/include/c++/11/bits/deque.tcc \
+ /usr/include/c++/11/bits/stl_queue.h \
  /home/simion/Desktop/5/Game2D/src/World.h \
  /usr/include/c++/11/unordered_set \
  /usr/include/c++/11/bits/unordered_set.h \

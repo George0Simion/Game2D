@@ -2,7 +2,7 @@
 #include <iostream>
 
 /* Constructor and Destructor */
-Game::Game() : window(nullptr), renderer(nullptr), isRunning(false), player(nullptr), world(nullptr), mazeGenerator(nullptr), difficulty(0) {}
+Game::Game() : window(nullptr), renderer(nullptr), isRunning(false), player(nullptr), world(nullptr), mazeGenerator(nullptr), difficulty(0), pathfindingManager() {}
 
 Game::~Game() {
     clean();
@@ -77,13 +77,13 @@ SDL_Texture* Game::loadTexture(const char* fileName) {                      /* M
     return tex;
 }
 
-void Game::spawnEnemy()
-/* No longer needed but keeping it just in case */
-{
-    SDL_Texture* enemyTex = loadTexture("/home/simion/Desktop/3/Game2D/assets/enemy4.png");
+void Game::spawnEnemy() {
+    SDL_Texture* enemyTex = loadTexture("/home/simion/Desktop/5/Game2D/assets/enemy4.png");
     float x = 540;
     float y = 100;
-    auto enemy = std::make_unique<Enemy>(x, y, enemyTex, 8, 0.1f);
+    
+    // Remove or adapt the PathfindingManager reference as needed.
+    auto enemy = std::make_unique<Enemy>(x, y, enemyTex, 8, 0.1f, pathfindingManager);
     enemy->setHealth(Enemy::INITIAL_HEALTH);
     entities.push_back(std::move(enemy));
 }
@@ -341,7 +341,7 @@ void Game::spawnEnemiesInDungeon(int numberOfEnemies) {
         float enemyY = y * 96.0f - 64;
 
         SDL_Texture* enemyTex = loadTexture("/home/simion/Desktop/3/Game2D/assets/enemy4.png");
-        auto enemy = std::make_unique<Enemy>(enemyX, enemyY, enemyTex, 8, 0.1f);
+        auto enemy = std::make_unique<Enemy>(enemyX, enemyY, enemyTex, 8, 0.1f, pathfindingManager);
         enemy->setHealth(Enemy::INITIAL_HEALTH);
         entities.push_back(std::move(enemy));
     }

@@ -13,6 +13,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/simion/Desktop/5/Game2D/src/Game.cpp" "CMakeFiles/SimpleGame.dir/src/Game.cpp.o" "gcc" "CMakeFiles/SimpleGame.dir/src/Game.cpp.o.d"
   "/home/simion/Desktop/5/Game2D/src/MazeGenerator.cpp" "CMakeFiles/SimpleGame.dir/src/MazeGenerator.cpp.o" "gcc" "CMakeFiles/SimpleGame.dir/src/MazeGenerator.cpp.o.d"
   "/home/simion/Desktop/5/Game2D/src/Menu.cpp" "CMakeFiles/SimpleGame.dir/src/Menu.cpp.o" "gcc" "CMakeFiles/SimpleGame.dir/src/Menu.cpp.o.d"
+  "/home/simion/Desktop/5/Game2D/src/PathfindingManager.cpp" "CMakeFiles/SimpleGame.dir/src/PathfindingManager.cpp.o" "gcc" "CMakeFiles/SimpleGame.dir/src/PathfindingManager.cpp.o.d"
   "/home/simion/Desktop/5/Game2D/src/Player.cpp" "CMakeFiles/SimpleGame.dir/src/Player.cpp.o" "gcc" "CMakeFiles/SimpleGame.dir/src/Player.cpp.o.d"
   "/home/simion/Desktop/5/Game2D/src/World.cpp" "CMakeFiles/SimpleGame.dir/src/World.cpp.o" "gcc" "CMakeFiles/SimpleGame.dir/src/World.cpp.o.d"
   "/home/simion/Desktop/5/Game2D/src/main.cpp" "CMakeFiles/SimpleGame.dir/src/main.cpp.o" "gcc" "CMakeFiles/SimpleGame.dir/src/main.cpp.o.d"

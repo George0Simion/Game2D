@@ -9,6 +9,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/SimpleGame.dir/src/MazeGenerator.cpp.o.d"
   "CMakeFiles/SimpleGame.dir/src/Menu.cpp.o"
   "CMakeFiles/SimpleGame.dir/src/Menu.cpp.o.d"
+  "CMakeFiles/SimpleGame.dir/src/PathfindingManager.cpp.o"
+  "CMakeFiles/SimpleGame.dir/src/PathfindingManager.cpp.o.d"
   "CMakeFiles/SimpleGame.dir/src/Player.cpp.o"
   "CMakeFiles/SimpleGame.dir/src/Player.cpp.o.d"
   "CMakeFiles/SimpleGame.dir/src/World.cpp.o"

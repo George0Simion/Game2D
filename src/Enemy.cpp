@@ -3,16 +3,22 @@
 #include <queue>
 #include <unordered_map>
 #include <algorithm>
+#include "PathfindingManager.h"
 
 const float Enemy::SPELL_COOLDOWN = 10.0f;
 
-const int ENEMY_PADDING_X = 45;
-const int ENEMY_PADDING_Y = 60;
+const int ENEMY_PADDING_X = 32;
+const int ENEMY_PADDING_Y = 56;
 
 const int CELL_SIZE = 96;
 
-Enemy::Enemy(float p_x, float p_y, SDL_Texture* p_tex, int numFrames, float animationSpeed)
-    : Entity(p_x, p_y, p_tex, numFrames, animationSpeed), 
+Enemy::Enemy(float p_x, float p_y, SDL_Texture* p_tex, int numFrames, float animationSpeed, PathfindingManager& pathfindingManager)
+    : Entity(p_x, p_y, p_tex, numFrames, animationSpeed),
+      pathfindingManager(pathfindingManager),
+      lastSharedPathUpdateTime(0),
+      lastPlayerCellX(-1),
+      lastPlayerCellY(-1),
+      currentPathIndex(0),
       bounceCount(0),
       attackCooldown(0.0f), 
       spellRange(300.0f), 
@@ -22,9 +28,9 @@ Enemy::Enemy(float p_x, float p_y, SDL_Texture* p_tex, int numFrames, float anim
       timeSinceLastDirectionChange(0.0f), 
       hasTarget(false), 
       hasPath(false),
-      spellDirX(0.0f),  // Initialize direction vectors to zero
+      spellDirX(0.0f),
       spellDirY(0.0f),
-      spellState(CURVED_TRAJECTORY),  // Start in the curved trajectory state
+      spellState(CURVED_TRAJECTORY),
       lastBounceTime(0),
       bounceDistance(0.0f)
 {
@@ -51,22 +57,18 @@ void Enemy::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Ent
 
     Uint32 currentTime = SDL_GetTicks();
 
-    // Check if the spell duration has expired
     if (currentTime - spellStartTime > spellDuration) {
         deactivateSpell();
         return;
     }
 
-    // Padding to transition to bouncing before impact
     const float wallPadding = 5.0f;
 
-    // Switch to curved trajectory if enough time has passed since the last bounce
     if (spellState == BOUNCING && currentTime - lastBounceTime > 2000) {
         spellState = CURVED_TRAJECTORY;
     }
 
     if (spellState == CURVED_TRAJECTORY) {
-        // Update target position more frequently to ensure smooth tracking
         Player* closestPlayer = nullptr;
         float minDistance = std::numeric_limits<float>::max();
         for (const auto& entity : entities) {
@@ -95,22 +97,18 @@ void Enemy::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Ent
         if (distance > 5.0f) {
             float curve = sin(SDL_GetTicks() * 0.001f);
 
-            float controlPointX = (spellX + spellTargetX) / 2 + curve * 50;  // Adding a control point for curve
+            float controlPointX = (spellX + spellTargetX) / 2 + curve * 50;
             float controlPointY = (spellY + spellTargetY) / 2 + curve * 50;
 
-            // Interpolating positions for smooth, curved movement
-            float t = spellSpeed * deltaTime / distance;  // Parametric time
+            float t = spellSpeed * deltaTime / distance;
             spellX = (1 - t) * (1 - t) * spellX + 2 * (1 - t) * t * controlPointX + t * t * spellTargetX;
             spellY = (1 - t) * (1 - t) * spellY + 2 * (1 - t) * t * controlPointY + t * t * spellTargetY;
 
-            // Check for collision with walls while in curved trajectory state
             if (isSpellCollidingWithWall(spellX + spellDirX * wallPadding, spellY + spellDirY * wallPadding, 96, game.getDungeonMaze())) {
-
                 spellState = BOUNCING;
                 lastBounceTime = currentTime;
                 bounceDistance = 0.0f;
 
-                // Set initial direction based on the current trajectory
                 float directionDx = spellTargetX - spellX;
                 float directionDy = spellTargetY - spellY;
                 float directionDistance = std::hypot(directionDx, directionDy);
@@ -125,45 +123,36 @@ void Enemy::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Ent
             return;
         }
     } else if (spellState == BOUNCING) {
-        // Calculate the new position during the bouncing state
         float newSpellX = spellX + spellDirX * spellSpeed * deltaTime;
         float newSpellY = spellY + spellDirY * spellSpeed * deltaTime;
 
-        // Track the distance traveled during bouncing
         bounceDistance += std::hypot(newSpellX - spellX, newSpellY - spellY);
 
-        // Check for collision with walls using the existing method
         if (isSpellCollidingWithWall(newSpellX + spellDirX * wallPadding, newSpellY + spellDirY * wallPadding, 96, game.getDungeonMaze())) {
-
-            // Reflect the direction vector based on the collision
             if (isSpellCollidingWithWall(newSpellX + spellDirX * wallPadding, spellY, 96, game.getDungeonMaze())) {
-                spellDirX = -spellDirX;  // Reverse horizontal direction
+                spellDirX = -spellDirX;
             }
             if (isSpellCollidingWithWall(spellX, newSpellY + spellDirY * wallPadding, 96, game.getDungeonMaze())) {
-                spellDirY = -spellDirY;  // Reverse vertical direction
+                spellDirY = -spellDirY;
             }
 
-            // Recalculate the new position after reflection
             newSpellX = spellX + spellDirX * spellSpeed * deltaTime;
             newSpellY = spellY + spellDirY * spellSpeed * deltaTime;
 
             bounceCount++;
-            lastBounceTime = currentTime;  // Reset the bounce time
-            bounceDistance = 0.0f;  // Reset the bounce distance
+            lastBounceTime = currentTime;
+            bounceDistance = 0.0f;
 
-            // Deactivate the spell if the maximum number of bounces is reached
             if (bounceCount >= 10) {
                 deactivateSpell();
                 return;
             }
         }
 
-        // Update spell position
         spellX = newSpellX;
         spellY = newSpellY;
     }
 
-    // Check for collision with the player
     SDL_Rect spellRect = { static_cast<int>(spellX), static_cast<int>(spellY), FRAME_WIDTH - 40, FRAME_HEIGHT - 40 };
     for (auto& entity : entities) {
         if (Player* player = dynamic_cast<Player*>(entity.get())) {
@@ -183,67 +172,31 @@ void Enemy::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Ent
     }
 }
 
-std::vector<std::pair<int, int>> Enemy::findPathToPlayer(Player& player, Game& game) {
-    auto& dungeonMaze = game.getDungeonMaze();
-    int startX = static_cast<int>((getX() + ENEMY_PADDING_X) / CELL_SIZE);
-    int startY = static_cast<int>((getY() + ENEMY_PADDING_Y) / CELL_SIZE);
-    int goalX = static_cast<int>((player.getX()) / CELL_SIZE);
-    int goalY = static_cast<int>((player.getY()) / CELL_SIZE);
+void Enemy::followSharedPath(float deltaTime, Player& player, Game& game) {
+    if (isMarkedForRemoval() || !hasPath) return;
 
-    std::vector<std::pair<int, int>> path;
-    if (startX == goalX && startY == goalY) return path;
-
-    std::priority_queue<std::tuple<int, int, int, int, std::vector<std::pair<int, int>>>> openSet;
-    std::unordered_map<int, std::unordered_map<int, int>> costSoFar;
-    openSet.emplace(0, startX, startY, 0, path);
-    costSoFar[startX][startY] = 0;
-
-    while (!openSet.empty()) {
-        auto [priority, x, y, cost, path] = openSet.top();
-        openSet.pop();
-
-        if (x == goalX && y == goalY) return path;
-
-        static const std::vector<std::pair<int, int>> directions = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
-        for (const auto& [dx, dy] : directions) {
-            int nextX = x + dx;
-            int nextY = y + dy;
-            int newCost = cost + 1;
-
-            if (nextX >= 0 && nextX < dungeonMaze[0].size() && nextY >= 0 && nextY < dungeonMaze.size() && dungeonMaze[nextY][nextX] != -1) {
-                if (!costSoFar.count(nextX) || !costSoFar[nextX].count(nextY) || newCost < costSoFar[nextX][nextY]) {
-                    costSoFar[nextX][nextY] = newCost;
-                    int priority = newCost + abs(nextX - goalX) + abs(nextY - goalY);
-                    auto newPath = path;
-                    newPath.emplace_back(nextX, nextY);
-                    openSet.emplace(priority, nextX, nextY, newCost, newPath);
-                }
-            }
-        }
-    }
-
-    return {}; // Return an empty path if no path is found
+    moveToNextWaypoint(deltaTime, player, game);
 }
 
-void Enemy::followPlayer(float deltaTime, Player& player, Game& game) {
-    if (isMarkedForRemoval()) return;
+std::vector<std::pair<int, int>> Enemy::calculateNewPath(Player& player, Game& game) {
+    return findPathToPlayer(player, game);
+}
+
+void Enemy::moveToNextWaypoint(float deltaTime, Player& player, Game& game) {
+    if (currentPathIndex >= pathToPlayer.size()) {
+        hasPath = false;
+        return;
+    }
 
     float moveSpeed = 100.0f;
     bool moved = false;
 
-    timeSinceLastDirectionChange += deltaTime;
-
-    // If there's no path or the path is finished, don't move
-    if (!hasPath || currentPathIndex >= pathToPlayer.size()) {
-        return;
-    }
-
-    // Get the next target position in the path
     auto [nextX, nextY] = pathToPlayer[currentPathIndex];
-    float targetX = nextX * CELL_SIZE;
-    float targetY = nextY * CELL_SIZE;
+    
+    // Adjust target positions to include padding
+    float targetX = nextX * CELL_SIZE - ENEMY_PADDING_X;
+    float targetY = nextY * CELL_SIZE - ENEMY_PADDING_Y;
 
-    // Move towards the next path point
     if (abs(targetX - getX()) > abs(targetY - getY())) {
         if (targetX > getX()) {
             if (!game.isWall(getX() + moveSpeed * deltaTime + ENEMY_PADDING_X, getY() + ENEMY_PADDING_Y)) {
@@ -274,25 +227,17 @@ void Enemy::followPlayer(float deltaTime, Player& player, Game& game) {
         }
     }
 
-    // If the enemy has reached the current target point, move to the next one in the path
     if (moved && abs(getX() - targetX) < moveSpeed * deltaTime && abs(getY() - targetY) < moveSpeed * deltaTime) {
         currentPathIndex++;
     }
-
-    // If the path is finished, stop moving
-    if (currentPathIndex >= pathToPlayer.size()) {
-        hasPath = false;
-    }
-
-    startAnimation();
 }
 
-void Enemy::moveDirectlyToPlayer(float deltaTime, Player& player, Game& game) {
+void Enemy::updateBehavior(float deltaTime, Player& player, std::vector<std::unique_ptr<Entity>>& entities, Game& game) {
     if (isMarkedForRemoval()) return;
 
     float distanceX = player.getX() - getX();
     float distanceY = player.getY() - getY();
-    float distance = sqrt(distanceX * distanceX + distanceY * distanceY);
+    float distance = std::sqrt(distanceX * distanceX + distanceY * distanceY);
 
     if (spellCooldownRemaining > 0.0f) {
         spellCooldownRemaining -= deltaTime;
@@ -300,52 +245,33 @@ void Enemy::moveDirectlyToPlayer(float deltaTime, Player& player, Game& game) {
 
     if (attackCooldown > 0.0f) {
         attackCooldown -= deltaTime;
+    }
+
+    Uint32 currentTime = SDL_GetTicks();
+
+    if (currentTime - lastSharedPathUpdateTime > sharedPathUpdateInterval) {
+        pathToPlayer = pathfindingManager.getSharedPathToPlayer(player, game, *this);
+        currentPathIndex = 0;
+        lastSharedPathUpdateTime = currentTime;
+        hasPath = !pathToPlayer.empty();
+    }
+
+    if (distance <= 150.0f) {
+        // If close enough, move directly to the player
+        moveDirectlyToPlayer(deltaTime, player, game);
+    } else if (distance <= 800.0f) {
+        // If within a certain range, follow the shared path and possibly attack
+        if (spellCooldownRemaining <= 0.0f) {
+            decideAction(player, distance);
+        }
+        followSharedPath(deltaTime, player, game);
     } else {
-        decideAction(player, distance);
+        // If far from the player, move randomly
+        randomMove(deltaTime, game);
+        hasPath = false;
     }
 
-    if (getAction() == Walking) {
-        float moveSpeed = 100.0f;
-        bool moved = false;
-
-        if (fabs(distanceX) > fabs(distanceY)) {
-            if (distanceX > 0) {
-                if (!game.isWall(getX() + moveSpeed * deltaTime + ENEMY_PADDING_X, getY() + ENEMY_PADDING_Y)) {
-                    setX(getX() + moveSpeed * deltaTime);
-                    moved = true;
-                }
-                setDirection(Right);
-            } else {
-                if (!game.isWall(getX() - moveSpeed * deltaTime + ENEMY_PADDING_X, getY() + ENEMY_PADDING_Y)) {
-                    setX(getX() - moveSpeed * deltaTime);
-                    moved = true;
-                }
-                setDirection(Left);
-            }
-        } else {
-            if (distanceY > 0) {
-                if (!game.isWall(getX() + ENEMY_PADDING_X, getY() + moveSpeed * deltaTime + ENEMY_PADDING_Y)) {
-                    setY(getY() + moveSpeed * deltaTime);
-                    moved = true;
-                }
-                setDirection(Down);
-            } else {
-                if (!game.isWall(getX() + ENEMY_PADDING_X, getY() - moveSpeed * deltaTime + ENEMY_PADDING_Y)) {
-                    setY(getY() - moveSpeed * deltaTime);
-                    moved = true;
-                }
-                setDirection(Up);
-            }
-        }
-
-        if (!moved) {
-            pathToPlayer = findPathToPlayer(player, game);
-            currentPathIndex = 0;
-            followPlayer(deltaTime, player, game);
-        }
-    }
-
-    startAnimation();
+    updateEnemy(deltaTime, player, entities, game);
 }
 
 void Enemy::randomMove(float deltaTime, Game& game) {
@@ -497,7 +423,7 @@ void Enemy::randomMove(float deltaTime, Game& game) {
     startAnimation();
 }
 
-void Enemy::updateBehavior(float deltaTime, Player& player, std::vector<std::unique_ptr<Entity>>& entities, Game& game) {
+void Enemy::moveDirectlyToPlayer(float deltaTime, Player& player, Game& game) {
     if (isMarkedForRemoval()) return;
 
     float distanceX = player.getX() - getX();
@@ -510,38 +436,52 @@ void Enemy::updateBehavior(float deltaTime, Player& player, std::vector<std::uni
 
     if (attackCooldown > 0.0f) {
         attackCooldown -= deltaTime;
-    }
-
-    // Track player's cell position
-    static int lastPlayerCellX = static_cast<int>(player.getX() / 96);
-    static int lastPlayerCellY = static_cast<int>(player.getY() / 96);
-    
-    int currentPlayerCellX = static_cast<int>(player.getX() / 96);
-    int currentPlayerCellY = static_cast<int>(player.getY() / 96);
-
-    // Recalculate path if player moves to a new cell
-    if (currentPlayerCellX != lastPlayerCellX || currentPlayerCellY != lastPlayerCellY) {
-        pathToPlayer = findPathToPlayer(player, game);
-        currentPathIndex = 0;
-        lastPlayerCellX = currentPlayerCellX;
-        lastPlayerCellY = currentPlayerCellY;
-        hasPath = true;
-    }
-
-    // Check distances and decide behavior
-    if (distance <= 150.0f) {
-        moveDirectlyToPlayer(deltaTime, player, game);
-    } else if (distance <= 800.0f) {
-        if (spellCooldownRemaining <= 0.0f) {
-            decideAction(player, distance);
-        }
-        followPlayer(deltaTime, player, game);
     } else {
-        randomMove(deltaTime, game);
-        hasPath = false;  // Reset path when player is far
+        decideAction(player, distance);
     }
 
-    updateEnemy(deltaTime, player, entities, game);
+    if (getAction() == Walking) {
+        float moveSpeed = 100.0f;
+        bool moved = false;
+
+        if (fabs(distanceX) > fabs(distanceY)) {
+            if (distanceX > 0) {
+                if (!game.isWall(getX() + moveSpeed * deltaTime + ENEMY_PADDING_X, getY() + ENEMY_PADDING_Y)) {
+                    setX(getX() + moveSpeed * deltaTime);
+                    moved = true;
+                }
+                setDirection(Right);
+            } else {
+                if (!game.isWall(getX() - moveSpeed * deltaTime + ENEMY_PADDING_X, getY() + ENEMY_PADDING_Y)) {
+                    setX(getX() - moveSpeed * deltaTime);
+                    moved = true;
+                }
+                setDirection(Left);
+            }
+        } else {
+            if (distanceY > 0) {
+                if (!game.isWall(getX() + ENEMY_PADDING_X, getY() + moveSpeed * deltaTime + ENEMY_PADDING_Y)) {
+                    setY(getY() + moveSpeed * deltaTime);
+                    moved = true;
+                }
+                setDirection(Down);
+            } else {
+                if (!game.isWall(getX() + ENEMY_PADDING_X, getY() - moveSpeed * deltaTime + ENEMY_PADDING_Y)) {
+                    setY(getY() - moveSpeed * deltaTime);
+                    moved = true;
+                }
+                setDirection(Up);
+            }
+        }
+
+        if (!moved) {
+            pathToPlayer = findPathToPlayer(player, game);
+            currentPathIndex = 0;
+            followSharedPath(deltaTime, player, game);
+        }
+    }
+
+    startAnimation();
 }
 
 void Enemy::updateEnemy(float deltaTime, Player& player, std::vector<std::unique_ptr<Entity>>& entities, Game& game) {
@@ -631,4 +571,50 @@ SDL_Rect Enemy::getAttackBoundingBox() const {
 
 int Enemy::getThrustRange() const {
     return 60;
+}
+
+std::vector<std::pair<int, int>> Enemy::findPathToPlayer(Player& player, Game& game) {
+    auto& dungeonMaze = game.getDungeonMaze();
+    
+    // Adjust enemy's starting position based on padding
+    int startX = static_cast<int>((getX() + ENEMY_PADDING_X) / CELL_SIZE);
+    int startY = static_cast<int>((getY() + ENEMY_PADDING_Y) / CELL_SIZE);
+    
+    // Player's position does not have padding
+    int goalX = static_cast<int>((player.getX()) / CELL_SIZE);
+    int goalY = static_cast<int>((player.getY()) / CELL_SIZE);
+
+    std::vector<std::pair<int, int>> path;
+    if (startX == goalX && startY == goalY) return path;
+
+    std::priority_queue<std::tuple<int, int, int, int, std::vector<std::pair<int, int>>>> openSet;
+    std::unordered_map<int, std::unordered_map<int, int>> costSoFar;
+    openSet.emplace(0, startX, startY, 0, path);
+    costSoFar[startX][startY] = 0;
+
+    while (!openSet.empty()) {
+        auto [priority, x, y, cost, path] = openSet.top();
+        openSet.pop();
+
+        if (x == goalX && y == goalY) return path;
+
+        static const std::vector<std::pair<int, int>> directions = {{0, -1}, {1, 0}, {0, 1}, {-1, 0}};
+        for (const auto& [dx, dy] : directions) {
+            int nextX = x + dx;
+            int nextY = y + dy;
+            int newCost = cost + 1;
+
+            if (nextX >= 0 && nextX < dungeonMaze[0].size() && nextY >= 0 && nextY < dungeonMaze.size() && dungeonMaze[nextY][nextX] != -1) {
+                if (!costSoFar.count(nextX) || !costSoFar[nextX].count(nextY) || newCost < costSoFar[nextX][nextY]) {
+                    costSoFar[nextX][nextY] = newCost;
+                    int priority = newCost + abs(nextX - goalX) + abs(nextY - goalY);
+                    auto newPath = path;
+                    newPath.emplace_back(nextX, nextY);
+                    openSet.emplace(priority, nextX, nextY, newCost, newPath);
+                }
+            }
+        }
+    }
+
+    return {};
 }

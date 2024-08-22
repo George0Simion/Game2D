@@ -249,6 +249,30 @@ src/Menu.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/SimpleGame.dir/build.make CMakeFiles/SimpleGame.dir/src/Menu.cpp.s
 .PHONY : src/Menu.cpp.s
 
+src/PathfindingManager.o: src/PathfindingManager.cpp.o
+.PHONY : src/PathfindingManager.o
+
+# target to build an object file
+src/PathfindingManager.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SimpleGame.dir/build.make CMakeFiles/SimpleGame.dir/src/PathfindingManager.cpp.o
+.PHONY : src/PathfindingManager.cpp.o
+
+src/PathfindingManager.i: src/PathfindingManager.cpp.i
+.PHONY : src/PathfindingManager.i
+
+# target to preprocess a source file
+src/PathfindingManager.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SimpleGame.dir/build.make CMakeFiles/SimpleGame.dir/src/PathfindingManager.cpp.i
+.PHONY : src/PathfindingManager.cpp.i
+
+src/PathfindingManager.s: src/PathfindingManager.cpp.s
+.PHONY : src/PathfindingManager.s
+
+# target to generate assembly for a file
+src/PathfindingManager.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SimpleGame.dir/build.make CMakeFiles/SimpleGame.dir/src/PathfindingManager.cpp.s
+.PHONY : src/PathfindingManager.cpp.s
+
 src/Player.o: src/Player.cpp.o
 .PHONY : src/Player.o
 
@@ -345,6 +369,9 @@ help:
 	@echo "... src/Menu.o"
 	@echo "... src/Menu.i"
 	@echo "... src/Menu.s"
+	@echo "... src/PathfindingManager.o"
+	@echo "... src/PathfindingManager.i"
+	@echo "... src/PathfindingManager.s"
 	@echo "... src/Player.o"
 	@echo "... src/Player.i"
 	@echo "... src/Player.s"

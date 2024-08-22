@@ -11,6 +11,7 @@
 
 class Game;
 class Enemy;
+class PathfindingManager;
 
 class Entity {
 public:
