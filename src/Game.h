@@ -66,6 +66,8 @@ private:
     SDL_Texture* spriteSheet;
     void loadHUDTexture();
     SDL_Texture* hudTexture;
+    SDL_Texture* pathTileTexture;
+    SDL_Texture* wallTileTexture;
 
     Player* player;
     Menu* menu;

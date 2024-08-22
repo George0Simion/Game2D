@@ -30,13 +30,13 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
         printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
         isRunning = false;
     } else {
-        font = TTF_OpenFont("/home/simion/Desktop/3/Game2D/assets/font.ttf", 32); // Adjust the path and size as needed
+        font = TTF_OpenFont("/home/simion/Desktop/5/Game2D/assets/font.ttf", 32); // Adjust the path and size as needed
         if (!font) {
             printf("Failed to load font! SDL_ttf Error: %s\n", TTF_GetError());
             isRunning = false;
         }
 
-        smallFont = TTF_OpenFont("/home/simion/Desktop/3/Game2D/assets/font.ttf", 16); // Adjust the path and size as needed
+        smallFont = TTF_OpenFont("/home/simion/Desktop/5/Game2D/assets/font.ttf", 16); // Adjust the path and size as needed
         if (!smallFont) {
             printf("Failed to load small font! SDL_ttf Error: %s\n", TTF_GetError());
             isRunning = false;
@@ -44,7 +44,7 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
     }
 
     /* Loading the main character and adding it to the vector */
-    SDL_Texture* tex = loadTexture("/home/simion/Desktop/3/Game2D/assets/sprite_good_arrow3.png");
+    SDL_Texture* tex = loadTexture("/home/simion/Desktop/5/Game2D/assets/sprite_good_arrow3.png");
     player = new Player(width / 2 - 64, height / 2 - 64, tex, 4, 0.1f);     /* Center the player */
     entities.push_back(std::unique_ptr<Entity>(player));
     player->setHealth(Player::INITIAL_HEALTH);                                                 /* Set the health of the player */
@@ -67,6 +67,8 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
 
     world->update(camera.x + camera.w / 2, camera.y + camera.h / 2);
 
+    pathTileTexture = loadTexture("/home/simion/Desktop/5/Game2D/assets/ground/cobblestone_2.png");
+    wallTileTexture = loadTexture("/home/simion/Desktop/5/Game2D/assets/wall/Brickwall_Texture.png");
     loadHUDTexture();                                                        /* Load the HUD texture */
 }
 
@@ -96,7 +98,7 @@ void Game::resetGame(bool resetDungeon) {
     entities.clear();
 
     // Reinitialize the player
-    player = new Player(1920 / 2 - 64, 1080 / 2 - 64, loadTexture("/home/simion/Desktop/3/Game2D/assets/sprite_good_arrow3.png"), 4, 0.1f);
+    player = new Player(1920 / 2 - 64, 1080 / 2 - 64, loadTexture("/home/simion/Desktop/5/Game2D/assets/sprite_good_arrow3.png"), 4, 0.1f);
     player->setHealth(Player::INITIAL_HEALTH);
     entities.push_back(std::unique_ptr<Entity>(player));
 
@@ -901,22 +903,24 @@ void Game::render() {
         int cellSize = 96; // Adjust cell size as needed
         for (int y = 0; y < dungeonMaze.size(); ++y) {
             for (int x = 0; x < dungeonMaze[y].size(); ++x) {
-                if (dungeonMaze[y][x] == -1) {
-                    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // White color for walls
-                } else if (dungeonMaze[y][x] == 0) {
-                    SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); // Green color for paths
-                } else if (dungeonMaze[y][x] == 2) {
-                    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255); // Blue color for spawn/exit point
-                } else if (dungeonMaze[y][x] == 3) {
-                    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Red color for next level entrance
-                }
                 SDL_Rect cellRect = {
                     x * cellSize - camera.x,
                     y * cellSize - camera.y,
                     cellSize,
                     cellSize
                 };
-                SDL_RenderFillRect(renderer, &cellRect);
+
+                if (dungeonMaze[y][x] == -1) {
+                    SDL_RenderCopy(renderer, wallTileTexture, NULL, &cellRect);
+                } else if (dungeonMaze[y][x] == 0) {
+                    SDL_RenderCopy(renderer, pathTileTexture, NULL, &cellRect);
+                } else if (dungeonMaze[y][x] == 2) {
+                    SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255); // Blue color for spawn/exit point
+                    SDL_RenderFillRect(renderer, &cellRect);
+                } else if (dungeonMaze[y][x] == 3) {
+                    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Red color for next level entrance
+                    SDL_RenderFillRect(renderer, &cellRect);
+                }
             }
         }
     } else {
@@ -1005,6 +1009,16 @@ void Game::clean() {
     if (smallFont) {
         TTF_CloseFont(smallFont);
         smallFont = nullptr;
+    }
+
+    if (pathTileTexture) {
+        SDL_DestroyTexture(pathTileTexture);
+        pathTileTexture = nullptr;
+    }
+
+    if (wallTileTexture) {
+        SDL_DestroyTexture(wallTileTexture);
+        wallTileTexture = nullptr;
     }
 
     delete menu;
