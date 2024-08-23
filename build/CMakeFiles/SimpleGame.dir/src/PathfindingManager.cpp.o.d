@@ -316,4 +316,5 @@ CMakeFiles/SimpleGame.dir/src/PathfindingManager.cpp.o: \
  /home/simion/Desktop/5/Game2D/src/FastNoiseLite.h \
  /home/simion/Desktop/5/Game2D/src/MazeGenerator.h \
  /usr/include/c++/11/stack /usr/include/c++/11/bits/stl_stack.h \
- /usr/include/c++/11/ctime
+ /usr/include/c++/11/ctime \
+ /home/simion/Desktop/5/Game2D/src/LightingManager.h

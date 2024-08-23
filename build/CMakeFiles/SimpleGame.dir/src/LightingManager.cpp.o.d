@@ -1,8 +1,9 @@
-CMakeFiles/SimpleGame.dir/src/Menu.cpp.o: \
- /home/simion/Desktop/5/Game2D/src/Menu.cpp /usr/include/stdc-predef.h \
- /home/simion/Desktop/5/Game2D/src/Menu.h /usr/include/SDL2/SDL.h \
- /usr/include/SDL2/SDL_main.h /usr/include/SDL2/SDL_stdinc.h \
- /usr/include/SDL2/SDL_config.h \
+CMakeFiles/SimpleGame.dir/src/LightingManager.cpp.o: \
+ /home/simion/Desktop/5/Game2D/src/LightingManager.cpp \
+ /usr/include/stdc-predef.h \
+ /home/simion/Desktop/5/Game2D/src/LightingManager.h \
+ /usr/include/SDL2/SDL.h /usr/include/SDL2/SDL_main.h \
+ /usr/include/SDL2/SDL_stdinc.h /usr/include/SDL2/SDL_config.h \
  /usr/include/x86_64-linux-gnu/SDL2/_real_SDL_config.h \
  /usr/include/SDL2/SDL_platform.h /usr/include/SDL2/begin_code.h \
  /usr/include/SDL2/close_code.h /usr/include/x86_64-linux-gnu/sys/types.h \
@@ -213,9 +214,7 @@ CMakeFiles/SimpleGame.dir/src/Menu.cpp.o: \
  /usr/include/SDL2/SDL_shape.h /usr/include/SDL2/SDL_system.h \
  /usr/include/SDL2/SDL_timer.h /usr/include/SDL2/SDL_version.h \
  /usr/include/SDL2/SDL_locale.h /usr/include/SDL2/SDL_misc.h \
- /home/simion/Desktop/5/Game2D/src/Game.h /usr/include/SDL2/SDL_image.h \
- /usr/include/SDL2/SDL.h /usr/include/SDL2/SDL_ttf.h \
- /usr/include/c++/11/memory /usr/include/c++/11/bits/allocator.h \
+ /usr/include/c++/11/vector /usr/include/c++/11/bits/allocator.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++allocator.h \
  /usr/include/c++/11/ext/new_allocator.h /usr/include/c++/11/new \
  /usr/include/c++/11/bits/exception.h \
@@ -224,97 +223,10 @@ CMakeFiles/SimpleGame.dir/src/Menu.cpp.o: \
  /usr/include/c++/11/bits/stl_uninitialized.h \
  /usr/include/c++/11/ext/alloc_traits.h \
  /usr/include/c++/11/bits/alloc_traits.h \
- /usr/include/c++/11/bits/stl_tempbuf.h \
- /usr/include/c++/11/bits/stl_raw_storage_iter.h \
- /usr/include/c++/11/bits/align.h /usr/include/c++/11/bit \
- /usr/include/c++/11/bits/uses_allocator.h \
- /usr/include/c++/11/bits/unique_ptr.h /usr/include/c++/11/utility \
- /usr/include/c++/11/bits/stl_relops.h \
- /usr/include/c++/11/initializer_list /usr/include/c++/11/tuple \
- /usr/include/c++/11/array /usr/include/c++/11/bits/range_access.h \
- /usr/include/c++/11/bits/invoke.h \
- /usr/include/c++/11/bits/stl_function.h \
- /usr/include/c++/11/backward/binders.h \
+ /usr/include/c++/11/bits/stl_vector.h \
+ /usr/include/c++/11/initializer_list \
+ /usr/include/c++/11/bits/stl_bvector.h \
  /usr/include/c++/11/bits/functional_hash.h \
  /usr/include/c++/11/bits/hash_bytes.h \
- /usr/include/c++/11/bits/shared_ptr.h /usr/include/c++/11/iosfwd \
- /usr/include/c++/11/bits/stringfwd.h /usr/include/c++/11/bits/postypes.h \
- /usr/include/c++/11/cwchar /usr/include/c++/11/bits/shared_ptr_base.h \
- /usr/include/c++/11/typeinfo /usr/include/c++/11/bits/allocated_ptr.h \
- /usr/include/c++/11/bits/refwrap.h \
- /usr/include/c++/11/ext/aligned_buffer.h \
- /usr/include/c++/11/ext/atomicity.h \
- /usr/include/x86_64-linux-gnu/c++/11/bits/gthr.h \
- /usr/include/x86_64-linux-gnu/c++/11/bits/gthr-default.h \
- /usr/include/pthread.h /usr/include/sched.h \
- /usr/include/x86_64-linux-gnu/bits/sched.h \
- /usr/include/x86_64-linux-gnu/bits/types/struct_sched_param.h \
- /usr/include/x86_64-linux-gnu/bits/cpu-set.h /usr/include/time.h \
- /usr/include/x86_64-linux-gnu/bits/time.h \
- /usr/include/x86_64-linux-gnu/bits/timex.h \
- /usr/include/x86_64-linux-gnu/bits/types/struct_tm.h \
- /usr/include/x86_64-linux-gnu/bits/types/struct_itimerspec.h \
- /usr/include/x86_64-linux-gnu/bits/setjmp.h \
- /usr/include/x86_64-linux-gnu/bits/types/struct___jmp_buf_tag.h \
- /usr/include/x86_64-linux-gnu/bits/pthread_stack_min-dynamic.h \
- /usr/include/x86_64-linux-gnu/c++/11/bits/atomic_word.h \
- /usr/include/x86_64-linux-gnu/sys/single_threaded.h \
- /usr/include/c++/11/ext/concurrence.h /usr/include/c++/11/exception \
- /usr/include/c++/11/bits/exception_ptr.h \
- /usr/include/c++/11/bits/cxxabi_init_exception.h \
- /usr/include/c++/11/bits/nested_exception.h \
- /usr/include/c++/11/bits/shared_ptr_atomic.h \
- /usr/include/c++/11/bits/atomic_base.h \
- /usr/include/c++/11/bits/atomic_lockfree_defines.h \
- /usr/include/c++/11/backward/auto_ptr.h \
- /usr/include/c++/11/pstl/glue_memory_defs.h \
- /usr/include/c++/11/pstl/execution_defs.h /usr/include/c++/11/algorithm \
- /usr/include/c++/11/bits/stl_algo.h \
- /usr/include/c++/11/bits/algorithmfwd.h \
- /usr/include/c++/11/bits/stl_heap.h \
- /usr/include/c++/11/bits/uniform_int_dist.h \
- /usr/include/c++/11/pstl/glue_algorithm_defs.h \
- /usr/include/c++/11/functional /usr/include/c++/11/bits/std_function.h \
- /usr/include/c++/11/unordered_map /usr/include/c++/11/bits/hashtable.h \
- /usr/include/c++/11/bits/hashtable_policy.h \
- /usr/include/c++/11/bits/enable_special_members.h \
- /usr/include/c++/11/bits/node_handle.h \
- /usr/include/c++/11/bits/unordered_map.h \
- /usr/include/c++/11/bits/erase_if.h /usr/include/c++/11/vector \
- /usr/include/c++/11/bits/stl_vector.h \
- /usr/include/c++/11/bits/stl_bvector.h \
- /usr/include/c++/11/bits/vector.tcc \
- /home/simion/Desktop/5/Game2D/src/Entity.h /usr/include/c++/11/string \
- /usr/include/c++/11/bits/char_traits.h /usr/include/c++/11/cstdint \
- /usr/include/c++/11/bits/localefwd.h \
- /usr/include/x86_64-linux-gnu/c++/11/bits/c++locale.h \
- /usr/include/c++/11/clocale /usr/include/locale.h \
- /usr/include/x86_64-linux-gnu/bits/locale.h /usr/include/c++/11/cctype \
- /usr/include/c++/11/bits/ostream_insert.h \
- /usr/include/c++/11/bits/cxxabi_forced.h \
- /usr/include/c++/11/bits/basic_string.h /usr/include/c++/11/string_view \
- /usr/include/c++/11/bits/string_view.tcc \
- /usr/include/c++/11/ext/string_conversions.h /usr/include/c++/11/cstdio \
- /usr/include/c++/11/cerrno /usr/include/errno.h \
- /usr/include/x86_64-linux-gnu/bits/errno.h /usr/include/linux/errno.h \
- /usr/include/x86_64-linux-gnu/asm/errno.h \
- /usr/include/asm-generic/errno.h /usr/include/asm-generic/errno-base.h \
- /usr/include/x86_64-linux-gnu/bits/types/error_t.h \
- /usr/include/c++/11/bits/charconv.h \
- /usr/include/c++/11/bits/basic_string.tcc /usr/include/c++/11/map \
- /usr/include/c++/11/bits/stl_tree.h /usr/include/c++/11/bits/stl_map.h \
- /usr/include/c++/11/bits/stl_multimap.h \
- /home/simion/Desktop/5/Game2D/src/Player.h \
- /home/simion/Desktop/5/Game2D/src/Enemy.h \
- /home/simion/Desktop/5/Game2D/src/PathfindingManager.h \
- /usr/include/c++/11/queue /usr/include/c++/11/deque \
- /usr/include/c++/11/bits/stl_deque.h /usr/include/c++/11/bits/deque.tcc \
- /usr/include/c++/11/bits/stl_queue.h \
- /home/simion/Desktop/5/Game2D/src/World.h \
- /usr/include/c++/11/unordered_set \
- /usr/include/c++/11/bits/unordered_set.h \
- /home/simion/Desktop/5/Game2D/src/FastNoiseLite.h \
- /home/simion/Desktop/5/Game2D/src/MazeGenerator.h \
- /usr/include/c++/11/stack /usr/include/c++/11/bits/stl_stack.h \
- /usr/include/c++/11/ctime \
- /home/simion/Desktop/5/Game2D/src/LightingManager.h
+ /usr/include/c++/11/bits/range_access.h \
+ /usr/include/c++/11/bits/vector.tcc

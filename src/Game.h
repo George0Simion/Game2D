@@ -15,7 +15,8 @@
 #include "Menu.h"
 #include "World.h"
 #include "MazeGenerator.h"
-#include "PathfindingManager.h"  // Ensure this is included
+#include "PathfindingManager.h"
+#include "LightingManager.h"
 
 class Game {
 public:
@@ -103,6 +104,8 @@ private:
     PathfindingManager pathfindingManager;  // Ensure PathfindingManager is included before its use here
 
     int difficulty;
+
+    LightingManager* lightingManager;
 
     friend class Player;
 };

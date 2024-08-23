@@ -59,6 +59,7 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
     dungeonEntrance = {500, 500, 50, 50};
     dungeonExit = {800, 800, 50, 50}; 
 
+    lightingManager = new LightingManager(renderer, 1920, 1080);
     camera = {0, 0, 1680, 900};                                             /* Initialize the camera */
 
     // Center the camera on the player initially
@@ -895,11 +896,11 @@ void Game::renderHealthBar(int x, int y, int currentHealth, int maxHealth) {
 void Game::render() {
     SDL_RenderClear(renderer);
 
-    if (isPlayerInDungeon) {
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Black color for the background
-        SDL_Rect dungeonRect = {0, 0, 1920, 1080}; // Adjust to your screen size
-        SDL_RenderFillRect(renderer, &dungeonRect);
+    std::vector<SDL_Rect> enemyPositions;
+    std::vector<SDL_Rect> spellPositions;
 
+    if (isPlayerInDungeon) {
+        // Render the dungeon background and tiles first
         int cellSize = 96; // Adjust cell size as needed
         for (int y = 0; y < dungeonMaze.size(); ++y) {
             for (int x = 0; x < dungeonMaze[y].size(); ++x) {
@@ -923,61 +924,115 @@ void Game::render() {
                 }
             }
         }
-    } else {
-        // Render the world
-        world->render(camera.x + camera.w / 2 + 192, camera.y + camera.h / 2 - 256, isPlayerInDungeon, dungeonEntrance, camera);
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    }
 
-    // Render entities and HUD as before
-    for (const auto& entity : entities) {
-        SDL_Rect srcRect = entity->getCurrentFrame();
-        SDL_Rect destRect = { 
-            static_cast<int>(entity->getX()) - camera.x, 
-            static_cast<int>(entity->getY()) - camera.y, 
-            static_cast<int>(srcRect.w * 2),  
-            static_cast<int>(srcRect.h * 2)  
-        };
-        SDL_RenderCopy(renderer, entity->getTex(), &srcRect, &destRect);
+        // Apply dimming by rendering the semi-transparent texture over the entire screen
+        SDL_RenderCopy(renderer, lightingManager->getDimmingTexture(), NULL, NULL);
 
-        if (entity->isArrowActive()) {
-            SDL_Rect arrowSrcRect = entity->getArrowFrame();
-            SDL_Rect arrowDestRect = {
-                static_cast<int>(entity->getArrowX()) - camera.x,
-                static_cast<int>(entity->getArrowY()) - camera.y,
-                64,
-                64
-            };
-            SDL_RenderCopy(renderer, entity->getTex(), &arrowSrcRect, &arrowDestRect);
-        }
-
-        if (entity->isSpellActive()) {
-            SDL_Rect spellSrcRect;
+        // Collect enemy positions for lighting effect
+        for (const auto& entity : entities) {
             if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
-                spellSrcRect = enemy->getSpellFrameForEnemy();
-            } else {
-                spellSrcRect = entity->getSpellFrame();
+                SDL_Rect enemyRect = {
+                    static_cast<int>(enemy->getX()) - camera.x,
+                    static_cast<int>(enemy->getY()) - camera.y,
+                    static_cast<int>(enemy->getCurrentFrame().w * 2),
+                    static_cast<int>(enemy->getCurrentFrame().h * 2)
+                };
+                enemyPositions.push_back(enemyRect);
             }
 
-            SDL_Rect spellDestRect = {
-                static_cast<int>(entity->getSpellX()) - camera.x,
-                static_cast<int>(entity->getSpellY()) - camera.y,
-                64,
-                64
-            };
-            SDL_RenderCopy(renderer, entity->getTex(), &spellSrcRect, &spellDestRect);
+            // Collect spell positions for additional lighting
+            if (entity->isSpellActive()) {
+                SDL_Rect spellRect = {
+                    static_cast<int>(entity->getSpellX()) - camera.x,
+                    static_cast<int>(entity->getSpellY()) - camera.y,
+                    64, // Width of the spell texture
+                    64  // Height of the spell texture
+                };
+                spellPositions.push_back(spellRect);
+            }
         }
 
-        // Render health bar above the entity if it's an enemy
-        if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
-            int healthBarX = destRect.x;
-            int healthBarY = destRect.y - 10; // Adjust the Y position to be above the enemy
-            renderHealthBar(healthBarX, healthBarY, enemy->getHealth(), enemy->getMaxHealth());
+        // Apply lighting effects for player, enemies, and spells
+        lightingManager->renderLighting(
+            {static_cast<int>(player->getX()), static_cast<int>(player->getY()), player->getCurrentFrame().w * 2, player->getCurrentFrame().h * 2},
+            enemyPositions,
+            spellPositions,
+            dungeonMaze,
+            camera
+        );
+
+        // Render main entities (Player, Enemies)
+        for (const auto& entity : entities) {
+            SDL_Rect srcRect = entity->getCurrentFrame();
+            SDL_Rect destRect = { 
+                static_cast<int>(entity->getX()) - camera.x, 
+                static_cast<int>(entity->getY()) - camera.y, 
+                static_cast<int>(srcRect.w * 2),  
+                static_cast<int>(srcRect.h * 2)  
+            };
+            SDL_RenderCopy(renderer, entity->getTex(), &srcRect, &destRect);
+
+            // Render spells
+            if (entity->isSpellActive()) {
+                SDL_Rect spellSrcRect;
+                if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
+                    spellSrcRect = enemy->getSpellFrameForEnemy();
+                } else {
+                    spellSrcRect = entity->getSpellFrame();
+                }
+
+                SDL_Rect spellDestRect = {
+                    static_cast<int>(entity->getSpellX()) - camera.x,
+                    static_cast<int>(entity->getSpellY()) - camera.y,
+                    64,
+                    64
+                };
+                SDL_RenderCopy(renderer, entity->getTex(), &spellSrcRect, &spellDestRect);
+            }
+
+            // Render health bar above the entity if it's an enemy
+            if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
+                int healthBarX = destRect.x;
+                int healthBarY = destRect.y - 10; // Adjust the Y position to be above the enemy
+                renderHealthBar(healthBarX, healthBarY, enemy->getHealth(), enemy->getMaxHealth());
+            }
+        }
+
+        // Render arrows after lighting effects are applied
+        for (const auto& entity : entities) {
+            if (entity->isArrowActive()) {
+                SDL_Rect arrowSrcRect = entity->getArrowFrame();
+                SDL_Rect arrowDestRect = {
+                    static_cast<int>(entity->getArrowX()) - camera.x,
+                    static_cast<int>(entity->getArrowY()) - camera.y,
+                    64,
+                    64
+                };
+                SDL_RenderCopy(renderer, entity->getTex(), &arrowSrcRect, &arrowDestRect);
+            }
+        }
+
+    } else {
+        // Render the world (outside the dungeon)
+        world->render(camera.x + camera.w / 2 + 192, camera.y + camera.h / 2 - 256, isPlayerInDungeon, dungeonEntrance, camera);
+
+        // Render entities (Player, Enemies, etc.)
+        for (const auto& entity : entities) {
+            SDL_Rect srcRect = entity->getCurrentFrame();
+            SDL_Rect destRect = { 
+                static_cast<int>(entity->getX()) - camera.x, 
+                static_cast<int>(entity->getY()) - camera.y, 
+                static_cast<int>(srcRect.w * 2),  
+                static_cast<int>(srcRect.h * 2)  
+            };
+            SDL_RenderCopy(renderer, entity->getTex(), &srcRect, &destRect);
         }
     }
 
+    // Render HUD
     renderHUD();
 
+    // Render menu if open
     if (isMenuOpen) {
         menu->render();
     }
@@ -1025,6 +1080,8 @@ void Game::clean() {
     menu = nullptr;
     delete world;
     world = nullptr;
+    delete lightingManager;
+    lightingManager = nullptr;
 
     TTF_Quit();
     IMG_Quit();

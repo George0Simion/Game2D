@@ -317,9 +317,10 @@ CMakeFiles/SimpleGame.dir/src/Game.cpp.o: \
  /home/simion/Desktop/5/Game2D/src/FastNoiseLite.h \
  /home/simion/Desktop/5/Game2D/src/MazeGenerator.h \
  /usr/include/c++/11/stack /usr/include/c++/11/bits/stl_stack.h \
- /usr/include/c++/11/ctime /usr/include/c++/11/iostream \
- /usr/include/c++/11/ostream /usr/include/c++/11/ios \
- /usr/include/c++/11/bits/ios_base.h \
+ /usr/include/c++/11/ctime \
+ /home/simion/Desktop/5/Game2D/src/LightingManager.h \
+ /usr/include/c++/11/iostream /usr/include/c++/11/ostream \
+ /usr/include/c++/11/ios /usr/include/c++/11/bits/ios_base.h \
  /usr/include/c++/11/bits/locale_classes.h \
  /usr/include/c++/11/bits/locale_classes.tcc \
  /usr/include/c++/11/system_error \

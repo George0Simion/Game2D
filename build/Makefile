@@ -201,6 +201,30 @@ src/Game.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/SimpleGame.dir/build.make CMakeFiles/SimpleGame.dir/src/Game.cpp.s
 .PHONY : src/Game.cpp.s
 
+src/LightingManager.o: src/LightingManager.cpp.o
+.PHONY : src/LightingManager.o
+
+# target to build an object file
+src/LightingManager.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SimpleGame.dir/build.make CMakeFiles/SimpleGame.dir/src/LightingManager.cpp.o
+.PHONY : src/LightingManager.cpp.o
+
+src/LightingManager.i: src/LightingManager.cpp.i
+.PHONY : src/LightingManager.i
+
+# target to preprocess a source file
+src/LightingManager.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SimpleGame.dir/build.make CMakeFiles/SimpleGame.dir/src/LightingManager.cpp.i
+.PHONY : src/LightingManager.cpp.i
+
+src/LightingManager.s: src/LightingManager.cpp.s
+.PHONY : src/LightingManager.s
+
+# target to generate assembly for a file
+src/LightingManager.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SimpleGame.dir/build.make CMakeFiles/SimpleGame.dir/src/LightingManager.cpp.s
+.PHONY : src/LightingManager.cpp.s
+
 src/MazeGenerator.o: src/MazeGenerator.cpp.o
 .PHONY : src/MazeGenerator.o
 
@@ -363,6 +387,9 @@ help:
 	@echo "... src/Game.o"
 	@echo "... src/Game.i"
 	@echo "... src/Game.s"
+	@echo "... src/LightingManager.o"
+	@echo "... src/LightingManager.i"
+	@echo "... src/LightingManager.s"
 	@echo "... src/MazeGenerator.o"
 	@echo "... src/MazeGenerator.i"
 	@echo "... src/MazeGenerator.s"
