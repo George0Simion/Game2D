@@ -201,6 +201,30 @@ src/Game.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/SimpleGame.dir/build.make CMakeFiles/SimpleGame.dir/src/Game.cpp.s
 .PHONY : src/Game.cpp.s
 
+src/GameMap.o: src/GameMap.cpp.o
+.PHONY : src/GameMap.o
+
+# target to build an object file
+src/GameMap.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SimpleGame.dir/build.make CMakeFiles/SimpleGame.dir/src/GameMap.cpp.o
+.PHONY : src/GameMap.cpp.o
+
+src/GameMap.i: src/GameMap.cpp.i
+.PHONY : src/GameMap.i
+
+# target to preprocess a source file
+src/GameMap.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SimpleGame.dir/build.make CMakeFiles/SimpleGame.dir/src/GameMap.cpp.i
+.PHONY : src/GameMap.cpp.i
+
+src/GameMap.s: src/GameMap.cpp.s
+.PHONY : src/GameMap.s
+
+# target to generate assembly for a file
+src/GameMap.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/SimpleGame.dir/build.make CMakeFiles/SimpleGame.dir/src/GameMap.cpp.s
+.PHONY : src/GameMap.cpp.s
+
 src/LightingManager.o: src/LightingManager.cpp.o
 .PHONY : src/LightingManager.o
 
@@ -387,6 +411,9 @@ help:
 	@echo "... src/Game.o"
 	@echo "... src/Game.i"
 	@echo "... src/Game.s"
+	@echo "... src/GameMap.o"
+	@echo "... src/GameMap.i"
+	@echo "... src/GameMap.s"
 	@echo "... src/LightingManager.o"
 	@echo "... src/LightingManager.i"
 	@echo "... src/LightingManager.s"

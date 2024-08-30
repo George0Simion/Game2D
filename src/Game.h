@@ -17,6 +17,7 @@
 #include "MazeGenerator.h"
 #include "PathfindingManager.h"
 #include "LightingManager.h"
+#include "GameMap.h"
 
 class Game {
 public:
@@ -69,6 +70,8 @@ private:
     SDL_Texture* hudTexture;
     SDL_Texture* pathTileTexture;
     SDL_Texture* wallTileTexture;
+    SDL_Texture* dungeonEntranceTexture;
+    SDL_Texture* tilesetTexture;
 
     Player* player;
     Menu* menu;
@@ -76,6 +79,7 @@ private:
     SDL_Rect camera;
 
     void processInput();
+    void handleWallSliding(const Uint8* state, float playerLeft, float playerRight, float playerTop, float playerBottom);
 
     void spawnEnemy();
     void resolveCollision(Player& player, Enemy& enemy);
@@ -90,6 +94,7 @@ private:
     bool isFacing(Entity& entity, Entity& target);
     void spawnEnemiesInDungeon(int numberOfEnemies);
     bool areAllEnemiesCleared() const;
+    std::pair<int, int> findDungeonEntrancePosition();
 
     TTF_Font* font;
     TTF_Font* smallFont;

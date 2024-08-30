@@ -45,7 +45,7 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
 
     /* Loading the main character and adding it to the vector */
     SDL_Texture* tex = loadTexture("/home/simion/Desktop/5/Game2D/assets/sprite_good_arrow3.png");
-    player = new Player(width / 2 - 64, height / 2 - 64, tex, 4, 0.1f);     /* Center the player */
+    player = new Player(1300, 900, tex, 4, 0.1f);     /* Center the player */
     entities.push_back(std::unique_ptr<Entity>(player));
     player->setHealth(Player::INITIAL_HEALTH);                                                 /* Set the health of the player */
 
@@ -53,11 +53,25 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
     deltaTime = 0.0f;                                                       /* Getting the in-game time for the movement */
 
     menu = new Menu(this);                                                  /* Allocating memory for the menu */
-    world = new World(renderer, 12345);                                     /* Initialize the world with a seed for procedural generation */
+    world = new World(renderer);                                     /* Initialize the world with a seed for procedural generation */
 
     isPlayerInDungeon = false;
-    dungeonEntrance = {500, 500, 50, 50};
-    dungeonExit = {800, 800, 50, 50}; 
+
+    std::pair<int, int> entrancePos = findDungeonEntrancePosition();
+    int tileSize = 96; // The size of each tile in pixels
+
+    // Check if the entrance position is valid
+    if (entrancePos.first != -1 && entrancePos.second != -1) {
+        dungeonEntrance = {
+            entrancePos.first * tileSize,
+            entrancePos.second * tileSize - 180,
+            tileSize, // Width of the dungeon entrance
+            tileSize  // Height of the dungeon entrance
+        };
+
+        // Set dungeonExit to the same coordinates
+        dungeonExit = dungeonEntrance;
+    }
 
     lightingManager = new LightingManager(renderer, 1920, 1080);
     camera = {0, 0, 1680, 900};                                             /* Initialize the camera */
@@ -68,9 +82,22 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
 
     world->update(camera.x + camera.w / 2, camera.y + camera.h / 2);
 
+    tilesetTexture = loadTexture("/home/simion/Desktop/5/Game2D/assets/tileset.png");
+    dungeonEntranceTexture = loadTexture("/home/simion/Desktop/5/Game2D/assets/dungeon_entrance.png");
     pathTileTexture = loadTexture("/home/simion/Desktop/5/Game2D/assets/ground/cobblestone_2.png");
     wallTileTexture = loadTexture("/home/simion/Desktop/5/Game2D/assets/wall/Brickwall_Texture.png");
     loadHUDTexture();                                                        /* Load the HUD texture */
+}
+
+std::pair<int, int> Game::findDungeonEntrancePosition() {
+    for (int y = 0; y < mapMatrix.size(); ++y) {
+        for (int x = 0; x < mapMatrix[y].size(); ++x) {
+            if (mapMatrix[y][x] == TILE_DUNGEON_ENTRANCE) {
+                return {x, y};  // Return the matrix coordinates of the dungeon entrance
+            }
+        }
+    }
+    return {-1, -1};  // Return an invalid position if no dungeon entrance is found
 }
 
 SDL_Texture* Game::loadTexture(const char* fileName) {                      /* Method for loading the texture for the main character */
@@ -104,7 +131,7 @@ void Game::resetGame(bool resetDungeon) {
     entities.push_back(std::unique_ptr<Entity>(player));
 
     // Reset the world
-    world = new World(renderer, 12345); // Reinitialize the world with a seed for procedural generation
+    world = new World(renderer); // Reinitialize the world with a seed for procedural generation
 
     // Reset the camera position
     camera = {0, 0, 1680, 900};
@@ -1014,7 +1041,7 @@ void Game::render() {
 
     } else {
         // Render the world (outside the dungeon)
-        world->render(camera.x + camera.w / 2 + 192, camera.y + camera.h / 2 - 256, isPlayerInDungeon, dungeonEntrance, camera);
+        world->render(camera.x + camera.w / 2 + 192, camera.y + camera.h / 2 - 256, isPlayerInDungeon, dungeonEntrance, camera, dungeonEntranceTexture, tilesetTexture);
 
         // Render entities (Player, Enemies, etc.)
         for (const auto& entity : entities) {

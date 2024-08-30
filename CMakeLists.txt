@@ -17,6 +17,7 @@ add_executable(SimpleGame
     src/MazeGenerator.cpp
     src/PathfindingManager.cpp
     src/LightingManager.cpp
+    src/GameMap.cpp
 )
 
 # Include directories

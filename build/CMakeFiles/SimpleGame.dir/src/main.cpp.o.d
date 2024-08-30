@@ -314,8 +314,8 @@ CMakeFiles/SimpleGame.dir/src/main.cpp.o: \
  /home/simion/Desktop/5/Game2D/src/World.h \
  /usr/include/c++/11/unordered_set \
  /usr/include/c++/11/bits/unordered_set.h \
- /home/simion/Desktop/5/Game2D/src/FastNoiseLite.h \
  /home/simion/Desktop/5/Game2D/src/MazeGenerator.h \
  /usr/include/c++/11/stack /usr/include/c++/11/bits/stl_stack.h \
  /usr/include/c++/11/ctime \
- /home/simion/Desktop/5/Game2D/src/LightingManager.h
+ /home/simion/Desktop/5/Game2D/src/LightingManager.h \
+ /home/simion/Desktop/5/Game2D/src/GameMap.h

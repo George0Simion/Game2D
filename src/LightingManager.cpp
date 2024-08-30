@@ -20,7 +20,7 @@ LightingManager::LightingManager(SDL_Renderer* renderer, int screenWidth, int sc
     }
     SDL_SetTextureBlendMode(dimmingTexture, SDL_BLENDMODE_BLEND);
     SDL_SetRenderTarget(renderer, dimmingTexture);
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 140); // Semi-transparent black for less dimming
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 160); // Semi-transparent black for less dimming
     SDL_RenderClear(renderer);
     SDL_SetRenderTarget(renderer, NULL); // Reset to default render target
 }
