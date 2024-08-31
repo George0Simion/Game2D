@@ -45,7 +45,7 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
 
     /* Loading the main character and adding it to the vector */
     SDL_Texture* tex = loadTexture("/home/simion/Desktop/5/Game2D/assets/sprite_good_arrow3.png");
-    player = new Player(1300, 900, tex, 4, 0.1f);     /* Center the player */
+    player = new Player(1300, 1000, tex, 4, 0.1f);     /* Center the player */
     entities.push_back(std::unique_ptr<Entity>(player));
     player->setHealth(Player::INITIAL_HEALTH);                                                 /* Set the health of the player */
 
@@ -225,62 +225,56 @@ void Game::processInput() {
     }
 
     if (moved) {
-        if (isPlayerInDungeon) {
-            // Perform wall collision check only if the player is inside the dungeon
-            SDL_Rect playerRect = player->getBoundingBox();
-            float playerLeft = newX;
-            float playerRight = newX + playerRect.w - 8;
-            float playerTop = newY + 16;
-            float playerBottom = newY + playerRect.h;
+        // Wall collision handling for both inside and outside the dungeon
+        SDL_Rect playerRect = player->getBoundingBox();
+        float playerLeft = newX;
+        float playerRight = newX + playerRect.w - 8;
+        float playerTop = newY + 16;
+        float playerBottom = newY + playerRect.h;
 
-            bool collision = isWall(playerLeft, playerTop) || 
-                             isWall(playerRight, playerTop) ||
-                             isWall(playerLeft, playerBottom) ||
-                             isWall(playerRight, playerBottom);
+        bool collision = isWall(playerLeft, playerTop) || 
+                         isWall(playerRight, playerTop) ||
+                         isWall(playerLeft, playerBottom) ||
+                         isWall(playerRight, playerBottom);
 
-            if (!collision) {
-                player->setX(newX);
-                player->setY(newY);
-            } else {
-                // Apply sliding effect
-                if (state[SDL_SCANCODE_W] || state[SDL_SCANCODE_UP]) {
-                    if (!isWall(playerLeft - 1, playerTop) && !isWall(playerLeft - 1, playerBottom)) {
-                        player->setX(player->getX() - 1);
-                    } else if (!isWall(playerRight + 1, playerTop) && !isWall(playerRight + 1, playerBottom)) {
-                        player->setX(player->getX() + 1);
-                    } else {
-                        player->setY(player->getY());
-                    }
-                } else if (state[SDL_SCANCODE_S] || state[SDL_SCANCODE_DOWN]) {
-                    if (!isWall(playerLeft - 1, playerBottom) && !isWall(playerLeft - 1, playerTop)) {
-                        player->setX(player->getX() - 1);
-                    } else if (!isWall(playerRight + 1, playerBottom) && !isWall(playerRight + 1, playerTop)) {
-                        player->setX(player->getX() + 1);
-                    } else {
-                        player->setY(player->getY());
-                    }
-                } else if (state[SDL_SCANCODE_A] || state[SDL_SCANCODE_LEFT]) {
-                    if (!isWall(playerLeft, playerTop - 1) && !isWall(playerRight, playerTop - 1)) {
-                        player->setY(player->getY() - 1);
-                    } else if (!isWall(playerLeft, playerBottom + 1) && !isWall(playerRight, playerBottom + 1)) {
-                        player->setY(player->getY() + 1);
-                    } else {
-                        player->setX(player->getX());
-                    }
-                } else if (state[SDL_SCANCODE_D] || state[SDL_SCANCODE_RIGHT]) {
-                    if (!isWall(playerRight, playerTop - 1) && !isWall(playerLeft, playerTop - 1)) {
-                        player->setY(player->getY() - 1);
-                    } else if (!isWall(playerRight, playerBottom + 1) && !isWall(playerLeft, playerBottom + 1)) {
-                        player->setY(player->getY() + 1);
-                    } else {
-                        player->setX(player->getX());
-                    }
-                }
-            }
-        } else {
-            // Update the player's position directly if outside the dungeon
+        if (!collision) {
             player->setX(newX);
             player->setY(newY);
+        } else {
+            // Apply sliding effect
+            if (state[SDL_SCANCODE_W] || state[SDL_SCANCODE_UP]) {
+                if (!isWall(playerLeft - 1, playerTop) && !isWall(playerLeft - 1, playerBottom)) {
+                    player->setX(player->getX() - 1);
+                } else if (!isWall(playerRight + 1, playerTop) && !isWall(playerRight + 1, playerBottom)) {
+                    player->setX(player->getX() + 1);
+                } else {
+                    player->setY(player->getY());
+                }
+            } else if (state[SDL_SCANCODE_S] || state[SDL_SCANCODE_DOWN]) {
+                if (!isWall(playerLeft - 1, playerBottom) && !isWall(playerLeft - 1, playerTop)) {
+                    player->setX(player->getX() - 1);
+                } else if (!isWall(playerRight + 1, playerBottom) && !isWall(playerRight + 1, playerTop)) {
+                    player->setX(player->getX() + 1);
+                } else {
+                    player->setY(player->getY());
+                }
+            } else if (state[SDL_SCANCODE_A] || state[SDL_SCANCODE_LEFT]) {
+                if (!isWall(playerLeft, playerTop - 1) && !isWall(playerRight, playerTop - 1)) {
+                    player->setY(player->getY() - 1);
+                } else if (!isWall(playerLeft, playerBottom + 1) && !isWall(playerRight, playerBottom + 1)) {
+                    player->setY(player->getY() + 1);
+                } else {
+                    player->setX(player->getX());
+                }
+            } else if (state[SDL_SCANCODE_D] || state[SDL_SCANCODE_RIGHT]) {
+                if (!isWall(playerRight, playerTop - 1) && !isWall(playerLeft, playerTop - 1)) {
+                    player->setY(player->getY() - 1);
+                } else if (!isWall(playerRight, playerBottom + 1) && !isWall(playerLeft, playerBottom + 1)) {
+                    player->setY(player->getY() + 1);
+                } else {
+                    player->setX(player->getX());
+                }
+            }
         }
 
         if (player->getAction() != Entity::Shooting && player->getAction() != Entity::Thrusting) {
@@ -428,12 +422,19 @@ bool Game::isWall(float x, float y) {
     int mazeX = static_cast<int>(x + 32) / cellSize;
     int mazeY = static_cast<int>(y + 64) / cellSize;
 
-    // Check bounds
-    if (mazeY < 0 || mazeY >= dungeonMaze.size() || mazeX < 0 || mazeX >= dungeonMaze[0].size()) {
-        return true;
+    if (isPlayerInDungeon) {
+        // Check bounds for dungeon maze
+        if (mazeY < 0 || mazeY >= dungeonMaze.size() || mazeX < 0 || mazeX >= dungeonMaze[0].size()) {
+            return true;
+        }
+        return dungeonMaze[mazeY][mazeX] == -1;
+    } else {
+        // Check bounds for outer world map
+        if (mazeY < 0 || mazeY >= mapMatrix.size() || mazeX < 0 || mazeX >= mapMatrix[0].size()) {
+            return true;
+        }
+        return mapMatrix[mazeY][mazeX] == 6; // Fence collision
     }
-
-    return dungeonMaze[mazeY][mazeX] == -1;
 }
 
 bool Game::areAllEnemiesCleared() const {
