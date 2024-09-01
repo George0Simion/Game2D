@@ -45,7 +45,7 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
 
     /* Loading the main character and adding it to the vector */
     SDL_Texture* tex = loadTexture("/home/simion/Desktop/5/Game2D/assets/sprite_good_arrow3.png");
-    player = new Player(1300, 1000, tex, 4, 0.1f);     /* Center the player */
+    player = new Player(670, 2850, tex, 4, 0.1f);     /* Center the player */
     entities.push_back(std::unique_ptr<Entity>(player));
     player->setHealth(Player::INITIAL_HEALTH);                                                 /* Set the health of the player */
 

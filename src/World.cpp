@@ -51,6 +51,28 @@ void World::update(float playerX, float playerY) {
 }
 
 void World::render(float playerX, float playerY, bool isPlayerInDungeon, SDL_Rect dungeonEntrance, const SDL_Rect& camera, SDL_Texture* dungeonEntranceTexture, SDL_Texture* tilesetTexture) {
+    // Define shadow parameters
+    const int shadowOffset = 15; // Offset for the shadow
+    const Uint8 shadowAlpha = 128; // Shadow transparency
+
+    // Calculate the world rendering area (shadow area)
+    int worldWidth = mapMatrix[0].size() * TILE_SIZE;
+    int worldHeight = mapMatrix.size() * TILE_SIZE;
+
+    SDL_Rect shadowRect = {
+        -camera.x + shadowOffset,
+        -camera.y + shadowOffset,
+        worldWidth,
+        worldHeight
+    };
+
+    // Set the renderer color for the shadow (semi-transparent black)
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, shadowAlpha);
+
+    // Render the shadow
+    SDL_RenderFillRect(renderer, &shadowRect);
+
+    // Render the map
     for (int y = 0; y < mapMatrix.size(); ++y) {
         for (int x = 0; x < mapMatrix[y].size(); ++x) {
             SDL_Rect destRect = {
@@ -68,6 +90,7 @@ void World::render(float playerX, float playerY, bool isPlayerInDungeon, SDL_Rec
             SDL_Rect srcRect;
             bool renderTile = true;
 
+            // Switch case handling different tile types
             switch (mapMatrix[y][x]) {
                 case TILE_PATH:
                     srcRect = getPathTileSourceRect(x, y); // Determine which path tile to use
@@ -109,6 +132,37 @@ void World::render(float playerX, float playerY, bool isPlayerInDungeon, SDL_Rec
                         SDL_RenderCopy(renderer, dungeonEntranceTexture, nullptr, &destRect);
                     }
                     renderTile = false;
+                case TILE_GATE:
+                    srcRect = {0, TILE_SOURCE_SIZE * 14 + 9, TILE_SOURCE_SIZE * 4, TILE_SOURCE_SIZE * 2};
+                    destRect.x = (x - 3) * TILE_SIZE - camera.x; // Adjust x-position to include the left tile
+                    destRect.y = (y - 1) * TILE_SIZE - camera.y;
+                    destRect.w = TILE_SIZE * 4;
+                    destRect.h = TILE_SIZE * 2;
+                    break;
+                case TILE_CROSS:
+                    srcRect = {crossIndex * TILE_SOURCE_SIZE, TILE_SOURCE_SIZE * 12 - 10, TILE_SOURCE_SIZE, TILE_SOURCE_SIZE + 3};
+                    crossIndex = (crossIndex + 1) % 4;
+                    break;
+                case TILE_GRAVE:
+                    srcRect = {graveIndex * TILE_SOURCE_SIZE + 6, TILE_SOURCE_SIZE * 13, TILE_SOURCE_SIZE + 4, TILE_SOURCE_SIZE + 3};
+                    graveIndex = (graveIndex + 1) % 2;
+                    break;
+                case TILE_COFFIN:
+                    srcRect = {6, TILE_SOURCE_SIZE * 17 - 15, TILE_SOURCE_SIZE * 2, TILE_SOURCE_SIZE};
+                    destRect.w = TILE_SIZE * 2;
+                    break;
+                case TILE_BONE:
+                    srcRect = {6, TILE_SOURCE_SIZE * 18 - 13, TILE_SOURCE_SIZE + 4, TILE_SOURCE_SIZE};
+                    break;
+                case TILE_SKULL:
+                    srcRect = {6, TILE_SOURCE_SIZE * 19 - 10, TILE_SOURCE_SIZE + 4, TILE_SOURCE_SIZE + 3};
+                    break;
+                case TILE_HOUSE_GREEN:
+                    srcRect = {TILE_SOURCE_SIZE * 6, TILE_SOURCE_SIZE, TILE_SOURCE_SIZE * 4, TILE_SOURCE_SIZE * 2};
+                    destRect.y = (y - 3) * TILE_SIZE - camera.y;
+                    destRect.w = TILE_SIZE * 5;
+                    destRect.h = TILE_SIZE * 3;
+                    break;
                 default:
                     renderTile = false;
                     break;

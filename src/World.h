@@ -21,6 +21,8 @@ private:
     SDL_Rect getPathTileSourceRect(int x, int y);
     SDL_Rect getFenceTileSourceRect(int x, int y);
     int bushIndex;
+    int crossIndex;
+    int graveIndex;
     
     SDL_Renderer* renderer;
     int chunkSize;
