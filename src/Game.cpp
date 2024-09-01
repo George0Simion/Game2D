@@ -84,8 +84,8 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
 
     tilesetTexture = loadTexture("/home/simion/Desktop/5/Game2D/assets/tileset.png");
     dungeonEntranceTexture = loadTexture("/home/simion/Desktop/5/Game2D/assets/dungeon_entrance.png");
-    pathTileTexture = loadTexture("/home/simion/Desktop/5/Game2D/assets/ground/cobblestone_2.png");
-    wallTileTexture = loadTexture("/home/simion/Desktop/5/Game2D/assets/wall/Brickwall_Texture.png");
+    pathTileTexture = loadTexture("/home/simion/Desktop/5/Game2D/assets/cobblestone_2.png");
+    wallTileTexture = loadTexture("/home/simion/Desktop/5/Game2D/assets/Brickwall_Texture.png");
     loadHUDTexture();                                                        /* Load the HUD texture */
 }
 
