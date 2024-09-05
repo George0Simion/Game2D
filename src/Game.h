@@ -19,6 +19,11 @@
 #include "LightingManager.h"
 #include "GameMap.h"
 
+#include <thread>
+#include <mutex>
+#include <queue>
+#include <condition_variable>
+
 class Game {
 public:
     Game();
@@ -45,6 +50,11 @@ public:
     bool isWall(float x, float y);
     int getDungeonWidth() const;
     int getDungeonHeight() const;
+
+    void dungeonGenerationThread();
+    void lightingThread();
+    void pathfindingThread();
+    void playerEnemyActionThread();
 
     bool isRunning;
     bool isMenuOpen;
@@ -110,9 +120,36 @@ private:
 
     int difficulty;
 
+    std::thread dungeonThreadHandle;
+    std::thread lightingThreadHandle;
+    std::thread pathfindingThreadHandle;
+    std::mutex dungeonMutex;
+    std::mutex lightingMutex;
+    std::mutex pathfindingMutex;
+    std::mutex entityMutex;
+    std::condition_variable dungeonCv;
+    std::condition_variable lightingCv;
+    std::condition_variable pathfindingCv;
+
+    std::thread playerEnemyActionThreadHandle;
+    std::mutex playerEnemyActionMutex;
+    std::condition_variable playerEnemyActionCv;
+    
+    bool terminateThreads;
+
     LightingManager* lightingManager;
 
     friend class Player;
 };
 
 #endif
+
+/*
+
+Dungeon Generation Thread: Handles dungeon generation asynchronously.
+Lighting Thread: Manages lighting effects and updates.
+Pathfinding Thread: Handles enemy pathfinding to the player.
+Player/Enemy Action Thread: Processes player and enemy actions, like movement and combat.
+Map Generation Thread (in World): Asynchronously generates map chunks.
+
+*/

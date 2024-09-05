@@ -5,6 +5,42 @@
 Game::Game() : window(nullptr), renderer(nullptr), isRunning(false), player(nullptr), world(nullptr), mazeGenerator(nullptr), difficulty(0), pathfindingManager() {}
 
 Game::~Game() {
+    // Set terminate flag for all threads
+    {
+        std::lock_guard<std::mutex> dungeonLock(dungeonMutex);
+        std::lock_guard<std::mutex> lightingLock(lightingMutex);
+        std::lock_guard<std::mutex> pathfindingLock(pathfindingMutex);
+        std::lock_guard<std::mutex> playerEnemyActionLock(playerEnemyActionMutex);
+        terminateThreads = true;
+    }
+
+    // Notify all threads to exit
+    dungeonCv.notify_one();
+    lightingCv.notify_one();
+    pathfindingCv.notify_one();
+    playerEnemyActionCv.notify_one();
+
+    // Join the dungeon generation thread
+    if (dungeonThreadHandle.joinable()) {
+        dungeonThreadHandle.join();
+    }
+
+    // Join the lighting thread
+    if (lightingThreadHandle.joinable()) {
+        lightingThreadHandle.join();
+    }
+
+    // Join the pathfinding thread
+    if (pathfindingThreadHandle.joinable()) {
+        pathfindingThreadHandle.join();
+    }
+
+    // Join the player and enemy action thread
+    if (playerEnemyActionThreadHandle.joinable()) {
+        playerEnemyActionThreadHandle.join();
+    }
+
+    // Clean up game resources
     clean();
 }
 
@@ -87,6 +123,119 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
     pathTileTexture = loadTexture("/home/simion/Desktop/5/Game2D/assets/cobblestone_2.png");
     wallTileTexture = loadTexture("/home/simion/Desktop/5/Game2D/assets/Brickwall_Texture.png");
     loadHUDTexture();                                                        /* Load the HUD texture */
+
+    terminateThreads = false;
+
+    dungeonThreadHandle = std::thread(&Game::dungeonGenerationThread, this);
+    lightingThreadHandle = std::thread(&Game::lightingThread, this);
+    pathfindingThreadHandle = std::thread(&Game::pathfindingThread, this);
+    playerEnemyActionThreadHandle = std::thread(&Game::playerEnemyActionThread, this);
+}
+
+void Game::dungeonGenerationThread() {
+    while (true) {
+        std::unique_lock<std::mutex> lock(dungeonMutex);
+        dungeonCv.wait(lock, [this] { return terminateThreads; });
+
+        if (terminateThreads) break;
+
+        // Generate dungeon chunks asynchronously
+        world->update(camera.x + camera.w / 2, camera.y + camera.h / 2);
+    }
+}
+
+void Game::lightingThread() {
+    while (true) {
+        std::unique_lock<std::mutex> lock(lightingMutex);
+        lightingCv.wait(lock, [this] { return terminateThreads; });
+
+        if (terminateThreads) break;
+
+        std::vector<SDL_Rect> enemyPositions;
+        std::vector<SDL_Rect> spellPositions;
+
+        {
+            // Ensure thread-safe access to entities when calculating positions
+            std::lock_guard<std::mutex> entityLock(entityMutex);
+
+            for (const auto& entity : entities) {
+                if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
+                    SDL_Rect enemyRect = {
+                        static_cast<int>(enemy->getX()) - camera.x,
+                        static_cast<int>(enemy->getY()) - camera.y,
+                        static_cast<int>(enemy->getCurrentFrame().w * 2),
+                        static_cast<int>(enemy->getCurrentFrame().h * 2)
+                    };
+                    enemyPositions.push_back(enemyRect);
+                }
+
+                if (entity->isSpellActive()) {
+                    SDL_Rect spellRect = {
+                        static_cast<int>(entity->getSpellX()) - camera.x,
+                        static_cast<int>(entity->getSpellY()) - camera.y,
+                        64, // Width of the spell texture
+                        64  // Height of the spell texture
+                    };
+                    spellPositions.push_back(spellRect);
+                }
+            }
+        }
+
+        // Update lighting effects asynchronously
+        lightingManager->renderLighting(
+            {static_cast<int>(player->getX()), static_cast<int>(player->getY()), player->getCurrentFrame().w * 2, player->getCurrentFrame().h * 2},
+            enemyPositions,
+            spellPositions,
+            dungeonMaze,
+            camera
+        );
+    }
+}
+
+
+void Game::pathfindingThread() {
+    while (true) {
+        std::unique_lock<std::mutex> lock(pathfindingMutex);
+        pathfindingCv.wait(lock, [this] { return terminateThreads; });
+
+        if (terminateThreads) break;
+
+        // Handle pathfinding requests asynchronously
+        for (auto& entity : entities) {
+            if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
+                // Get path to player
+                auto path = pathfindingManager.getSharedPathToPlayer(*player, *this, *enemy);
+                
+                // Update the enemy's path directly
+                enemy->pathToPlayer = path;
+                enemy->currentPathIndex = 0;  // Reset path index to start at the beginning
+
+                // Follow the path
+                enemy->followSharedPath(deltaTime, *player, *this);
+            }
+        }
+    }
+}
+
+void Game::playerEnemyActionThread() {
+    while (true) {
+        std::unique_lock<std::mutex> lock(playerEnemyActionMutex);
+        playerEnemyActionCv.wait(lock, [this] { return terminateThreads; });
+
+        if (terminateThreads) break;
+
+        // Process player actions
+        if (!isMenuOpen && !player->getIsDead()) {
+            player->update(deltaTime, entities, *this);
+        }
+
+        // Process enemy actions
+        for (auto& entity : entities) {
+            if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
+                enemy->updateBehavior(deltaTime, *player, entities, *this);
+            }
+        }
+    }
 }
 
 std::pair<int, int> Game::findDungeonEntrancePosition() {
@@ -495,12 +644,16 @@ void Game::update() {
         return;
     }
 
+    dungeonCv.notify_one();  // Notify dungeon generation thread
+    lightingCv.notify_one(); // Notify lighting thread
+    pathfindingCv.notify_one(); // Notify pathfinding thread
+    playerEnemyActionCv.notify_one();  // Notify player and enemy action thread
+
     if (player->getIsDead()) {
         player->update(deltaTime, entities, *this);
         if (isPlayerDeathAnimationFinished() && currentTime - deathTime >= DEATH_DELAY) {
             menu->setState(Menu::RESPAWN_MENU);
             isMenuOpen = true;
-            // resetGame(true);
         }
     } else {
         processInput();
@@ -954,6 +1107,10 @@ void Game::renderHealthBar(int x, int y, int currentHealth, int maxHealth) {
 }
 
 void Game::render() {
+    std::lock_guard<std::mutex> dungeonLock(dungeonMutex);  // Lock dungeon rendering
+    std::lock_guard<std::mutex> lightingLock(lightingMutex); // Lock lighting rendering
+    std::lock_guard<std::mutex> entityLock(entityMutex); // Lock entity rendering
+
     SDL_RenderClear(renderer);
 
     std::vector<SDL_Rect> enemyPositions;

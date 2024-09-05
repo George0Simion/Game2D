@@ -5,52 +5,82 @@
 const int TILE_SIZE = 96;
 const int TILE_SOURCE_SIZE = 32;
 
-World::World(SDL_Renderer* p_renderer) : renderer(p_renderer), chunkSize(12), bushIndex(0) {
-    // No need to initialize noise or similar elements
+World::World(SDL_Renderer* p_renderer) : renderer(p_renderer), chunkSize(12), terminateThread(false) {
+    generationThread = std::thread(&World::mapGenerationThread, this);
 }
 
 World::~World() {
-    chunks.clear();
-    visibleChunks.clear();
+    {
+        std::lock_guard<std::mutex> lock(chunkMutex);
+        terminateThread = true;
+    }
+    cv.notify_one();  // Notify the thread to stop
+    if (generationThread.joinable()) {
+        generationThread.join();
+    }
 }
 
-// No need to generate chunks based on noise; we use mapMatrix directly
+void World::mapGenerationThread() {
+    while (true) {
+        std::pair<int, int> chunkCoords;
+        {
+            std::unique_lock<std::mutex> lock(chunkMutex);
+            cv.wait(lock, [this] { return !chunkQueue.empty() || terminateThread; });
+            if (terminateThread) break;
+            chunkCoords = chunkQueue.front();
+            chunkQueue.pop();
+        }
+        // Generate the chunk outside of the critical section
+        generateChunk(chunkCoords.first, chunkCoords.second);
+    }
+}
+
+void World::requestChunkGeneration(int chunkX, int chunkY) {
+    std::lock_guard<std::mutex> lock(chunkMutex);
+    chunkQueue.push({chunkX, chunkY});
+    cv.notify_one();  // Notify the thread that there's a new chunk to generate
+}
+
 void World::generateChunk(int chunkX, int chunkY) {
     std::string key = getChunkKey(chunkX, chunkY);
-    if (chunks.find(key) != chunks.end()) return; // Chunk already generated
-
-    // For a static world, you might predefine chunks or use mapMatrix directly
-    // Here you could dynamically adjust if needed
-    chunks[key] = mapMatrix;  // Assuming you adjust chunks by predefined rules
+    
+    // Lock the mutex while modifying the chunks map
+    {
+        std::lock_guard<std::mutex> lock(chunkMutex);
+        if (chunks.find(key) != chunks.end()) return;  // Chunk already exists
+        chunks[key] = mapMatrix;  // For simplicity, assume mapMatrix is static for this example
+    }
 }
 
-// Update visible chunks based on player's position
 void World::update(float playerX, float playerY) {
-    // Use the mapMatrix directly for simplicity in a static or semi-static world
     int centerX = static_cast<int>(playerX) / (chunkSize * TILE_SIZE);
     int centerY = static_cast<int>(playerY) / (chunkSize * TILE_SIZE);
-    
+
     std::unordered_set<std::string> newVisibleChunks;
-    
+
     for (int x = centerX - 2; x <= centerX + 2; ++x) {
         for (int y = centerY - 2; y <= centerY + 2; ++y) {
             std::string key = getChunkKey(x, y);
-            generateChunk(x, y); // Ensure chunk is generated
+            if (chunks.find(key) == chunks.end()) {
+                requestChunkGeneration(x, y);  // Request chunk generation in background
+            }
             newVisibleChunks.insert(key);
         }
     }
-    
+
     // Remove chunks that are no longer visible
     for (const auto& chunkKey : visibleChunks) {
         if (newVisibleChunks.find(chunkKey) == newVisibleChunks.end()) {
-            chunks.erase(chunkKey); // Despawn the chunk
+            chunks.erase(chunkKey);  // Despawn the chunk
         }
     }
-    
+
     visibleChunks = newVisibleChunks;
 }
 
 void World::render(float playerX, float playerY, bool isPlayerInDungeon, SDL_Rect dungeonEntrance, const SDL_Rect& camera, SDL_Texture* dungeonEntranceTexture, SDL_Texture* tilesetTexture) {
+    std::lock_guard<std::mutex> lock(chunkMutex);  // Protect access to chunks
+
     // Define shadow parameters
     const int shadowOffset = 15; // Offset for the shadow
     const Uint8 shadowAlpha = 128; // Shadow transparency
@@ -72,104 +102,106 @@ void World::render(float playerX, float playerY, bool isPlayerInDungeon, SDL_Rec
     // Render the shadow
     SDL_RenderFillRect(renderer, &shadowRect);
 
-    // Render the map
-    for (int y = 0; y < mapMatrix.size(); ++y) {
-        for (int x = 0; x < mapMatrix[y].size(); ++x) {
-            SDL_Rect destRect = {
-                x * TILE_SIZE - camera.x,
-                y * TILE_SIZE - camera.y,
-                TILE_SIZE,
-                TILE_SIZE
-            };
+    // Render visible chunks
+    for (const auto& [chunkKey, chunk] : chunks) {
+        for (int y = 0; y < chunk.size(); ++y) {
+            for (int x = 0; x < chunk[y].size(); ++x) {
+                SDL_Rect destRect = {
+                    x * TILE_SIZE - camera.x,
+                    y * TILE_SIZE - camera.y,
+                    TILE_SIZE,
+                    TILE_SIZE
+                };
 
-            // Always render grass first as the base layer
-            SDL_Rect grassSrcRect = {TILE_SOURCE_SIZE * 9, TILE_SOURCE_SIZE * 4, TILE_SOURCE_SIZE, TILE_SOURCE_SIZE};
-            SDL_RenderCopy(renderer, tilesetTexture, &grassSrcRect, &destRect);
+                // Always render grass first as the base layer
+                SDL_Rect grassSrcRect = {TILE_SOURCE_SIZE * 9, TILE_SOURCE_SIZE * 4, TILE_SOURCE_SIZE, TILE_SOURCE_SIZE};
+                SDL_RenderCopy(renderer, tilesetTexture, &grassSrcRect, &destRect);
 
-            // Now render other elements on top of the grass
-            SDL_Rect srcRect;
-            bool renderTile = true;
+                // Now render other elements on top of the grass
+                SDL_Rect srcRect;
+                bool renderTile = true;
 
-            // Switch case handling different tile types
-            switch (mapMatrix[y][x]) {
-                case TILE_PATH:
-                    srcRect = getPathTileSourceRect(x, y); // Determine which path tile to use
-                    break;
-                case TILE_FENCE:
-                    srcRect = getFenceTileSourceRect(x, y);
-                    break;
-                case TILE_BUSH:
-                    srcRect = {bushIndex * TILE_SOURCE_SIZE, TILE_SOURCE_SIZE * 6, TILE_SOURCE_SIZE - 12, TILE_SOURCE_SIZE - 12};
-                    bushIndex = (bushIndex + 1) % 4;
-                    break;
-                case TILE_HOUSE_BLUE:
-                    srcRect = {16, 0, TILE_SOURCE_SIZE * 3, TILE_SOURCE_SIZE * 3}; // Blue house
-                    destRect.x = (x - 1) * TILE_SIZE - camera.x; // Adjust x-position to include the left tile
-                    destRect.y = (y - 5) * TILE_SIZE - camera.y;
-                    destRect.w = TILE_SIZE * 5;
-                    destRect.h = TILE_SIZE * 5;
-                    break;
-                case TILE_HOUSE_RED:
-                    srcRect = {TILE_SOURCE_SIZE * 4, TILE_SOURCE_SIZE, TILE_SOURCE_SIZE * 2, TILE_SOURCE_SIZE * 2};
-                    destRect.x = (x - 1) * TILE_SIZE - camera.x;
-                    destRect.y = (y - 4) * TILE_SIZE - camera.y;
-                    destRect.w = TILE_SIZE * 5;
-                    destRect.h = TILE_SIZE * 4;
-                    break;
-                case TILE_TREE:
-                    srcRect = {TILE_SOURCE_SIZE * 10, 0, TILE_SIZE - 25, TILE_SIZE}; // Tree
-                    destRect.x = (x - 2) * TILE_SIZE - camera.x; // Adjust x-position to include the left tile
-                    destRect.y = (y - 3) * TILE_SIZE - camera.y;
-                    destRect.w = TILE_SIZE * 3;
-                    destRect.h = TILE_SIZE * 4;
-                    break;
-                case TILE_DUNGEON_ENTRANCE:
-                    destRect.x = (x - 2) * TILE_SIZE - camera.x; // Adjust x-position to include the left tile
-                    destRect.y = (y - 3) * TILE_SIZE - camera.y;
-                    destRect.w = TILE_SIZE * 5;
-                    destRect.h = TILE_SIZE * 3;
-                    if (!isPlayerInDungeon) {
-                        SDL_RenderCopy(renderer, dungeonEntranceTexture, nullptr, &destRect);
-                    }
-                    renderTile = false;
-                case TILE_GATE:
-                    srcRect = {0, TILE_SOURCE_SIZE * 14 + 9, TILE_SOURCE_SIZE * 4, TILE_SOURCE_SIZE * 2};
-                    destRect.x = (x - 3) * TILE_SIZE - camera.x; // Adjust x-position to include the left tile
-                    destRect.y = (y - 1) * TILE_SIZE - camera.y;
-                    destRect.w = TILE_SIZE * 4;
-                    destRect.h = TILE_SIZE * 2;
-                    break;
-                case TILE_CROSS:
-                    srcRect = {crossIndex * TILE_SOURCE_SIZE, TILE_SOURCE_SIZE * 12 - 10, TILE_SOURCE_SIZE, TILE_SOURCE_SIZE + 3};
-                    crossIndex = (crossIndex + 1) % 4;
-                    break;
-                case TILE_GRAVE:
-                    srcRect = {graveIndex * TILE_SOURCE_SIZE + 6, TILE_SOURCE_SIZE * 13, TILE_SOURCE_SIZE + 4, TILE_SOURCE_SIZE + 3};
-                    graveIndex = (graveIndex + 1) % 2;
-                    break;
-                case TILE_COFFIN:
-                    srcRect = {6, TILE_SOURCE_SIZE * 17 - 15, TILE_SOURCE_SIZE * 2, TILE_SOURCE_SIZE};
-                    destRect.w = TILE_SIZE * 2;
-                    break;
-                case TILE_BONE:
-                    srcRect = {6, TILE_SOURCE_SIZE * 18 - 13, TILE_SOURCE_SIZE + 4, TILE_SOURCE_SIZE};
-                    break;
-                case TILE_SKULL:
-                    srcRect = {6, TILE_SOURCE_SIZE * 19 - 10, TILE_SOURCE_SIZE + 4, TILE_SOURCE_SIZE + 3};
-                    break;
-                case TILE_HOUSE_GREEN:
-                    srcRect = {TILE_SOURCE_SIZE * 6, TILE_SOURCE_SIZE, TILE_SOURCE_SIZE * 4, TILE_SOURCE_SIZE * 2};
-                    destRect.y = (y - 3) * TILE_SIZE - camera.y;
-                    destRect.w = TILE_SIZE * 5;
-                    destRect.h = TILE_SIZE * 3;
-                    break;
-                default:
-                    renderTile = false;
-                    break;
-            }
+                // Switch case handling different tile types in the chunk
+                switch (chunk[y][x]) {
+                    case TILE_PATH:
+                        srcRect = getPathTileSourceRect(x, y); // Determine which path tile to use
+                        break;
+                    case TILE_FENCE:
+                        srcRect = getFenceTileSourceRect(x, y);
+                        break;
+                    case TILE_BUSH:
+                        srcRect = {bushIndex * TILE_SOURCE_SIZE, TILE_SOURCE_SIZE * 6, TILE_SOURCE_SIZE - 12, TILE_SOURCE_SIZE - 12};
+                        bushIndex = (bushIndex + 1) % 4;
+                        break;
+                    case TILE_HOUSE_BLUE:
+                        srcRect = {16, 0, TILE_SOURCE_SIZE * 3, TILE_SOURCE_SIZE * 3}; // Blue house
+                        destRect.x = (x - 1) * TILE_SIZE - camera.x; // Adjust x-position to include the left tile
+                        destRect.y = (y - 5) * TILE_SIZE - camera.y;
+                        destRect.w = TILE_SIZE * 5;
+                        destRect.h = TILE_SIZE * 5;
+                        break;
+                    case TILE_HOUSE_RED:
+                        srcRect = {TILE_SOURCE_SIZE * 4, TILE_SOURCE_SIZE, TILE_SOURCE_SIZE * 2, TILE_SOURCE_SIZE * 2};
+                        destRect.x = (x - 1) * TILE_SIZE - camera.x;
+                        destRect.y = (y - 4) * TILE_SIZE - camera.y;
+                        destRect.w = TILE_SIZE * 5;
+                        destRect.h = TILE_SIZE * 4;
+                        break;
+                    case TILE_TREE:
+                        srcRect = {TILE_SOURCE_SIZE * 10, 0, TILE_SIZE - 25, TILE_SIZE}; // Tree
+                        destRect.x = (x - 2) * TILE_SIZE - camera.x; // Adjust x-position to include the left tile
+                        destRect.y = (y - 3) * TILE_SIZE - camera.y;
+                        destRect.w = TILE_SIZE * 3;
+                        destRect.h = TILE_SIZE * 4;
+                        break;
+                    case TILE_DUNGEON_ENTRANCE:
+                        destRect.x = (x - 2) * TILE_SIZE - camera.x; // Adjust x-position to include the left tile
+                        destRect.y = (y - 3) * TILE_SIZE - camera.y;
+                        destRect.w = TILE_SIZE * 5;
+                        destRect.h = TILE_SIZE * 3;
+                        if (!isPlayerInDungeon) {
+                            SDL_RenderCopy(renderer, dungeonEntranceTexture, nullptr, &destRect);
+                        }
+                        renderTile = false;
+                    case TILE_GATE:
+                        srcRect = {0, TILE_SOURCE_SIZE * 14 + 9, TILE_SOURCE_SIZE * 4, TILE_SOURCE_SIZE * 2};
+                        destRect.x = (x - 3) * TILE_SIZE - camera.x; // Adjust x-position to include the left tile
+                        destRect.y = (y - 1) * TILE_SIZE - camera.y;
+                        destRect.w = TILE_SIZE * 4;
+                        destRect.h = TILE_SIZE * 2;
+                        break;
+                    case TILE_CROSS:
+                        srcRect = {crossIndex * TILE_SOURCE_SIZE, TILE_SOURCE_SIZE * 12 - 10, TILE_SOURCE_SIZE, TILE_SOURCE_SIZE + 3};
+                        crossIndex = (crossIndex + 1) % 4;
+                        break;
+                    case TILE_GRAVE:
+                        srcRect = {graveIndex * TILE_SOURCE_SIZE + 6, TILE_SOURCE_SIZE * 13, TILE_SOURCE_SIZE + 4, TILE_SOURCE_SIZE + 3};
+                        graveIndex = (graveIndex + 1) % 2;
+                        break;
+                    case TILE_COFFIN:
+                        srcRect = {6, TILE_SOURCE_SIZE * 17 - 15, TILE_SOURCE_SIZE * 2, TILE_SOURCE_SIZE};
+                        destRect.w = TILE_SIZE * 2;
+                        break;
+                    case TILE_BONE:
+                        srcRect = {6, TILE_SOURCE_SIZE * 18 - 13, TILE_SOURCE_SIZE + 4, TILE_SOURCE_SIZE};
+                        break;
+                    case TILE_SKULL:
+                        srcRect = {6, TILE_SOURCE_SIZE * 19 - 10, TILE_SOURCE_SIZE + 4, TILE_SOURCE_SIZE + 3};
+                        break;
+                    case TILE_HOUSE_GREEN:
+                        srcRect = {TILE_SOURCE_SIZE * 6, TILE_SOURCE_SIZE, TILE_SOURCE_SIZE * 4, TILE_SOURCE_SIZE * 2};
+                        destRect.y = (y - 3) * TILE_SIZE - camera.y;
+                        destRect.w = TILE_SIZE * 5;
+                        destRect.h = TILE_SIZE * 3;
+                        break;
+                    default:
+                        renderTile = false;
+                        break;
+                }
 
-            if (renderTile) {
-                SDL_RenderCopy(renderer, tilesetTexture, &srcRect, &destRect);
+                if (renderTile) {
+                    SDL_RenderCopy(renderer, tilesetTexture, &srcRect, &destRect);
+                }
             }
         }
     }

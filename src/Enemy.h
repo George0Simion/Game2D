@@ -36,7 +36,10 @@ public:
     void updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities, Game& game);
 
     std::vector<std::pair<int, int>> calculateNewPath(Player& player, Game& game);
-    void setPath(const std::vector<std::pair<int, int>>& newPath);
+    void followSharedPath(float deltaTime, Player& player, Game& game);
+
+    std::vector<std::pair<int, int>> pathToPlayer;
+    size_t currentPathIndex;
 
 protected:
     int getActionOffset() const override;
@@ -47,8 +50,6 @@ private:
     float thrustRange;
     float moveSpeed;
     float spellCooldownRemaining;
-    std::vector<std::pair<int, int>> pathToPlayer;
-    size_t currentPathIndex;
     bool hasPath;
 
     float directionChangeCooldown;
@@ -56,9 +57,7 @@ private:
     bool hasTarget;
 
     void decideAction(Player& player, float distance);
-    void followPlayer(float deltaTime, Player& player, Game& game);
     void randomMove(float deltaTime, Game& game);
-    void followSharedPath(float deltaTime, Player& player, Game& game);
     void moveToNextWaypoint(float deltaTime, Player& player, Game& game);
 
     std::vector<std::pair<int, int>> findPathToPlayer(Player& player, Game& game);

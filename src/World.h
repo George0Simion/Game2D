@@ -8,6 +8,11 @@
 #include <SDL2/SDL.h>
 #include "Entity.h"
 
+#include <thread>
+#include <mutex>
+#include <queue>
+#include <condition_variable>
+
 class World {
 public:
     World(SDL_Renderer* p_renderer);
@@ -18,6 +23,17 @@ public:
 private:
     void generateChunk(int chunkX, int chunkY);
     std::string getChunkKey(int chunkX, int chunkY);
+
+    // Threading related members
+    void mapGenerationThread(); // Function for the background thread
+    void requestChunkGeneration(int chunkX, int chunkY); // Add chunk to queue
+
+    std::thread generationThread;
+    std::mutex chunkMutex;  // Mutex to protect access to chunks
+    std::condition_variable cv;  // For thread notification
+    std::queue<std::pair<int, int>> chunkQueue;  // Queue of chunks to generate
+    bool terminateThread;  // Flag to stop the background thread
+
     SDL_Rect getPathTileSourceRect(int x, int y);
     SDL_Rect getFenceTileSourceRect(int x, int y);
     int bushIndex;

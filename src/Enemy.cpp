@@ -173,7 +173,7 @@ void Enemy::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Ent
 }
 
 void Enemy::followSharedPath(float deltaTime, Player& player, Game& game) {
-    if (isMarkedForRemoval() || !hasPath) return;
+    if (isMarkedForRemoval() || !hasPath || pathToPlayer.empty()) return;
 
     moveToNextWaypoint(deltaTime, player, game);
 }
@@ -184,7 +184,7 @@ std::vector<std::pair<int, int>> Enemy::calculateNewPath(Player& player, Game& g
 
 void Enemy::moveToNextWaypoint(float deltaTime, Player& player, Game& game) {
     if (currentPathIndex >= pathToPlayer.size()) {
-        hasPath = false;
+        hasPath = false;  // Mark path as complete
         return;
     }
 
@@ -227,6 +227,7 @@ void Enemy::moveToNextWaypoint(float deltaTime, Player& player, Game& game) {
         }
     }
 
+    // Move to next waypoint if close enough
     if (moved && abs(getX() - targetX) < moveSpeed * deltaTime && abs(getY() - targetY) < moveSpeed * deltaTime) {
         currentPathIndex++;
     }
