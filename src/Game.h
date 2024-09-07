@@ -50,11 +50,14 @@ public:
     bool isWall(float x, float y);
     int getDungeonWidth() const;
     int getDungeonHeight() const;
+    void renderText(const char* text, int x, int y, SDL_Color color);
 
     void dungeonGenerationThread();
     void lightingThread();
     void pathfindingThread();
     void playerEnemyActionThread();
+
+    LightingManager* lightingManager;
 
     bool isRunning;
     bool isMenuOpen;
@@ -99,7 +102,6 @@ private:
     void updateEnemySpellAnimation(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities);
     void renderHUD();
     void renderCooldowns();
-    void renderText(const char* text, int x, int y, SDL_Color color);
     void renderSmallText(const char* text, int x, int y, SDL_Color color);
     bool isFacing(Entity& entity, Entity& target);
     void spawnEnemiesInDungeon(int numberOfEnemies);
@@ -136,8 +138,6 @@ private:
     std::condition_variable playerEnemyActionCv;
     
     bool terminateThreads;
-
-    LightingManager* lightingManager;
 
     friend class Player;
 };
