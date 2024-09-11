@@ -11,6 +11,7 @@
 #include <map>
 #include <utility>
 #include <unordered_map>
+#include <random>
 
 class PathfindingManager;
 

@@ -284,7 +284,11 @@ void Enemy::randomMove(float deltaTime, Game& game) {
     if (timeSinceLastDirectionChange >= directionChangeCooldown) {  // Check if cooldown has passed
         timeSinceLastDirectionChange = 0.0f;  // Reset timer
         std::vector<Direction> directions = {Up, Down, Left, Right};
-        std::random_shuffle(directions.begin(), directions.end());
+
+        std::random_device rd;
+        std::mt19937 g(rd());
+        std::shuffle(directions.begin(), directions.end(), g);
+
         for (Direction dir : directions) {
             float newX = getX();
             float newY = getY();
@@ -391,7 +395,11 @@ void Enemy::randomMove(float deltaTime, Game& game) {
     if (!moved) {
         // Choose a new direction where there is no wall
         std::vector<Direction> directions = {Up, Down, Left, Right};
-        std::random_shuffle(directions.begin(), directions.end());
+
+        std::random_device rd;
+        std::mt19937 g(rd());
+        std::shuffle(directions.begin(), directions.end(), g);
+
         for (Direction dir : directions) {
             float newX = getX();
             float newY = getY();
