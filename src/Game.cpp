@@ -548,7 +548,9 @@ void Game::spawnEnemiesInDungeon(int numberOfEnemies) {
     }
 
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
-    std::random_shuffle(pathCells.begin(), pathCells.end());
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(pathCells.begin(), pathCells.end(), g);
 
     for (int i = 0; i < numberOfEnemies && i < pathCells.size(); ++i) {
         int x = pathCells[i].first;
