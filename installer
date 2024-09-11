@@ -1,0 +1,142 @@
+#!/bin/bash
+
+# Function to check if a command exists
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
+
+# Function to check if a package is installed (Debian/Ubuntu)
+is_package_installed_debian() {
+    dpkg -s "$1" &> /dev/null
+}
+
+# Function to check if a package is installed (Fedora)
+is_package_installed_fedora() {
+    rpm -q "$1" &> /dev/null
+}
+
+# Function to check if a package is installed (Arch)
+is_package_installed_arch() {
+    pacman -Qs "$1" &> /dev/null
+}
+
+# Function to install dependencies based on the operating system
+install_dependencies() {
+    if [ -f /etc/os-release ]; then
+        # Load OS details
+        . /etc/os-release
+        OS=$ID
+    else
+        echo "Unknown operating system."
+        exit 1
+    fi
+
+    echo "Detected OS: $OS"
+
+    case "$OS" in
+        ubuntu|debian)
+            echo "Checking dependencies for Ubuntu/Debian..."
+            dependencies=("cmake" "build-essential" "libsdl2-dev" "libsdl2-image-dev" "libsdl2-ttf-dev")
+            
+            # Install missing dependencies
+            for dep in "${dependencies[@]}"; do
+                if ! is_package_installed_debian "$dep"; then
+                    echo "Installing $dep..."
+                    sudo apt-get install -y "$dep"
+                else
+                    echo "$dep is already installed."
+                fi
+            done
+            ;;
+        fedora)
+            echo "Checking dependencies for Fedora..."
+            dependencies=("cmake" "gcc-c++" "SDL2-devel" "SDL2_image-devel" "SDL2_ttf-devel")
+            
+            # Install missing dependencies
+            for dep in "${dependencies[@]}"; do
+                if ! is_package_installed_fedora "$dep"; then
+                    echo "Installing $dep..."
+                    sudo dnf install -y "$dep"
+                else
+                    echo "$dep is already installed."
+                fi
+            done
+            ;;
+        arch)
+            echo "Checking dependencies for Arch Linux..."
+            dependencies=("cmake" "base-devel" "sdl2" "sdl2_image" "sdl2_ttf")
+            
+            # Install missing dependencies
+            for dep in "${dependencies[@]}"; do
+                if ! is_package_installed_arch "$dep"; then
+                    echo "Installing $dep..."
+                    sudo pacman -Syu --noconfirm "$dep"
+                else
+                    echo "$dep is already installed."
+                fi
+            done
+            ;;
+        *)
+            if grep -qEi "(Microsoft|WSL)" /proc/version &> /dev/null; then
+                echo "Running on WSL. Checking dependencies for Ubuntu/Debian..."
+                dependencies=("cmake" "build-essential" "libsdl2-dev" "libsdl2-image-dev" "libsdl2-ttf-dev")
+                
+                # Install missing dependencies
+                for dep in "${dependencies[@]}"; do
+                    if ! is_package_installed_debian "$dep"; then
+                        echo "Installing $dep..."
+                        sudo apt-get install -y "$dep"
+                    else
+                        echo "$dep is already installed."
+                    fi
+                done
+            else
+                echo "Unsupported OS. You need to install SDL2, SDL2_image, SDL2_ttf, CMake, and a compiler manually."
+                exit 1
+            fi
+            ;;
+    esac
+}
+
+# Function to compile the project
+compile_project() {
+    echo "Creating build directory..."
+    mkdir -p build
+    cd build || { echo "Failed to enter build directory"; exit 1; }
+
+    echo "Running CMake..."
+    cmake ..
+
+    echo "Compiling the project..."
+    make
+
+    if [ $? -ne 0 ]; then
+        echo "Build failed. Exiting..."
+        exit 1
+    fi
+
+    echo "Build successful!"
+}
+
+# Function to create a symbolic link for running the game
+create_symlink() {
+    cd .. || { echo "Failed to return to root project directory"; exit 1; }
+
+    echo "Creating symlink for ./run to the executable in the build directory..."
+    ln -sf build/SimpleGame run
+
+    if [ $? -ne 0 ]; then
+        echo "Failed to create symlink."
+        exit 1
+    fi
+
+    echo "Symlink created successfully! You can run the game with ./run"
+}
+
+# Main script execution
+echo "Starting installation process..."
+install_dependencies
+compile_project
+create_symlink
+
+echo "Installation completed successfully!"

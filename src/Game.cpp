@@ -44,6 +44,22 @@ Game::~Game() {
     clean();
 }
 
+// Helper function to get the absolute path to the assets directory
+std::string getAssetPath(const std::string& subDir = "") {
+    char* basePath = SDL_GetBasePath();
+    if (basePath) {
+        std::string basePathStr(basePath);
+        SDL_free(basePath);  // Free the base path memory after usage
+
+        // Go up one directory from the build folder to the root project directory
+        std::string assetsPath = basePathStr + "../assets/" + subDir;
+        return assetsPath;
+    } else {
+        std::cerr << "Error getting base path: " << SDL_GetError() << std::endl;
+        return "";
+    }
+}
+
 void Game::init(const char* title, int width, int height, bool fullscreen) {
     int flags = fullscreen ? SDL_WINDOW_FULLSCREEN : 0;
     if (SDL_Init(SDL_INIT_EVERYTHING) == 0) {
@@ -66,13 +82,13 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
         printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
         isRunning = false;
     } else {
-        font = TTF_OpenFont("../assets/font.ttf", 32); // Adjust the path and size as needed
+        font = TTF_OpenFont(getAssetPath("font.ttf").c_str(), 32); // Use getAssetPath
         if (!font) {
             printf("Failed to load font! SDL_ttf Error: %s\n", TTF_GetError());
             isRunning = false;
         }
 
-        smallFont = TTF_OpenFont("../assets/font.ttf", 16); // Adjust the path and size as needed
+        smallFont = TTF_OpenFont(getAssetPath("font.ttf").c_str(), 16); // Use getAssetPath
         if (!smallFont) {
             printf("Failed to load small font! SDL_ttf Error: %s\n", TTF_GetError());
             isRunning = false;
@@ -80,7 +96,7 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
     }
 
     /* Loading the main character and adding it to the vector */
-    SDL_Texture* tex = loadTexture("../assets/sprite_good_arrow3.png");
+    SDL_Texture* tex = loadTexture(getAssetPath("sprite_good_arrow3.png").c_str());
     player = new Player(670, 2850, tex, 4, 0.1f);
     entities.push_back(std::unique_ptr<Entity>(player));
     player->setHealth(Player::INITIAL_HEALTH);                                                 /* Set the health of the player */
@@ -118,10 +134,10 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
 
     world->update(camera.x + camera.w / 2, camera.y + camera.h / 2);
 
-    tilesetTexture = loadTexture("../assets/tileset.png");
-    dungeonEntranceTexture = loadTexture("../assets/dungeon_entrance.png");
-    pathTileTexture = loadTexture("../assets/cobblestone_2.png");
-    wallTileTexture = loadTexture("../assets/Brickwall_Texture.png");
+    tilesetTexture = loadTexture(getAssetPath("tileset.png").c_str());
+    dungeonEntranceTexture = loadTexture(getAssetPath("dungeon_entrance.png").c_str());
+    pathTileTexture = loadTexture(getAssetPath("cobblestone_2.png").c_str());
+    wallTileTexture = loadTexture(getAssetPath("Brickwall_Texture.png").c_str());
     loadHUDTexture();                                                        /* Load the HUD texture */
 
     terminateThreads = false;
@@ -257,7 +273,7 @@ SDL_Texture* Game::loadTexture(const char* fileName) {                      /* M
 }
 
 void Game::spawnEnemy() {
-    SDL_Texture* enemyTex = loadTexture("../assets/enemy4.png");
+    SDL_Texture* enemyTex = loadTexture(getAssetPath("enemy4.png").c_str());
     float x = 540;
     float y = 100;
     
@@ -275,7 +291,7 @@ void Game::resetGame(bool resetDungeon) {
     entities.clear();
 
     // Reinitialize the player
-    player = new Player(670, 2850, loadTexture("../assets/sprite_good_arrow3.png"), 4, 0.1f);
+    player = new Player(670, 2850, loadTexture(getAssetPath("sprite_good_arrow3.png").c_str()), 4, 0.1f);
     player->setHealth(Player::INITIAL_HEALTH);
     entities.push_back(std::unique_ptr<Entity>(player));
 
@@ -541,7 +557,7 @@ void Game::spawnEnemiesInDungeon(int numberOfEnemies) {
         float enemyX = x * 96.0f - 32;
         float enemyY = y * 96.0f - 64;
 
-        SDL_Texture* enemyTex = loadTexture("/home/simion/Desktop/3/Game2D/assets/enemy4.png");
+        SDL_Texture* enemyTex = loadTexture(getAssetPath("enemy4.png").c_str());
         auto enemy = std::make_unique<Enemy>(enemyX, enemyY, enemyTex, 8, 0.1f, pathfindingManager);
         enemy->setHealth(Enemy::INITIAL_HEALTH);
         entities.push_back(std::move(enemy));
@@ -946,7 +962,7 @@ void Game::updateSpellAnimation(float deltaTime, std::vector<std::unique_ptr<Ent
 }
 
 void Game::loadHUDTexture() {
-    hudTexture = loadTexture("/home/simion/Desktop/3/Game2D/assets/hud.png");
+    hudTexture = loadTexture(getAssetPath("hud.png").c_str());
 }
 
 void drawRoundedRect(SDL_Renderer* renderer, SDL_Rect rect, int radius, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
