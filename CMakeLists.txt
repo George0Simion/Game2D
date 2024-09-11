@@ -32,19 +32,32 @@ else()
     message(FATAL_ERROR "SDL2 not found!")
 endif()
 
-# Manually specify the paths for SDL2_image and SDL2_ttf
-# Replace these paths with the actual paths where the libraries are located
+# Find SDL2_image and SDL2_ttf libraries
+find_library(SDL2_IMAGE_LIBRARIES NAMES SDL2_image sdl2_image)
+find_library(SDL2_TTF_LIBRARIES NAMES SDL2_ttf sdl2_ttf)
 
-# SDL2_image
-set(SDL2_IMAGE_INCLUDE_DIRS "/usr/include/SDL2")
-set(SDL2_IMAGE_LIBRARIES "/usr/lib/x86_64-linux-gnu/libSDL2_image.so")
+if (SDL2_IMAGE_LIBRARIES)
+    message(STATUS "SDL2_image found: ${SDL2_IMAGE_LIBRARIES}")
+    target_link_libraries(SimpleGame ${SDL2_IMAGE_LIBRARIES})
+else()
+    message(FATAL_ERROR "SDL2_image not found!")
+endif()
 
-# SDL2_ttf
-set(SDL2_TTF_INCLUDE_DIRS "/usr/include/SDL2")
-set(SDL2_TTF_LIBRARIES "/usr/lib/x86_64-linux-gnu/libSDL2_ttf.so")
+if (SDL2_TTF_LIBRARIES)
+    message(STATUS "SDL2_ttf found: ${SDL2_TTF_LIBRARIES}")
+    target_link_libraries(SimpleGame ${SDL2_TTF_LIBRARIES})
+else()
+    message(FATAL_ERROR "SDL2_ttf not found!")
+endif()
 
-# Include directories for SDL2_image and SDL2_ttf
-include_directories(${SDL2_IMAGE_INCLUDE_DIRS} ${SDL2_TTF_INCLUDE_DIRS})
+# Find include directories for SDL2_image and SDL2_ttf
+find_path(SDL2_IMAGE_INCLUDE_DIRS SDL_image.h HINTS /usr/include/SDL2)
+find_path(SDL2_TTF_INCLUDE_DIRS SDL_ttf.h HINTS /usr/include/SDL2)
 
-# Link the SDL2_image and SDL2_ttf libraries
-target_link_libraries(SimpleGame ${SDL2_IMAGE_LIBRARIES} ${SDL2_TTF_LIBRARIES})
+if (SDL2_IMAGE_INCLUDE_DIRS AND SDL2_TTF_INCLUDE_DIRS)
+    message(STATUS "SDL2_image includes found: ${SDL2_IMAGE_INCLUDE_DIRS}")
+    message(STATUS "SDL2_ttf includes found: ${SDL2_TTF_INCLUDE_DIRS}")
+    include_directories(${SDL2_IMAGE_INCLUDE_DIRS} ${SDL2_TTF_INCLUDE_DIRS})
+else()
+    message(FATAL_ERROR "SDL2_image or SDL2_ttf include directories not found!")
+endif()
