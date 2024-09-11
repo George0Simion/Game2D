@@ -66,13 +66,13 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
         printf("SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError());
         isRunning = false;
     } else {
-        font = TTF_OpenFont("/home/simion/Desktop/5/Game2D/assets/font.ttf", 32); // Adjust the path and size as needed
+        font = TTF_OpenFont("../assets/font.ttf", 32); // Adjust the path and size as needed
         if (!font) {
             printf("Failed to load font! SDL_ttf Error: %s\n", TTF_GetError());
             isRunning = false;
         }
 
-        smallFont = TTF_OpenFont("/home/simion/Desktop/5/Game2D/assets/font.ttf", 16); // Adjust the path and size as needed
+        smallFont = TTF_OpenFont("../assets/font.ttf", 16); // Adjust the path and size as needed
         if (!smallFont) {
             printf("Failed to load small font! SDL_ttf Error: %s\n", TTF_GetError());
             isRunning = false;
@@ -80,7 +80,7 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
     }
 
     /* Loading the main character and adding it to the vector */
-    SDL_Texture* tex = loadTexture("/home/simion/Desktop/5/Game2D/assets/sprite_good_arrow3.png");
+    SDL_Texture* tex = loadTexture("../assets/sprite_good_arrow3.png");
     player = new Player(670, 2850, tex, 4, 0.1f);
     entities.push_back(std::unique_ptr<Entity>(player));
     player->setHealth(Player::INITIAL_HEALTH);                                                 /* Set the health of the player */
@@ -118,10 +118,10 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
 
     world->update(camera.x + camera.w / 2, camera.y + camera.h / 2);
 
-    tilesetTexture = loadTexture("/home/simion/Desktop/5/Game2D/assets/tileset.png");
-    dungeonEntranceTexture = loadTexture("/home/simion/Desktop/5/Game2D/assets/dungeon_entrance.png");
-    pathTileTexture = loadTexture("/home/simion/Desktop/5/Game2D/assets/cobblestone_2.png");
-    wallTileTexture = loadTexture("/home/simion/Desktop/5/Game2D/assets/Brickwall_Texture.png");
+    tilesetTexture = loadTexture("../assets/tileset.png");
+    dungeonEntranceTexture = loadTexture("../assets/dungeon_entrance.png");
+    pathTileTexture = loadTexture("../assets/cobblestone_2.png");
+    wallTileTexture = loadTexture("../assets/Brickwall_Texture.png");
     loadHUDTexture();                                                        /* Load the HUD texture */
 
     terminateThreads = false;
@@ -257,7 +257,7 @@ SDL_Texture* Game::loadTexture(const char* fileName) {                      /* M
 }
 
 void Game::spawnEnemy() {
-    SDL_Texture* enemyTex = loadTexture("/home/simion/Desktop/5/Game2D/assets/enemy4.png");
+    SDL_Texture* enemyTex = loadTexture("../assets/enemy4.png");
     float x = 540;
     float y = 100;
     
@@ -275,7 +275,7 @@ void Game::resetGame(bool resetDungeon) {
     entities.clear();
 
     // Reinitialize the player
-    player = new Player(670, 2850, loadTexture("/home/simion/Desktop/5/Game2D/assets/sprite_good_arrow3.png"), 4, 0.1f);
+    player = new Player(670, 2850, loadTexture("../assets/sprite_good_arrow3.png"), 4, 0.1f);
     player->setHealth(Player::INITIAL_HEALTH);
     entities.push_back(std::unique_ptr<Entity>(player));
 
@@ -299,6 +299,19 @@ void Game::resetGame(bool resetDungeon) {
         if (mazeGenerator) {
             delete mazeGenerator;
             mazeGenerator = nullptr;
+        }
+
+        int tileSize = 96; // The size of each tile in pixels
+        
+        // Reset dungeon entrance and exit based on the map
+        std::pair<int, int> entrancePos = findDungeonEntrancePosition();
+        if (entrancePos.first != -1 && entrancePos.second != -1) {
+            dungeonEntrance = {
+                entrancePos.first * tileSize,
+                entrancePos.second * tileSize - 180,
+                tileSize,
+                tileSize
+            };
         }
     }
 }
@@ -467,23 +480,21 @@ void Game::startLevel(int difficulty) {
     mazeGenerator = new MazeGenerator(mazeWidth, mazeHeight);
     dungeonMaze = mazeGenerator->generateMaze();
 
-    // Set specific positions for entrance and exit
-    int entranceX = 1; // For example, fixed entrance point at (1, 1)
+    // Set specific positions for the dungeon entrance (top-left) and exit (outer world position)
+    int entranceX = 1; // Top-left corner of the dungeon
     int entranceY = 1;
-    int exitX = mazeWidth - 2; // Fixed exit point at bottom right corner
+    int exitX = mazeWidth - 2; // Bottom-right corner of the dungeon
     int exitY = mazeHeight - 2;
 
+    // Mark the entrance and exit in the dungeon matrix
     dungeonMaze[entranceY][entranceX] = 2; // 2 represents entrance
-    dungeonMaze[exitY][exitX] = 3; // 3 represents exit
+    dungeonMaze[exitY][exitX] = 3;         // 3 represents exit for next level
 
     int cellSize = 96;
 
-    // Set dungeon entrance and exit coordinates
-    dungeonEntrance = {entranceX * cellSize, entranceY * cellSize, cellSize, cellSize};
-    dungeonExit = {exitX * cellSize, exitY * cellSize, cellSize, cellSize};
-
-    player->setX(dungeonEntrance.x + 64); // Center player in the entrance tile
-    player->setY(dungeonEntrance.y + 64);
+    // Set the player's position at the entrance (top-left corner)
+    player->setX(entranceX * cellSize + 64); // Center player in the entrance tile
+    player->setY(entranceY * cellSize + 64);
 
     // Adjust the camera to center the player
     camera.x = player->getX() - camera.w / 2 + cellSize / 2;
@@ -495,6 +506,17 @@ void Game::startLevel(int difficulty) {
     camera.x = std::max(0, std::min(camera.x, mazePixelWidth - camera.w));
     camera.y = std::max(0, std::min(camera.y, mazePixelHeight - camera.h));
 
+    // Set dungeonExit to the outer world's entrance coordinates
+    std::pair<int, int> outerWorldEntrancePos = findDungeonEntrancePosition();
+    if (outerWorldEntrancePos.first != -1 && outerWorldEntrancePos.second != -1) {
+        int outerWorldX = outerWorldEntrancePos.first * cellSize;
+        int outerWorldY = outerWorldEntrancePos.second * cellSize;
+
+        // Set the dungeon exit to match the outer world's entrance coordinates
+        dungeonExit = {outerWorldX, outerWorldY, cellSize, cellSize};
+    }
+
+    // Spawn enemies in the dungeon
     spawnEnemiesInDungeon(difficulty + 1);
 }
 
@@ -532,13 +554,13 @@ void Game::enterDungeon() {
     isPlayerInDungeon = true;
     startLevel(0);
     
-    // Re-initialize the dungeon entrance coordinates to ensure consistency
+    // // Re-initialize the dungeon entrance coordinates to ensure consistency
     std::pair<int, int> entrancePos = findDungeonEntrancePosition();
     int tileSize = 96;
     if (entrancePos.first != -1 && entrancePos.second != -1) {
         dungeonEntrance = {
             entrancePos.first * tileSize,
-            entrancePos.second * tileSize - 180,
+            entrancePos.second * tileSize,
             tileSize,
             tileSize
         };
@@ -551,13 +573,16 @@ void Game::transitionToNextLevel() {
 }
 
 bool Game::checkDungeonExit() {
+    // Check if the player is at the top-left corner (entrance to dungeon)
     SDL_Rect playerRect = {static_cast<int>(player->getX()), static_cast<int>(player->getY()), 64, 64};
-    return SDL_HasIntersection(&playerRect, &dungeonExit);
+    SDL_Rect topLeftExitRect = {0, 0, 96, 96}; // Assuming entrance is at (1,1) in the dungeon
+    return SDL_HasIntersection(&playerRect, &topLeftExitRect);
 }
 
 bool Game::checkNextLevelDoor() {
+    // Check if the player is at the bottom-right corner (entrance to the next level)
     SDL_Rect playerRect = {static_cast<int>(player->getX()), static_cast<int>(player->getY()), 64, 64};
-    SDL_Rect nextLevelRect = {dungeonExit.x, dungeonExit.y, dungeonExit.w - 32, dungeonExit.h - 32}; // Adjusted for the next level door
+    SDL_Rect nextLevelRect = {dungeonExit.x, dungeonExit.y, dungeonExit.w - 32, dungeonExit.h - 32};
     return SDL_HasIntersection(&playerRect, &nextLevelRect);
 }
 
@@ -567,25 +592,12 @@ void Game::exitDungeon() {
 
     // Restore player to the last position before entering the dungeon
     player->setX(lastPlayerX);
-    player->setY(lastPlayerY);
-
-    // Correct player position relative to the outside entrance
-    if (player->getX() > dungeonEntrance.x) {
-        player->setX(player->getX() + 64);
-    } else {
-        player->setX(player->getX() - 64);
-    }
-
-    if (player->getY() > dungeonEntrance.y) {
-        player->setY(player->getY() + 64);
-    } else {
-        player->setY(player->getY() - 64);
-    }
+    player->setY(lastPlayerY + 180);
 
     delete mazeGenerator;
     mazeGenerator = nullptr;
 
-    // Reset entrance position to ensure consistency
+    // Ensure the entrance remains where it was in the outer world
     std::pair<int, int> entrancePos = findDungeonEntrancePosition();
     int tileSize = 96;
     if (entrancePos.first != -1 && entrancePos.second != -1) {
@@ -596,6 +608,20 @@ void Game::exitDungeon() {
             tileSize
         };
     }
+
+    delete mazeGenerator;
+    mazeGenerator = nullptr;
+
+    // Center the camera on the player after exiting the dungeon
+    camera.x = player->getX() - camera.w / 2;
+    camera.y = player->getY() - camera.h / 2;
+
+    // Ensure the camera stays within the boundaries of the world
+    int worldWidth = 1980;
+    int worldHeight = 1080;
+
+    camera.x = std::max(0, std::min(camera.x, worldWidth - camera.w));
+    camera.y = std::max(0, std::min(camera.y, worldHeight - camera.h));
 }
 
 bool Game::isWall(float x, float y) {

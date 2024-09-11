@@ -107,6 +107,7 @@ private:
     void spawnEnemiesInDungeon(int numberOfEnemies);
     bool areAllEnemiesCleared() const;
     std::pair<int, int> findDungeonEntrancePosition();
+    std::pair<int, int> findDungeonExitPosition();
 
     TTF_Font* font;
     TTF_Font* smallFont;
