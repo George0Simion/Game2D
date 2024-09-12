@@ -522,15 +522,7 @@ void Game::startLevel(int difficulty) {
     camera.x = std::max(0, std::min(camera.x, mazePixelWidth - camera.w));
     camera.y = std::max(0, std::min(camera.y, mazePixelHeight - camera.h));
 
-    // Set dungeonExit to the outer world's entrance coordinates
-    std::pair<int, int> outerWorldEntrancePos = findDungeonEntrancePosition();
-    if (outerWorldEntrancePos.first != -1 && outerWorldEntrancePos.second != -1) {
-        int outerWorldX = outerWorldEntrancePos.first * cellSize;
-        int outerWorldY = outerWorldEntrancePos.second * cellSize;
-
-        // Set the dungeon exit to match the outer world's entrance coordinates
-        dungeonExit = {outerWorldX, outerWorldY, cellSize, cellSize};
-    }
+    dungeonExit = {exitX * cellSize, exitY * cellSize, cellSize, cellSize};
 
     // Spawn enemies in the dungeon
     spawnEnemiesInDungeon(difficulty + 1);
