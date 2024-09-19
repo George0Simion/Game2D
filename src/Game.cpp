@@ -377,7 +377,7 @@ void Game::processInput() {
     const Uint8* state = SDL_GetKeyboardState(NULL);
     bool moved = false;
 
-    float speed = player->isRunning() ? 450.0f : 100.0f;
+    float speed = player->isRunning() ? 200.0f : 100.0f;
     float newX = player->getX();
     float newY = player->getY();
 

@@ -180,20 +180,11 @@ SDL_Rect Entity::getBoundingBox() const {
 }
 
 void Entity::setX(float p_x) {
-    if (p_x != x) {
-        x = p_x;
-        startAnimation();
-    } else {
-        stopAnimation();
-    }
+    x = p_x;
 }
+
 void Entity::setY(float p_y) {
-    if (p_y != y) {
-        y = p_y;
-        startAnimation();
-    } else {
-        stopAnimation();
-    }
+    y = p_y;
 }
 
 SDL_Rect Entity::getArrowFrame() const {

@@ -199,12 +199,14 @@ std::vector<std::pair<int, int>> Enemy::calculateNewPath(Player& player, Game& g
 }
 
 void Enemy::moveToNextWaypoint(float deltaTime, Player& player, Game& game) {
+    if (isMarkedForRemoval() || !hasPath || pathToPlayer.empty()) return;
+
     if (currentPathIndex >= pathToPlayer.size()) {
         hasPath = false;  // Mark path as complete
         return;
     }
 
-    float moveSpeed = 100.0f;
+    float moveSpeed = this->moveSpeed;
     bool moved = false;
 
     auto [nextX, nextY] = pathToPlayer[currentPathIndex];
@@ -213,38 +215,45 @@ void Enemy::moveToNextWaypoint(float deltaTime, Player& player, Game& game) {
     float targetX = nextX * CELL_SIZE - ENEMY_PADDING_X;
     float targetY = nextY * CELL_SIZE - ENEMY_PADDING_Y;
 
+    float newX = getX();
+    float newY = getY();
+
+    // Determine the direction towards the next waypoint
     if (abs(targetX - getX()) > abs(targetY - getY())) {
+        // Movement in X direction
         if (targetX > getX()) {
-            if (!game.isWall(getX() + moveSpeed * deltaTime + ENEMY_PADDING_X, getY() + ENEMY_PADDING_Y)) {
-                setX(getX() + moveSpeed * deltaTime);
-                moved = true;
-            }
+            newX += moveSpeed * deltaTime;
             setDirection(Right);
         } else {
-            if (!game.isWall(getX() - moveSpeed * deltaTime + ENEMY_PADDING_X, getY() + ENEMY_PADDING_Y)) {
-                setX(getX() - moveSpeed * deltaTime);
-                moved = true;
-            }
+            newX -= moveSpeed * deltaTime;
             setDirection(Left);
         }
     } else {
+        // Movement in Y direction
         if (targetY > getY()) {
-            if (!game.isWall(getX() + ENEMY_PADDING_X, getY() + moveSpeed * deltaTime + ENEMY_PADDING_Y)) {
-                setY(getY() + moveSpeed * deltaTime);
-                moved = true;
-            }
+            newY += moveSpeed * deltaTime;
             setDirection(Down);
         } else {
-            if (!game.isWall(getX() + ENEMY_PADDING_X, getY() - moveSpeed * deltaTime + ENEMY_PADDING_Y)) {
-                setY(getY() - moveSpeed * deltaTime);
-                moved = true;
-            }
+            newY -= moveSpeed * deltaTime;
             setDirection(Up);
         }
     }
 
-    // Move to next waypoint if close enough
-    if (moved && abs(getX() - targetX) < moveSpeed * deltaTime && abs(getY() - targetY) < moveSpeed * deltaTime) {
+    // Check collision at all four corners of the enemy's bounding box
+    if (!game.isWall(newX + ENEMY_PADDING_X, newY + ENEMY_PADDING_Y) && 
+        !game.isWall(newX + ENEMY_PADDING_X + FRAME_WIDTH - 1, newY + ENEMY_PADDING_Y) &&
+        !game.isWall(newX + ENEMY_PADDING_X, newY + ENEMY_PADDING_Y + FRAME_HEIGHT - 1) &&
+        !game.isWall(newX + ENEMY_PADDING_X + FRAME_WIDTH - 1, newY + ENEMY_PADDING_Y + FRAME_HEIGHT - 1)) {
+        setX(newX);
+        setY(newY);
+        moved = true;
+    } else {
+        // Unable to move towards the waypoint; mark path as invalid
+        hasPath = false;
+    }
+
+    // Move to the next waypoint if close enough
+    if (abs(getX() - targetX) < moveSpeed * deltaTime && abs(getY() - targetY) < moveSpeed * deltaTime) {
         currentPathIndex++;
     }
 }

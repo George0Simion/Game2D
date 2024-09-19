@@ -29,7 +29,19 @@ std::vector<std::pair<int, int>> PathfindingManager::calculateSharedPath(Player&
     std::vector<std::pair<int, int>> path;
     if (startX == goalX && startY == goalY) return path;
 
-    std::priority_queue<std::tuple<int, int, int, int, std::vector<std::pair<int, int>>>> openSet;
+    // Define a custom comparator for the priority queue
+    auto compare = [](const std::tuple<int, int, int, int, std::vector<std::pair<int, int>>>& a,
+                    const std::tuple<int, int, int, int, std::vector<std::pair<int, int>>>& b) {
+        return std::get<0>(a) > std::get<0>(b); // Min-heap based on priority
+    };
+
+    // Declare the priority queue with the custom comparator
+    std::priority_queue<
+        std::tuple<int, int, int, int, std::vector<std::pair<int, int>>>,
+        std::vector<std::tuple<int, int, int, int, std::vector<std::pair<int, int>>>>,
+        decltype(compare)
+    > openSet(compare);
+
     std::unordered_map<int, std::unordered_map<int, int>> costSoFar;
     openSet.emplace(0, startX, startY, 0, path);
     costSoFar[startX][startY] = 0;
