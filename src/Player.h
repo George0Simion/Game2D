@@ -43,6 +43,8 @@ public:
 
     void deactivateSpell();
 
+    void heal(int amount);
+
 private:
     bool isDead;
     bool deathAnimationFinished;

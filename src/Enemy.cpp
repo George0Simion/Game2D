@@ -23,7 +23,6 @@ Enemy::Enemy(float p_x, float p_y, SDL_Texture* p_tex, int numFrames, float anim
       attackCooldown(0.0f), 
       spellRange(300.0f), 
       thrustRange(100.0f), 
-      moveSpeed(75.0f), 
       directionChangeCooldown(0.5f), 
       timeSinceLastDirectionChange(0.0f), 
       hasTarget(false), 
@@ -34,8 +33,25 @@ Enemy::Enemy(float p_x, float p_y, SDL_Texture* p_tex, int numFrames, float anim
       lastBounceTime(0),
       bounceDistance(0.0f)
 {
-    spellSpeed = 100.0f;
+    // Initialize stats based on difficulty (default values; will be overridden)
+    maxHealth = INITIAL_HEALTH;
+    moveSpeed = 75.0f;
+    thrustDamage = THRUST_DAMAGE;
+    spellDamage = SPELL_DAMAGE;
+    setHealth(maxHealth);  // Set initial health
 }
+
+void Enemy::setMaxHealth(int health) { maxHealth = health; }
+int Enemy::getMaxHealth() const { return maxHealth; }
+
+void Enemy::setMoveSpeed(float speed) { moveSpeed = speed; }
+float Enemy::getMoveSpeed() const { return moveSpeed; }
+
+void Enemy::setThrustDamage(int damage) { thrustDamage = damage; }
+int Enemy::getThrustDamage() const { return thrustDamage; }
+
+void Enemy::setSpellDamage(int damage) { spellDamage = damage; }
+int Enemy::getSpellDamage() const { return spellDamage; }
 
 void Enemy::setSpellTarget(float targetX, float targetY) {
     spellActive = true;
@@ -159,7 +175,7 @@ void Enemy::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Ent
             if (!player->getIsDead()) {
                 SDL_Rect playerBoundingBox = player->getBoundingBox();
                 if (SDL_HasIntersection(&spellRect, &playerBoundingBox)) {
-                    player->takeDamage(SPELL_DAMAGE);
+                    player->takeDamage(spellDamage);
                     if (!player->isAlive()) {
                         player->setIsDead(true);
                     }
@@ -260,12 +276,14 @@ void Enemy::updateBehavior(float deltaTime, Player& player, std::vector<std::uni
     if (distance <= 150.0f) {
         // If close enough, move directly to the player
         moveDirectlyToPlayer(deltaTime, player, game);
+
     } else if (distance <= 800.0f) {
         // If within a certain range, follow the shared path and possibly attack
         if (spellCooldownRemaining <= 0.0f) {
             decideAction(player, distance);
         }
         followSharedPath(deltaTime, player, game);
+
     } else {
         // If far from the player, move randomly
         randomMove(deltaTime, game);
@@ -276,7 +294,7 @@ void Enemy::updateBehavior(float deltaTime, Player& player, std::vector<std::uni
 }
 
 void Enemy::randomMove(float deltaTime, Game& game) {
-    float moveSpeed = 100.0f;
+    float moveSpeed = this->moveSpeed;
     bool moved = false;
 
     timeSinceLastDirectionChange += deltaTime;
@@ -450,7 +468,7 @@ void Enemy::moveDirectlyToPlayer(float deltaTime, Player& player, Game& game) {
     }
 
     if (getAction() == Walking) {
-        float moveSpeed = 100.0f;
+        float moveSpeed = this->moveSpeed;
         bool moved = false;
 
         if (fabs(distanceX) > fabs(distanceY)) {

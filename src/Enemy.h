@@ -31,8 +31,6 @@ public:
     static const int SPELL_DURATION = 6000;
     static const float SPELL_COOLDOWN;
 
-    int getMaxHealth() const override { return INITIAL_HEALTH; }
-
     void setSpellTarget(float targetX, float targetY) override;
     void updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities, Game& game);
 
@@ -41,6 +39,18 @@ public:
 
     std::vector<std::pair<int, int>> pathToPlayer;
     size_t currentPathIndex;
+
+    void setMaxHealth(int health);
+    int getMaxHealth() const override;
+
+    void setMoveSpeed(float speed);
+    float getMoveSpeed() const;
+
+    void setThrustDamage(int damage);
+    int getThrustDamage() const;
+
+    void setSpellDamage(int damage);
+    int getSpellDamage() const;
 
 protected:
     int getActionOffset() const override;
@@ -86,6 +96,10 @@ private:
 
     Uint32 lastSharedPathUpdateTime;
     const Uint32 sharedPathUpdateInterval = 2000;
+
+    int maxHealth;
+    int thrustDamage;
+    int spellDamage;
 };
 
 #endif

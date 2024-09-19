@@ -19,6 +19,13 @@ Player::Player(float p_x, float p_y, SDL_Texture* p_tex, int numFrames, float an
       lastBounceTime(0),
       bounceDistance(0.0f) {}
 
+void Player::heal(int amount) {
+    health += amount;
+    if (health > getMaxHealth()) {
+        health = getMaxHealth();
+    }
+}
+
 void Player::updateSpellPosition(float deltaTime, std::vector<std::unique_ptr<Entity>>& entities, Game& game) {
     if (!spellActive) {
         return;

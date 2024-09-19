@@ -105,7 +105,7 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
     deltaTime = 0.0f;                                                       /* Getting the in-game time for the movement */
 
     menu = new Menu(this);                                                  /* Allocating memory for the menu */
-    world = new World(renderer);                                     /* Initialize the world with a seed for procedural generation */
+    world = new World(renderer);                                            /* Initialize the world with a seed for procedural generation */
 
     isPlayerInDungeon = false;
 
@@ -117,8 +117,8 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
         dungeonEntrance = {
             entrancePos.first * tileSize,
             entrancePos.second * tileSize - 180,
-            tileSize, // Width of the dungeon entrance
-            tileSize  // Height of the dungeon entrance
+            tileSize,
+            tileSize
         };
 
         // Set dungeonExit to the same coordinates
@@ -138,7 +138,7 @@ void Game::init(const char* title, int width, int height, bool fullscreen) {
     dungeonEntranceTexture = loadTexture(getAssetPath("dungeon_entrance.png").c_str());
     pathTileTexture = loadTexture(getAssetPath("cobblestone_2.png").c_str());
     wallTileTexture = loadTexture(getAssetPath("Brickwall_Texture.png").c_str());
-    loadHUDTexture();                                                        /* Load the HUD texture */
+    loadHUDTexture();                                                        /* Load the textures */
 
     terminateThreads = false;
 
@@ -317,7 +317,7 @@ void Game::resetGame(bool resetDungeon) {
             mazeGenerator = nullptr;
         }
 
-        int tileSize = 96; // The size of each tile in pixels
+        int tileSize = 96;
         
         // Reset dungeon entrance and exit based on the map
         std::pair<int, int> entrancePos = findDungeonEntrancePosition();
@@ -377,7 +377,7 @@ void Game::processInput() {
     const Uint8* state = SDL_GetKeyboardState(NULL);
     bool moved = false;
 
-    float speed = player->isRunning() ? 150.0f : 100.0f;
+    float speed = player->isRunning() ? 175.0f : 100.0f;
     float newX = player->getX();
     float newY = player->getY();
 
@@ -553,7 +553,18 @@ void Game::spawnEnemiesInDungeon(int numberOfEnemies) {
 
         SDL_Texture* enemyTex = loadTexture(getAssetPath("enemy4.png").c_str());
         auto enemy = std::make_unique<Enemy>(enemyX, enemyY, enemyTex, 8, 0.1f, pathfindingManager);
-        enemy->setHealth(Enemy::INITIAL_HEALTH);
+
+        // Set enemy stats based on difficulty
+        int additionalHealth = difficulty * 20;       // Increase health by 20 per level
+        float additionalSpeed = difficulty * 5.0f;    // Increase speed by 5 per level
+        int additionalDamage = difficulty * 5;        // Increase damage by 5 per level
+
+        enemy->setMaxHealth(Enemy::INITIAL_HEALTH + additionalHealth);
+        enemy->setHealth(enemy->getMaxHealth());      // Update current health
+        enemy->setMoveSpeed(75.0f + additionalSpeed);
+        enemy->setThrustDamage(Enemy::THRUST_DAMAGE + additionalDamage);
+        enemy->setSpellDamage(Enemy::SPELL_DAMAGE + additionalDamage);
+
         entities.push_back(std::move(enemy));
     }
 }
@@ -564,7 +575,7 @@ void Game::enterDungeon() {
     isPlayerInDungeon = true;
     startLevel(0);
     
-    // // Re-initialize the dungeon entrance coordinates to ensure consistency
+    // Re-initialize the dungeon entrance coordinates to ensure consistency
     std::pair<int, int> entrancePos = findDungeonEntrancePosition();
     int tileSize = 96;
     if (entrancePos.first != -1 && entrancePos.second != -1) {
@@ -585,7 +596,7 @@ void Game::transitionToNextLevel() {
 bool Game::checkDungeonExit() {
     // Check if the player is at the top-left corner (entrance to dungeon)
     SDL_Rect playerRect = {static_cast<int>(player->getX()), static_cast<int>(player->getY()), 64, 64};
-    SDL_Rect topLeftExitRect = {0, 0, 96, 96}; // Assuming entrance is at (1,1) in the dungeon
+    SDL_Rect topLeftExitRect = {0, 0, 96, 96};
     return SDL_HasIntersection(&playerRect, &topLeftExitRect);
 }
 
@@ -664,11 +675,11 @@ bool Game::areAllEnemiesCleared() const {
 }
 
 int Game::getDungeonWidth() const {
-    return dungeonMaze.empty() ? 0 : dungeonMaze[0].size() * 96; // Assuming each cell is 96 pixels
+    return dungeonMaze.empty() ? 0 : dungeonMaze[0].size() * 96;
 }
 
 int Game::getDungeonHeight() const {
-    return dungeonMaze.size() * 96; // Assuming each cell is 96 pixels
+    return dungeonMaze.size() * 96;
 }
 
 void Game::update() {
@@ -807,10 +818,10 @@ void Game::resolveCollision(Player& player, Enemy& enemy) {
     // Check enemy's attack collision with player
     if (Entity::checkCollision(enemyAttackBox, player.getBoundingBox())) {
         if (enemy.getAction() == Entity::Thrusting && !enemy.getDamageApplied() && (currentTime - enemy.getAttackStartTime() >= enemy.getAttackDelay())) {
-            applyDamage(enemy, player, Enemy::THRUST_DAMAGE);
+            applyDamage(enemy, player, enemy.getThrustDamage());
             enemy.setDamageApplied(true);
         } else if (enemy.getAction() == Entity::Spellcasting && !enemy.getDamageApplied() && (currentTime - enemy.getAttackStartTime() >= enemy.getAttackDelay())) {
-            applyDamage(enemy, player, Enemy::SPELL_DAMAGE);
+            applyDamage(enemy, player, enemy.getSpellDamage());
             enemy.setDamageApplied(true);
         }
     }
@@ -904,6 +915,9 @@ void Game::applyDamage(Entity& attacker, Entity& target, int damage) {
             deathTime = SDL_GetTicks();
         } else if (Enemy* enemy = dynamic_cast<Enemy*>(&target)) {
             entitiesToRemove.push_back(&target);
+
+            int healAmount = 10 + difficulty * 5;  // Heal increases by 5 per level
+            player->heal(healAmount);
         }
     }
 }
@@ -933,7 +947,7 @@ void Game::updateSpellAnimation(float deltaTime, std::vector<std::unique_ptr<Ent
     if (player->getAction() == Entity::Spellcasting && !player->isArrowActive()) {
         // Find the closest enemy
         Enemy* closestEnemy = nullptr;
-        float minDistance = std::numeric_limits<float>::max(); // Correct usage of numeric_limits
+        float minDistance = std::numeric_limits<float>::max();
 
         for (const auto& entity : entities) {
             if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
@@ -1093,10 +1107,10 @@ void Game::renderHUD() {
     SDL_RenderCopy(renderer, hudTexture, &playerHudSourceRect, &playerHudDestRect);
 
     // Render player's health in the HUD
-    int healthBarX = playerHudX + 132; // Adjust x position as needed
-    int healthBarY = playerHudY + 32; // Adjust y position as needed
-    int healthBarWidth = 155;  // Adjust as needed
-    int healthBarHeight = 18;  // Adjust as needed
+    int healthBarX = playerHudX + 132;
+    int healthBarY = playerHudY + 32;
+    int healthBarWidth = 155;
+    int healthBarHeight = 18;
     float healthRatio = static_cast<float>(player->getHealth()) / static_cast<float>(player->getMaxHealth());
     if (healthRatio > 0) {
         SDL_Rect healthRect = { healthBarX, healthBarY, static_cast<int>(healthBarWidth * healthRatio), healthBarHeight };
@@ -1105,14 +1119,14 @@ void Game::renderHUD() {
     }
 
     // Render the green bar (placeholder)
-    int greenBarX = playerHudX + 132; // Adjust x position as needed
-    int greenBarY = playerHudY + 61; // Adjust y position as needed
+    int greenBarX = playerHudX + 132;
+    int greenBarY = playerHudY + 61;
     SDL_Rect greenRect = { greenBarX, greenBarY, healthBarWidth, healthBarHeight };
     drawRoundedRect(renderer, greenRect, 5, 34, 177, 76, 255); // Rounded corners with radius 5, green color
 
     // Render the stamina bar (blue)
-    int blueBarX = playerHudX + 132; // Adjust x position as needed
-    int blueBarY = playerHudY + 91; // Adjust y position as needed
+    int blueBarX = playerHudX + 132;
+    int blueBarY = playerHudY + 91;
     float staminaRatio = static_cast<float>(player->getStamina()) / static_cast<float>(player->getMaxStamina());
     int blueBarWidth = static_cast<int>(healthBarWidth * staminaRatio);
     if (blueBarWidth > 4.75) {

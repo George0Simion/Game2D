@@ -102,7 +102,7 @@ void Entity::setSpellTarget(float targetX, float targetY) {
 
 SDL_Rect Entity::getSpellFrame() const {
     if (spellActive) {
-        int spellRow = 25; // Adjust as per your sprite sheet
+        int spellRow = 25;
         int spellFrameIndex = (SDL_GetTicks() / 50) % 6; // Assuming 6 frames for the spell animation
         return {spellFrameIndex * FRAME_WIDTH, spellRow * FRAME_HEIGHT, FRAME_WIDTH, FRAME_HEIGHT};
     }

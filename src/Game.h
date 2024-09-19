@@ -119,7 +119,7 @@ private:
 
     MazeGenerator* mazeGenerator;
     std::vector<std::vector<int>> dungeonMaze;
-    PathfindingManager pathfindingManager;  // Ensure PathfindingManager is included before its use here
+    PathfindingManager pathfindingManager;
 
     int difficulty;
 
