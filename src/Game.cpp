@@ -377,7 +377,7 @@ void Game::processInput() {
     const Uint8* state = SDL_GetKeyboardState(NULL);
     bool moved = false;
 
-    float speed = player->isRunning() ? 175.0f : 100.0f;
+    float speed = player->isRunning() ? 450.0f : 100.0f;
     float newX = player->getX();
     float newY = player->getY();
 
@@ -1192,10 +1192,7 @@ void Game::render() {
             }
         }
 
-        // Apply dimming by rendering the semi-transparent texture over the entire screen
-        SDL_RenderCopy(renderer, lightingManager->getDimmingTexture(), NULL, NULL);
-
-        // Collect enemy positions for lighting effect
+        // Collect enemy and spell positions for lighting effects
         for (const auto& entity : entities) {
             if (Enemy* enemy = dynamic_cast<Enemy*>(entity.get())) {
                 SDL_Rect enemyRect = {
@@ -1207,7 +1204,6 @@ void Game::render() {
                 enemyPositions.push_back(enemyRect);
             }
 
-            // Collect spell positions for additional lighting
             if (entity->isSpellActive()) {
                 SDL_Rect spellRect = {
                     static_cast<int>(entity->getSpellX()) - camera.x,
@@ -1218,15 +1214,6 @@ void Game::render() {
                 spellPositions.push_back(spellRect);
             }
         }
-
-        // Apply lighting effects for player, enemies, and spells
-        lightingManager->renderLighting(
-            {static_cast<int>(player->getX()), static_cast<int>(player->getY()), player->getCurrentFrame().w * 2, player->getCurrentFrame().h * 2},
-            enemyPositions,
-            spellPositions,
-            dungeonMaze,
-            camera
-        );
 
         // Render main entities (Player, Enemies)
         for (const auto& entity : entities) {
@@ -1265,7 +1252,7 @@ void Game::render() {
             }
         }
 
-        // Render arrows after lighting effects are applied
+        // Render arrows
         for (const auto& entity : entities) {
             if (entity->isArrowActive()) {
                 SDL_Rect arrowSrcRect = entity->getArrowFrame();
@@ -1279,9 +1266,31 @@ void Game::render() {
             }
         }
 
+        // Apply lighting effects for player, enemies, and spells
+        lightingManager->renderLighting(
+            {
+                static_cast<int>(player->getX()), 
+                static_cast<int>(player->getY()), 
+                player->getCurrentFrame().w * 2, 
+                player->getCurrentFrame().h * 2
+            },
+            enemyPositions,
+            spellPositions,
+            dungeonMaze,
+            camera
+        );
+
     } else {
         // Render the world (outside the dungeon)
-        world->render(camera.x + camera.w / 2 + 192, camera.y + camera.h / 2 - 256, isPlayerInDungeon, dungeonEntrance, camera, dungeonEntranceTexture, tilesetTexture);
+        world->render(
+            camera.x + camera.w / 2 + 192, 
+            camera.y + camera.h / 2 - 256, 
+            isPlayerInDungeon, 
+            dungeonEntrance, 
+            camera, 
+            dungeonEntranceTexture, 
+            tilesetTexture
+        );
 
         // Render entities (Player, Enemies, etc.)
         for (const auto& entity : entities) {
