@@ -51,7 +51,7 @@ This game isn't just another indie project; it's an immersive experience that bl
 
 - **Dynamic Lighting & Shadows**: Immerse yourself in a world where real-time lighting affects gameplay. Shadows can conceal dangers or provide stealth opportunities.
 
-- **Challenging Enemies**: Battle against enemies that become more formidable as you delve deeper. Their speed and damage increase, keeping you on your toes.
+- **Challenging Enemies**: Battle against enemies that become more formidable as you delve deeper. Their speed, damage, and health scale with each level, keeping you on your toes.
 
 - **Rich Combat System**: Wield a variety of weapons and abilities, including slashing, thrusting, shooting arrows, and casting spells. Each ability comes with its own mechanics and cooldowns.
 
@@ -60,6 +60,8 @@ This game isn't just another indie project; it's an immersive experience that bl
 - **Multi-threaded Performance**: Enjoy smooth gameplay as the game leverages multi-threading for dungeon generation, lighting calculations, AI behaviors, and more.
 
 - **Intuitive HUD**: Keep track of your health, stamina, and ability cooldowns with a sleek, unobtrusive HUD.
+
+- **Scaling Health Rewards**: Defeat enemies to recover health, with the amount restored scaling dynamically based on your level.
 
 ---
 
@@ -81,7 +83,7 @@ The heart of **ShadowMaze** lies within its dungeons. These labyrinthine structu
 
 - **Maze Generation**: Dungeons are created using a refined version of the recursive backtracking algorithm, ensuring solvable and intriguing layouts.
 
-- **Increasing Difficulty**: As you delve deeper, dungeons become more complex, and enemies become faster and more dangerous.
+- **Increasing Difficulty**: As you delve deeper, dungeons become more complex, and enemies become faster, stronger, and tougher to defeat.
 
 - **Lighting Challenges**: Dungeons are cloaked in darkness, requiring you to rely on limited light sources, enhancing the suspense and difficulty.
 
@@ -123,7 +125,7 @@ Your abilities are potent but require careful timing due to cooldown periods.
 
 Face off against relentless enemies that become more challenging as you progress.
 
-- **Progressive Difficulty**: Enemies increase in speed and damage the deeper you venture into the dungeon, keeping the gameplay fresh and challenging.
+- **Progressive Difficulty**: Enemies increase in speed, damage, and health the deeper you venture into the dungeon, keeping the gameplay fresh and challenging.
 
 - **Intelligent Pathfinding**: Enemies use pathfinding algorithms to navigate the dungeon and pursue you.
 
@@ -137,11 +139,13 @@ Face off against relentless enemies that become more challenging as you progress
   - Enemies have their own health bars displayed above them.
   - They can take damage from all your attack types and can be defeated permanently.
 
+- **Scaling Health Rewards**: Killing enemies restores health, with the amount restored increasing as you reach higher levels.
+
 ### **Lighting & Shadows**
 
 Light isn't just a visual effect—it's a gameplay element.
 
-- **Dynamic Lighting**: The game features real-time lighting effects that affect visibility.
+- **Dynamic Lighting**: The game features real-time lighting effects that affect visibility and gameplay.
 
 - **Shadow Mechanics**:
   - **Visibility**: Areas outside light sources are shrouded in darkness, hiding enemies and obstacles.
@@ -176,7 +180,7 @@ Light isn't just a visual effect—it's a gameplay element.
 Begin by cloning the game repository to your local machine:
 
 ```bash
-git clone https://github.com/yourusername/shadowmaze-chronicles.git
+git clone https://github.com/George0Simion/Game2D.git
 ```
 
 ### **2. Run the Installer**
